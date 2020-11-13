@@ -1,3 +1,3 @@
-__version__ = '0.2'
+__version__ = '0.2.1.dev0'
 
 from ._core import Stock
