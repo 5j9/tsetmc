@@ -10,7 +10,7 @@ def patch_get_with_file(name):
     return patch.object(_core, 'get', lambda _: text)
 
 
-@patch_get_with_file('famali.html')
+@patch_get_with_file('fmelli.html')
 def test_get_page_info():
     d = Stock(1).get_page_info()
     assert d == {
