@@ -14,7 +14,7 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     packages=['tsetmc'],
     python_requires='>=3.9',
-    install_requires=['requests'],
+    install_requires=['requests', 'jdatetime'],
     tests_require=['pytest'],
     zip_safe=True,
     classifiers=[

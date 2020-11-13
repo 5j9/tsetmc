@@ -1,10 +1,13 @@
 from re import compile as rc
+from datetime import datetime
 
 from requests import Session
+from jdatetime import datetime as jdatetime
 
 
 session = Session()
-
+strptime = datetime.strptime
+jstrptime = jdatetime.strptime
 
 session_get = session.get
 
@@ -26,6 +29,33 @@ WEAK_YEAR_MIN_MAX_SEARCH = rc(
     rf"MinWeek='{F}',MaxWeek='{F}',MinYear='{F}',MaxYear='{F}'").search
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
+INSTANT_MATCH = rc(
+    r'(?P<timestamp>\d\d:\d\d:\d\d),'
+    r'A ,'
+    r'(?P<last_price>\d+),'
+    r'(?P<closing_price>\d+),'
+    r'(?P<opening_price>\d+),'
+    r'(?P<yesterday_price>\d+),'
+    r'(?P<day_range_start>\d+),'
+    r'(?P<day_range_end>\d+),'
+    r'(?P<number_of_transactions>\d+),'
+    r'(?P<volume_of_transactions>\d+),'
+    r'(?P<value_of_transactions>\d+),'
+    r'1,'
+    r'(?P<last_info_datetime>\d+,\d+)'
+    r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
+).match
+INSTANT_INTS = {
+    'last_price',
+    'closing_price',
+    'opening_price',
+    'yesterday_price',
+    'day_range_start',
+    'day_range_end',
+    'number_of_transactions',
+    'volume_of_transactions',
+    'value_of_transactions',
+}
 
 
 class Stock:
@@ -62,17 +92,23 @@ class Stock:
             'year_min': float(wy_min_max[3]),
         }
 
-    def get_instant_info(self):  # todo
+    def get_instant_info(self):
         text = get(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             f'?i={self.id}&c=67%20')
-        line1, line2, line3 = text.split('\n')
-        market_index_change = float(line2)
-        market_index_change_percent = float()
-        return {
-            'market_index_change': market_index_change,
-            'market_index_change_percent': market_index_change_percent,
-        }
+        group_dict = INSTANT_MATCH(text).groupdict()
+        for k in INSTANT_INTS:
+            # noinspection PyTypeChecker
+            group_dict[k] = int(group_dict[k])
+        # noinspection PyTypeChecker
+        group_dict['last_info_datetime'] = strptime(
+            group_dict['last_info_datetime'], '%Y%m%d,%H%M%S')
+        if (nav_datetime := group_dict.get('nav_datetime')) is not None:
+            # noinspection PyTypeChecker
+            group_dict['nav'] = int(group_dict['nav'])
+            group_dict['nav_datetime'] = jstrptime(
+                nav_datetime, '%Y/%m/%d %H:%M:%S')
+        return group_dict
 
     @staticmethod
     def from_name(s: str) -> 'Stock':

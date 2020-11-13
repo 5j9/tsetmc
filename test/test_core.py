@@ -1,4 +1,7 @@
+from datetime import datetime
 from unittest.mock import patch
+
+from jdatetime import datetime as jdatetime
 
 # noinspection PyProtectedMember
 from tsetmc import Stock, _core
@@ -96,3 +99,76 @@ def test_get_page_info_no_sector_pe():
         'week_min': 3670.0,
         'year_max': 21750.0,
         'year_min': 2616.0}
+
+
+@patch_get_with_file('dara_yekom.txt')
+def test_dara1_instant():
+    assert Stock(1).get_instant_info() == {
+        'closing_price': 181240,
+        'day_range_end': 176300,
+        'day_range_start': 185000,
+        'opening_price': 181600,
+        'last_info_datetime': datetime(2020, 11, 11, 12, 29, 59),
+        'last_price': 183250,
+        'nav': 202821,
+        'nav_datetime': jdatetime(1399, 8, 21, 11, 56),
+        'number_of_transactions': 62630,
+        'timestamp': '12:29:59',
+        'value_of_transactions': 6085868910210,
+        'volume_of_transactions': 33579648,
+        'yesterday_price': 181110}
+
+
+@patch_get_with_file('asam.txt')
+def test_asam_instant():
+    assert Stock(1).get_instant_info() == {
+        'closing_price': 94140,
+        'day_range_end': 92001,
+        'day_range_start': 96000,
+        'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17),
+        'last_price': 95890,
+        'nav': 95630,
+        'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43),
+        'number_of_transactions': 27,
+        'opening_price': 94440,
+        'timestamp': '12:28:17',
+        'value_of_transactions': 753116350,
+        'volume_of_transactions': 8000,
+        'yesterday_price': 93414
+    }
+
+
+@patch_get_with_file('negin.txt')
+def test_negin_instant():
+    assert Stock(1).get_instant_info() == {
+        'closing_price': 50110,
+        'day_range_end': 50000,
+        'day_range_start': 50700,
+        'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37),
+        'last_price': 50000,
+        'nav': 12190,
+        'nav_datetime': jdatetime(1398, 12, 29, 16, 0),
+        'number_of_transactions': 29,
+        'opening_price': 50010,
+        'timestamp': '12:29:37',
+        'value_of_transactions': 1408671580,
+        'volume_of_transactions': 28109,
+        'yesterday_price': 50010}
+
+
+@patch_get_with_file('fmelli.txt')
+def test_fmelli_instant():
+    assert Stock(1).get_instant_info() == {
+        'closing_price': 19890,
+        'day_range_end': 19200,
+        'day_range_start': 20320,
+        'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53),
+        'last_price': 20320,
+        'nav': None,
+        'nav_datetime': None,
+        'number_of_transactions': 26572,
+        'opening_price': 19400,
+        'timestamp': '17:29:53',
+        'value_of_transactions': 1318025925250,
+        'volume_of_transactions': 66266936,
+        'yesterday_price': 19360}
