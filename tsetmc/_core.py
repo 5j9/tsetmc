@@ -64,28 +64,29 @@ class Stock:
         self.id = id
 
     def get_page_info(self) -> dict:
+        """Returns static info of the symbol's page."""
         text = get(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
-        a_min_max = ALLOWED_MIN_MAX_SEARCH(text)
+        t_min_max = ALLOWED_MIN_MAX_SEARCH(text)
         wy_min_max = WEAK_YEAR_MIN_MAX_SEARCH(text)
         title_match = TITLE_SEARCH(text)
         free_float_match = FREE_FLOAT_SEARCH(text)
         eps_match = EPS_SEARCH(text)
         sector_pe_match = SECTOR_PE_SEARCH(text)
         return {
-            'allowed_max': float(a_min_max[2]),
-            'allowed_min': float(a_min_max[1]),
-            'base_volume': int(BASE_VOLUME_SEARCH(text)[1]),
+            'tmax': float(t_min_max[2]),
+            'tmin': float(t_min_max[1]),
+            'bvol': int(BASE_VOLUME_SEARCH(text)[1]),
             'eps': int(eps_match[1]) if eps_match is not None else None,
             'free_float': int(
                 free_float_match[1]) if free_float_match is not None else None,
-            'full_name': title_match[1],
-            'group_name': GROUP_NAME_SEARCH(text)[1],
+            'l30': title_match[1],
+            'sector_name': GROUP_NAME_SEARCH(text)[1],
             'market': title_match[3],
             'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1]),
-            'name': title_match[2],
+            'l18': title_match[2],
             'sector_pe': float(
                 sector_pe_match[1]) if sector_pe_match is not None else None,
-            'shares': int(SHARES_SEARCH(text)[1]),
+            'z': int(SHARES_SEARCH(text)[1]),
             'week_max': float(wy_min_max[2]),
             'week_min': float(wy_min_max[1]),
             'year_max': float(wy_min_max[4]),
