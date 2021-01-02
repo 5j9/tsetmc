@@ -1,9 +1,10 @@
 from re import compile as rc
 from datetime import datetime
+from io import StringIO
 
 from requests import Session
 from jdatetime import datetime as jdatetime
-from pandas import DataFrame, to_numeric
+from pandas import Int64Dtype, read_csv, to_numeric
 
 
 session = Session()
@@ -122,38 +123,41 @@ class Stock:
         return Stock(int(FIRST_NUMBER_SEARCH(text)[0]))
 
 
-def get_market_dataframe() -> DataFrame:
-    """Return the market status which information used in creating filters.
+def get_market_watch_init() -> dict:
+    """Return the market status which are the info used in creating filters.
 
     For more information about filters see:
         http://tsetmc.com/Loader.aspx?ParTree=15131F
     For the meaning of column names in the returned DataFrame see:
         https://cdn.tsetmc.com/Site.aspx?ParTree=151713
-    For `flow` and `yval` codes see:
-        http://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
+        For `flow` and `yval` codes see:
+            http://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     """
     text = get('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, _, states, price_rows, _ = text.split('@')
-    state_cols = (
-        'id', 'isin', 'l18', 'l30', 'unknown1',
-        'pf', 'pc', 'pl', 'tno', 'tvol', 'tval',
-        'pmin', 'pmax', 'py', 'eps', 'bvol',
-        'unknown2', 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval')
-    state_df = DataFrame(
-        [state.split(',') for state in states.split(';')],
-        columns=state_cols)
-    numeric_cols = ['id', *state_cols[4:]]
-    state_df[numeric_cols] = state_df[numeric_cols].apply(to_numeric)
-    state_df = state_df.set_index('id')
-    price_cols = ('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
-    price_df = DataFrame(
-        [price_row.split(',') for price_row in price_rows.split(';')],
-        columns=price_cols)
-    numeric_cols = ['id', *price_cols]
-    price_df[numeric_cols] = price_df[numeric_cols].apply(to_numeric)
+    state_df = read_csv(
+        StringIO(states),
+        lineterminator=';',
+        names=(
+            'id', 'isin', 'l18', 'l30', 'unknown1', 'pf', 'pc', 'pl', 'tno',
+            'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'unknown2',
+            'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
+        # unlike int64, Int64 is nullable
+        dtype={'tmin': "Int64", 'tmax': "Int64"},
+        low_memory=False,
+        index_col='id')
+    price_df = read_csv(
+        StringIO(price_rows),
+        lineterminator=';',
+        names=('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
+        dtype="Int64",
+        low_memory=False)
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    price_df = price_df.set_index(['id', 'row']).unstack().sort_index(1, 1)
+    price_df = price_df.set_index(['id', 'row']).unstack(fill_value=0).sort_index(1, 1)
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
-    return joined_df
+    joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
+    return {  # todo, also add other info available in MarketWatchInit.aspx
+        'dataframe': joined_df,
+    }

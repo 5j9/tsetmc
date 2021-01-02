@@ -4,7 +4,7 @@ from unittest.mock import patch
 from jdatetime import datetime as jdatetime
 
 # noinspection PyProtectedMember
-from tsetmc import Stock, _core
+from tsetmc import Stock, _core, get_market_watch_init
 
 
 def patch_get_with_file(name):
@@ -172,3 +172,12 @@ def test_fmelli_instant():
         'value_of_transactions': 1318025925250,
         'volume_of_transactions': 66266936,
         'yesterday_price': 19360}
+
+
+@patch_get_with_file('MarketWatchInit.aspx')
+def test_get_market_watch_init():
+    df = get_market_watch_init()['dataframe']
+    dtypes = df.dtypes
+    assert dtypes['zo3'] == 'Int64'
+    assert dtypes['tmax'] == 'Int64'
+    assert df.index.dtype == 'uint64'
