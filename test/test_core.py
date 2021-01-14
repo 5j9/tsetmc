@@ -10,7 +10,7 @@ from tsetmc import Stock, _core, get_market_watch_init
 def patch_get_with_file(name):
     with open(f'{__file__}/../data/{name}', encoding='utf8') as f:
         text = f.read().replace('ي', 'ی').replace('ك', 'ک')
-    return patch.object(_core, 'get', lambda _: text)
+    return patch.object(_core, 'fa_norm_text', lambda _: text)
 
 
 @patch_get_with_file('fmelli.html')

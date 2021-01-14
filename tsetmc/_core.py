@@ -4,7 +4,7 @@ from io import StringIO
 
 from requests import Session
 from jdatetime import datetime as jdatetime
-from pandas import Int64Dtype, read_csv, to_numeric
+from pandas import read_csv, to_numeric, DataFrame
 
 
 session = Session()
@@ -14,10 +14,7 @@ jstrptime = jdatetime.strptime
 session_get = session.get
 
 
-def get(url) -> str:
-    return session_get(url).text.replace('ي', 'ی').replace('ك', 'ک')
-
-
+FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'([\d\.]+)'
 SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
 TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
@@ -60,6 +57,11 @@ INSTANT_INTS = {
 }
 
 
+def fa_norm_text(url) -> str:
+    # replace Arabic [ي ك] with Persian [ی ک]
+    return session_get(url).text.translate(FARSI_NORM)
+
+
 class Stock:
 
     def __init__(self, id: int):
@@ -71,7 +73,7 @@ class Stock:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = get(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
+        text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
         t_min_max = ALLOWED_MIN_MAX_SEARCH(text)
         wy_min_max = WEAK_YEAR_MIN_MAX_SEARCH(text)
         title_match = TITLE_SEARCH(text)
@@ -100,7 +102,7 @@ class Stock:
         }
 
     def get_instant_info(self) -> dict:
-        text = get(
+        text = fa_norm_text(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             f'?i={self.id}&c=67%20')
         group_dict = INSTANT_MATCH(text).groupdict()
@@ -119,7 +121,7 @@ class Stock:
 
     @staticmethod
     def from_name(s: str) -> 'Stock':
-        text = get('http://tsetmc.com/tsev2/data/search.aspx?skey=' + s)
+        text = fa_norm_text('http://tsetmc.com/tsev2/data/search.aspx?skey=' + s)
         return Stock(int(FIRST_NUMBER_SEARCH(text)[0]))
 
 
@@ -133,7 +135,7 @@ def get_market_watch_init() -> dict:
         For `flow` and `yval` codes see:
             http://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     """
-    text = get('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
+    text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, _, states, price_rows, _ = text.split('@')
     state_df = read_csv(
         StringIO(states),
@@ -154,7 +156,8 @@ def get_market_watch_init() -> dict:
         low_memory=False)
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    price_df = price_df.set_index(['id', 'row']).unstack(fill_value=0).sort_index(1, 1)
+    price_df.set_index(['id', 'row'], inplace=True)
+    price_df = price_df.unstack(fill_value=0).sort_index(1, 1)
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
     joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
