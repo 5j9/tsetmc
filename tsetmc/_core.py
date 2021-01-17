@@ -1,17 +1,15 @@
 from re import compile as rc
 from datetime import datetime
-from io import StringIO
+from io import BytesIO, StringIO
 
 from requests import Session
 from jdatetime import datetime as jdatetime
 from pandas import read_csv, to_numeric, DataFrame
 
 
-session = Session()
 strptime = datetime.strptime
 jstrptime = jdatetime.strptime
-
-session_get = session.get
+GET = Session().get
 
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
@@ -57,12 +55,18 @@ INSTANT_INTS = {
 }
 
 
+def get_content(url) -> bytes:
+    return GET(url).content
+
+
 def fa_norm_text(url) -> str:
     # replace Arabic [ي ك] with Persian [ی ک]
-    return session_get(url).text.translate(FARSI_NORM)
+    return get_content(url).decode().translate(FARSI_NORM)
 
 
-class Stock:
+class Instrument:
+    # warning/todo:
+    # get_page_info and get_inst_info are not tested widely and fail sometimes.
 
     def __init__(self, id: int):
         self.id = id
@@ -101,7 +105,7 @@ class Stock:
             'year_min': float(wy_min_max[3]),
         }
 
-    def get_instant_info(self) -> dict:
+    def get_inst_info(self) -> dict:
         text = fa_norm_text(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             f'?i={self.id}&c=67%20')
@@ -120,9 +124,9 @@ class Stock:
         return group_dict
 
     @staticmethod
-    def from_name(s: str) -> 'Stock':
+    def from_search(s: str) -> 'Instrument':
         text = fa_norm_text('http://tsetmc.com/tsev2/data/search.aspx?skey=' + s)
-        return Stock(int(FIRST_NUMBER_SEARCH(text)[0]))
+        return Instrument(int(FIRST_NUMBER_SEARCH(text)[0]))
 
 
 def get_market_watch_init() -> dict:
@@ -147,7 +151,7 @@ def get_market_watch_init() -> dict:
         # unlike int64, Int64 is nullable
         dtype={'tmin': "Int64", 'tmax': "Int64"},
         low_memory=False,
-        index_col='id')
+        index_col=['id', 'isin', 'l18', 'l30'])
     price_df = read_csv(
         StringIO(price_rows),
         lineterminator=';',
@@ -160,7 +164,70 @@ def get_market_watch_init() -> dict:
     price_df = price_df.unstack(fill_value=0).sort_index(1, 1)
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
-    joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
+    # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
     return {  # todo, also add other info available in MarketWatchInit.aspx
         'dataframe': joined_df,
     }
+
+
+def _split_id_rows(content: bytes, id_row_len):
+    data = content.split(b';')
+    for i, datum in enumerate(data):
+        items = datum.split(b',')
+        if len(items) == id_row_len:
+            id_ = items[0]
+        else:
+            # noinspection PyUnboundLocalVariable
+            items.insert(0, id_)
+        # noinspection PyTypeChecker
+        data[i] = items
+    return data
+
+
+def get_closing_price_all() -> DataFrame:
+    """Return price history dataframe.
+
+    For the meaning of column names refer to
+        http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
+    """
+    content = get_content('http://members.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
+    data = _split_id_rows(content, id_row_len=11)
+    df = DataFrame(data, columns=(
+        'id', 'n', 'PClosing', 'PDrCotVal', 'ZTotTran', 'QTotTran5J',
+        'QTotCap', 'PriceMin', 'PriceMax', 'PriceYesterday', 'PriceFirst'))
+    # noinspection PyTypeChecker
+    df = df.apply(to_numeric)
+    df.set_index(['id', 'n'], inplace=True)
+    return df
+
+
+def get_client_type_all() -> DataFrame:
+    """Return client types (natural/legal stats) as a DataFrame.
+
+    For the meaning of column names refer to
+        https://cdn.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3198
+    """
+    content = get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
+    df = read_csv(
+        BytesIO(content), lineterminator=b';', names=(
+            'id', 'Buy_CountI', 'Buy_CountN', 'Buy_I_Volume', 'Buy_N_Volume',
+            'Sell_CountI', 'Sell_CountN', 'Sell_I_Volume', 'Sell_N_Volume'),
+        dtype="int64", index_col='id', low_memory=False)
+    return df
+
+
+def get_key_stats() -> DataFrame:
+    """Return key statistics as a DataFrame.
+
+    For the meaning of column names refer to
+        http://www.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
+        http://cdn.tsetmc.com/Site.aspx?ParTree=151713
+    """
+    content = get_content('http://www.tsetmc.com/tsev2/data/InstValue.aspx?t=a')
+    data = _split_id_rows(content, id_row_len=3)
+    df = DataFrame(data, columns=('id', 'n', 'value'))
+    # noinspection PyTypeChecker
+    df = df.apply(to_numeric)
+    df = df.pivot('id', 'n', 'value')
+    df.columns = [f'is{c}' for c in df.columns]
+    return df
