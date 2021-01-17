@@ -170,7 +170,7 @@ def get_market_watch_init() -> dict:
     }
 
 
-def _split_id_rows(content: bytes, id_row_len):
+def _split_id_rows(content: bytes, id_row_len: int) -> list:
     data = content.split(b';')
     for i, datum in enumerate(data):
         items = datum.split(b',')
