@@ -1,3 +1,9 @@
+Installation
+------------
+``pip install --user tsetmc``
+
+Overview
+--------
 There are four main functions that return `pandas`_  ``DataFrame`` s:
 
 * ``get_market_watch_init``
