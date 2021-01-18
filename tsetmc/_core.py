@@ -138,6 +138,9 @@ def get_market_watch_init() -> dict:
         https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         For `flow` and `yval` codes see:
             http://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
+        For `heven` see:
+            http://cdn.tsetmc.com/Site.aspx?ParTree=111411111S&LnkIdn=129
+            (it's the time of last transaction in HHMMSS format)
     """
     text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, _, states, price_rows, _ = text.split('@')
@@ -145,8 +148,8 @@ def get_market_watch_init() -> dict:
         StringIO(states),
         lineterminator=';',
         names=(
-            'id', 'isin', 'l18', 'l30', 'unknown1', 'pf', 'pc', 'pl', 'tno',
-            'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'unknown2',
+            'id', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno',
+            'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount',
             'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
         # unlike int64, Int64 is nullable
         dtype={'tmin': "Int64", 'tmax': "Int64"},

@@ -179,11 +179,11 @@ def test_fmelli_instant():
 def test_get_market_watch_init():
     df = get_market_watch_init()['dataframe']
     assert df.dtypes.to_dict() == {
-        'unknown1': 'int64', 'pf': 'int64', 'pc': 'int64',
+        'heven': 'int64', 'pf': 'int64', 'pc': 'int64',
         'pl': 'int64', 'tno': 'int64', 'tvol': 'int64',
         'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64',
         'py': 'int64', 'eps': 'float64', 'bvol': 'int64',
-        'unknown2': 'int64', 'flow': 'int64',
+        'visitcount': 'int64', 'flow': 'int64',
         'cs': 'int64', 'tmax': 'Int64', 'tmin': 'Int64',
         'z': 'int64', 'yval': 'int64', 'pd1': 'Int64',
         'po1': 'Int64', 'qd1': 'Int64', 'qo1': 'Int64',
