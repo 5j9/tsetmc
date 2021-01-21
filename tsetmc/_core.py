@@ -152,22 +152,22 @@ def get_market_watch_init() -> dict:
     text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, _, states, price_rows, _ = text.split('@')
     state_df = read_csv(
-        StringIO(states),
-        lineterminator=';',
-        names=(
+        StringIO(states)
+        , lineterminator=';'
+        , names=(
             'id', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
             , 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount'
-            , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
+            , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval')
         # unlike int64, Int64 is nullable
-        dtype={'tmin': "Int64", 'tmax': "Int64"},
-        low_memory=False,
-        index_col=['id', 'isin', 'l18', 'l30'])
+        , dtype={'tmin': "Int64", 'tmax': "Int64"}
+        , low_memory=False
+        , index_col=['id', 'isin', 'l18', 'l30'])
     price_df = read_csv(
-        StringIO(price_rows),
-        lineterminator=';',
-        names=('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
-        dtype="Int64",
-        low_memory=False)
+        StringIO(price_rows)
+        , lineterminator=';'
+        , names=('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
+        , dtype="Int64"
+        , low_memory=False)
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
     price_df.set_index(['id', 'row'], inplace=True)
