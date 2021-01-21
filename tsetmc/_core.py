@@ -28,31 +28,22 @@ MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
 INSTANT_MATCH = rc(
     r'(?P<timestamp>\d\d:\d\d:\d\d),'
-    r'A ,'
-    r'(?P<last_price>\d+),'
-    r'(?P<closing_price>\d+),'
-    r'(?P<opening_price>\d+),'
-    r'(?P<yesterday_price>\d+),'
-    r'(?P<day_range_start>\d+),'
-    r'(?P<day_range_end>\d+),'
-    r'(?P<number_of_transactions>\d+),'
-    r'(?P<volume_of_transactions>\d+),'
-    r'(?P<value_of_transactions>\d+),'
+    r'..,'
+    r'(?P<pl>\d+),'
+    r'(?P<pc>\d+),'
+    r'(?P<pf>\d+),'
+    r'(?P<py>\d+),'
+    r'(?P<pmin>\d+),'
+    r'(?P<pmax>\d+),'
+    r'(?P<tno>\d+),'
+    r'(?P<tvol>\d+),'
+    r'(?P<tval>\d+),'
     r'1,'
     r'(?P<last_info_datetime>\d+,\d+)'
     r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
 ).match
 INSTANT_INTS = {
-    'last_price',
-    'closing_price',
-    'opening_price',
-    'yesterday_price',
-    'day_range_start',
-    'day_range_end',
-    'number_of_transactions',
-    'volume_of_transactions',
-    'value_of_transactions',
-}
+    'pl', 'pc', 'py', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'}
 
 
 def get_content(url) -> bytes:
@@ -106,9 +97,12 @@ class Instrument:
         }
 
     def get_inst_info(self) -> dict:
+        # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
+        # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
+        # return the same response.
         text = fa_norm_text(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
-            f'?i={self.id}&c=67%20')
+            f'?i={self.id}&c=')
         group_dict = INSTANT_MATCH(text).groupdict()
         for k in INSTANT_INTS:
             # noinspection PyTypeChecker

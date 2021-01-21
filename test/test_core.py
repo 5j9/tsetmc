@@ -105,74 +105,74 @@ def test_get_page_info_no_sector_pe():
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
     assert Instrument(1).get_inst_info() == {
-        'closing_price': 181240,
-        'day_range_end': 176300,
-        'day_range_start': 185000,
-        'opening_price': 181600,
+        'pc': 181240,
+        'pmax': 176300,
+        'pmin': 185000,
+        'pf': 181600,
         'last_info_datetime': datetime(2020, 11, 11, 12, 29, 59),
-        'last_price': 183250,
+        'pl': 183250,
         'nav': 202821,
         'nav_datetime': jdatetime(1399, 8, 21, 11, 56),
-        'number_of_transactions': 62630,
+        'tno': 62630,
         'timestamp': '12:29:59',
-        'value_of_transactions': 6085868910210,
-        'volume_of_transactions': 33579648,
-        'yesterday_price': 181110}
+        'tval': 6085868910210,
+        'tvol': 33579648,
+        'py': 181110}
 
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
     assert Instrument(1).get_inst_info() == {
-        'closing_price': 94140,
-        'day_range_end': 92001,
-        'day_range_start': 96000,
+        'pc': 94140,
+        'pmax': 92001,
+        'pmin': 96000,
         'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17),
-        'last_price': 95890,
+        'pl': 95890,
         'nav': 95630,
         'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43),
-        'number_of_transactions': 27,
-        'opening_price': 94440,
+        'tno': 27,
+        'pf': 94440,
         'timestamp': '12:28:17',
-        'value_of_transactions': 753116350,
-        'volume_of_transactions': 8000,
-        'yesterday_price': 93414
+        'tval': 753116350,
+        'tvol': 8000,
+        'py': 93414
     }
 
 
 @patch_get_content('negin.txt')
 def test_negin_instant():
     assert Instrument(1).get_inst_info() == {
-        'closing_price': 50110,
-        'day_range_end': 50000,
-        'day_range_start': 50700,
+        'pc': 50110,
+        'pmax': 50000,
+        'pmin': 50700,
         'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37),
-        'last_price': 50000,
+        'pl': 50000,
         'nav': 12190,
         'nav_datetime': jdatetime(1398, 12, 29, 16, 0),
-        'number_of_transactions': 29,
-        'opening_price': 50010,
+        'tno': 29,
+        'pf': 50010,
         'timestamp': '12:29:37',
-        'value_of_transactions': 1408671580,
-        'volume_of_transactions': 28109,
-        'yesterday_price': 50010}
+        'tval': 1408671580,
+        'tvol': 28109,
+        'py': 50010}
 
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
     assert Instrument(1).get_inst_info() == {
-        'closing_price': 19890,
-        'day_range_end': 19200,
-        'day_range_start': 20320,
+        'pc': 19890,
+        'pmax': 19200,
+        'pmin': 20320,
         'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53),
-        'last_price': 20320,
+        'pl': 20320,
         'nav': None,
         'nav_datetime': None,
-        'number_of_transactions': 26572,
-        'opening_price': 19400,
+        'tno': 26572,
+        'pf': 19400,
         'timestamp': '17:29:53',
-        'value_of_transactions': 1318025925250,
-        'volume_of_transactions': 66266936,
-        'yesterday_price': 19360}
+        'tval': 1318025925250,
+        'tvol': 66266936,
+        'py': 19360}
 
 
 @patch_get_content('MarketWatchInit.aspx')
@@ -230,3 +230,29 @@ def test_get_key_stats():
     df = get_key_stats()
     assert all(df.columns.str.startswith('is'))
     assert df.index.name == 'id'
+
+
+VSKHOOZ = {
+    'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18),
+    'nav': None,
+    'nav_datetime': None,
+    'pc': 67818,
+    'pf': 0,
+    'pl': 67810,
+    'pmax': 0,
+    'pmin': 0,
+    'py': 67818,
+    'timestamp': '06:42:18',
+    'tno': 0,
+    'tval': 0,
+    'tvol': 0}
+
+
+@patch_get_content('vskhooz_short_response.txt')
+def test_vskhooz_short():
+    assert Instrument(1).get_inst_info() == VSKHOOZ
+
+
+@patch_get_content('vskhooz_long_response.txt')
+def test_vskhooz_long():
+    assert Instrument(1).get_inst_info() == VSKHOOZ
