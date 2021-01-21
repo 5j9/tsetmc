@@ -104,7 +104,7 @@ def test_get_page_info_no_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).get_inst_info() == {
+    assert Instrument(1).get_info() == {
         'pc': 181240,
         'pmax': 176300,
         'pmin': 185000,
@@ -122,7 +122,7 @@ def test_dara1_instant():
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
-    assert Instrument(1).get_inst_info() == {
+    assert Instrument(1).get_info() == {
         'pc': 94140,
         'pmax': 92001,
         'pmin': 96000,
@@ -141,7 +141,7 @@ def test_asam_instant():
 
 @patch_get_content('negin.txt')
 def test_negin_instant():
-    assert Instrument(1).get_inst_info() == {
+    assert Instrument(1).get_info() == {
         'pc': 50110,
         'pmax': 50000,
         'pmin': 50700,
@@ -159,7 +159,7 @@ def test_negin_instant():
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
-    assert Instrument(1).get_inst_info() == {
+    assert Instrument(1).get_info() == {
         'pc': 19890,
         'pmax': 19200,
         'pmin': 20320,
@@ -250,9 +250,27 @@ VSKHOOZ = {
 
 @patch_get_content('vskhooz_short_response.txt')
 def test_vskhooz_short():
-    assert Instrument(1).get_inst_info() == VSKHOOZ
+    assert Instrument(1).get_info() == VSKHOOZ
 
 
 @patch_get_content('vskhooz_long_response.txt')
 def test_vskhooz_long():
-    assert Instrument(1).get_inst_info() == VSKHOOZ
+    assert Instrument(1).get_info() == VSKHOOZ
+
+
+@patch_get_content('fmelli_trade_history_top2.txt')
+def test_get_trade_history():
+    df = Instrument(1).get_trade_history(2)
+    assert df.to_dict() == {
+        'pmax': {20210120: 10400.0, 20210119: 10380.0}
+        , 'pmin': {20210120: 10120.0, 20210119: 9400.0}
+        , 'pc': {20210120: 10380.0, 20210119: 9910.0}
+        , 'pl': {20210120: 10400.0, 20210119: 10290.0}
+        , 'pf': {20210120: 10350.0, 20210119: 9400.0}
+        , 'py': {20210120: 9910.0, 20210119: 9890.0}
+        , 'tval': {20210120: 498484813880.0, 20210119: 2649416188110.0}
+        , 'tvol': {20210120: 48013394, 20210119: 267389256}
+        , 'tno': {20210120: 7284, 20210119: 36765}}
+    index = df.index
+    assert index.name == 'date'
+    assert all(index.values == [20210120, 20210119])

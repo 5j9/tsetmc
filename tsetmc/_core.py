@@ -96,7 +96,7 @@ class Instrument:
             'year_min': float(wy_min_max[3]),
         }
 
-    def get_inst_info(self) -> dict:
+    def get_info(self) -> dict:
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
@@ -116,6 +116,19 @@ class Instrument:
             group_dict['nav_datetime'] = jstrptime(
                 nav_datetime, '%Y/%m/%d %H:%M:%S')
         return group_dict
+
+    def get_trade_history(self, top: int) -> DataFrame:
+        content = get_content(
+            f'http://members.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.id}&Top={top}')
+        df = read_csv(
+            BytesIO(content)
+            , sep='@'
+            , lineterminator=';'
+            , names=['date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno']
+            , low_memory=False
+            , index_col='date'
+        )
+        return df
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':
