@@ -199,6 +199,9 @@ def get_closing_price_all() -> DataFrame:
 
     For the meaning of column names refer to
         http://cdn.tsetmc.com/Site.aspx?ParTree=151713
+    This method returns the same set of information as `[ih]` variable in
+        tsetmc filters. See:
+            http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
     """
     content = get_content('http://members.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
