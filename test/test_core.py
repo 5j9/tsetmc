@@ -203,11 +203,9 @@ def test_get_market_watch_init():
 def test_get_closing_price_all():
     df = get_closing_price_all()
     assert df.dtypes.to_dict() == {
-        'PClosing': 'int64', 'PDrCotVal': 'int64', 
-        'ZTotTran': 'int64', 'QTotTran5J': 'int64', 
-        'QTotCap': 'int64', 'PriceMin': 'int64', 
-        'PriceMax': 'int64', 'PriceYesterday': 'int64', 
-        'PriceFirst': 'int64'}
+        'pc': 'int64', 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
+        , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64', 'py': 'int64'
+        , 'pf': 'int64'}
     index = df.index
     assert index.names == ['id', 'n']
     assert index.dtype == 'O'

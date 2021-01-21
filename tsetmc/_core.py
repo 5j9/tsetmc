@@ -76,24 +76,24 @@ class Instrument:
         eps_match = EPS_SEARCH(text)
         sector_pe_match = SECTOR_PE_SEARCH(text)
         return {
-            'tmax': float(t_min_max[2]),
-            'tmin': float(t_min_max[1]),
-            'bvol': int(BASE_VOLUME_SEARCH(text)[1]),
-            'eps': int(eps_match[1]) if eps_match is not None else None,
-            'free_float': int(
-                free_float_match[1]) if free_float_match is not None else None,
-            'l30': title_match[1],
-            'sector_name': GROUP_NAME_SEARCH(text)[1],
-            'market': title_match[3],
-            'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1]),
-            'l18': title_match[2],
-            'sector_pe': float(
-                sector_pe_match[1]) if sector_pe_match is not None else None,
-            'z': int(SHARES_SEARCH(text)[1]),
-            'week_max': float(wy_min_max[2]),
-            'week_min': float(wy_min_max[1]),
-            'year_max': float(wy_min_max[4]),
-            'year_min': float(wy_min_max[3]),
+            'tmax': float(t_min_max[2])
+            , 'tmin': float(t_min_max[1])
+            , 'bvol': int(BASE_VOLUME_SEARCH(text)[1])
+            , 'eps': int(eps_match[1]) if eps_match is not None else None
+            , 'free_float': int(
+                free_float_match[1]) if free_float_match is not None else None
+            , 'l30': title_match[1]
+            , 'sector_name': GROUP_NAME_SEARCH(text)[1]
+            , 'market': title_match[3]
+            , 'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1])
+            , 'l18': title_match[2]
+            , 'sector_pe': float(
+                sector_pe_match[1]) if sector_pe_match is not None else None
+            , 'z': int(SHARES_SEARCH(text)[1])
+            , 'week_max': float(wy_min_max[2])
+            , 'week_min': float(wy_min_max[1])
+            , 'year_max': float(wy_min_max[4])
+            , 'year_min': float(wy_min_max[3])
         }
 
     def get_info(self) -> dict:
@@ -155,9 +155,9 @@ def get_market_watch_init() -> dict:
         StringIO(states),
         lineterminator=';',
         names=(
-            'id', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno',
-            'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount',
-            'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
+            'id', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
+            , 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount'
+            , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
         # unlike int64, Int64 is nullable
         dtype={'tmin': "Int64", 'tmax': "Int64"},
         low_memory=False,
@@ -176,7 +176,7 @@ def get_market_watch_init() -> dict:
     joined_df = state_df.join(price_df)
     # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
     return {  # todo, also add other info available in MarketWatchInit.aspx
-        'dataframe': joined_df,
+        'dataframe': joined_df
     }
 
 
@@ -198,13 +198,13 @@ def get_closing_price_all() -> DataFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
-        http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
+        http://cdn.tsetmc.com/Site.aspx?ParTree=151713
     """
     content = get_content('http://members.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     df = DataFrame(data, columns=(
-        'id', 'n', 'PClosing', 'PDrCotVal', 'ZTotTran', 'QTotTran5J',
-        'QTotCap', 'PriceMin', 'PriceMax', 'PriceYesterday', 'PriceFirst'))
+        'id', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
+        , 'pmin', 'pmax', 'py', 'pf'))
     # noinspection PyTypeChecker
     df = df.apply(to_numeric)
     df.set_index(['id', 'n'], inplace=True)
@@ -220,9 +220,9 @@ def get_client_type_all() -> DataFrame:
     content = get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
     df = read_csv(
         BytesIO(content), lineterminator=b';', names=(
-            'id', 'Buy_CountI', 'Buy_CountN', 'Buy_I_Volume', 'Buy_N_Volume',
-            'Sell_CountI', 'Sell_CountN', 'Sell_I_Volume', 'Sell_N_Volume'),
-        dtype="int64", index_col='id', low_memory=False)
+            'id', 'Buy_CountI', 'Buy_CountN', 'Buy_I_Volume', 'Buy_N_Volume'
+            , 'Sell_CountI', 'Sell_CountN', 'Sell_I_Volume', 'Sell_N_Volume')
+        , dtype="int64", index_col='id', low_memory=False)
     return df
 
 
