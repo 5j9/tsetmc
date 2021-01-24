@@ -272,3 +272,21 @@ def test_get_trade_history():
     index = df.index
     assert index.name == 'date'
     assert all(index.values == [20210120, 20210119])
+
+
+@patch_get_content('vsadid.txt')
+def test_vsadid():
+    assert Instrument(1).get_info() == {
+        'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10),
+        'nav': None,
+        'nav_datetime': None,
+        'pc': 23810,
+        'pf': 0,
+        'pl': 23633,
+        'pmax': 0,
+        'pmin': 0,
+        'py': 23810,
+        'timestamp': '06:41:10',
+        'tno': 0,
+        'tval': 0,
+        'tvol': 0}

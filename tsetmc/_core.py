@@ -28,7 +28,7 @@ MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
 INSTANT_MATCH = rc(
     r'(?P<timestamp>\d\d:\d\d:\d\d),'
-    r'..,'
+    r'[^,]+,'
     r'(?P<pl>\d+),'
     r'(?P<pc>\d+),'
     r'(?P<pf>\d+),'
@@ -38,7 +38,7 @@ INSTANT_MATCH = rc(
     r'(?P<tno>\d+),'
     r'(?P<tvol>\d+),'
     r'(?P<tval>\d+),'
-    r'1,'
+    r'\d+,'
     r'(?P<last_info_datetime>\d+,\d+)'
     r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
 ).match
