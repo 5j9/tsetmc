@@ -29,7 +29,7 @@ WEAK_YEAR_MIN_MAX_SEARCH = rc(
     rf"MinWeek='{F}',MaxWeek='{F}',MinYear='{F}',MaxYear='{F}'").search
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
-INSTANT_MATCH = rc(
+INFO_MATCH = rc(
     r'(?P<timestamp>\d\d:\d\d:\d\d),'
     r'[^,]+,'
     r'(?P<pl>\d+),'
@@ -45,7 +45,7 @@ INSTANT_MATCH = rc(
     r'(?P<last_info_datetime>\d+,\d+)'
     r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
 ).match
-INSTANT_INTS = {
+INFO_INTS = {
     'pl', 'pc', 'py', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'}
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
@@ -114,8 +114,8 @@ class Instrument:
         text = fa_norm_text(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             f'?i={self.id}&c=')
-        group_dict = INSTANT_MATCH(text).groupdict()
-        for k in INSTANT_INTS:
+        group_dict = INFO_MATCH(text).groupdict()
+        for k in INFO_INTS:
             # noinspection PyTypeChecker
             group_dict[k] = int(group_dict[k])
         # noinspection PyTypeChecker
