@@ -9,7 +9,7 @@ from tsetmc import Instrument, _core, get_market_watch_init, \
 
 
 def patch_get_content(name):
-    with open(f'{__file__}/../data/{name}', 'rb') as f:
+    with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         text = f.read()
     return patch.object(_core, 'get_content', lambda _: text)
 
