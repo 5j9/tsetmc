@@ -1,6 +1,9 @@
+from functools import partial
 from re import compile as rc
 from datetime import datetime
 from io import BytesIO, StringIO
+from ast import literal_eval
+
 
 from requests import Session
 from jdatetime import datetime as jdatetime
@@ -44,6 +47,8 @@ INSTANT_MATCH = rc(
 ).match
 INSTANT_INTS = {
     'pl', 'pc', 'py', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'}
+RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
+STR_TO_NUM = partial(rc(r"'(\d+)'").sub, r'\1')
 
 
 def get_content(url) -> bytes:
@@ -75,6 +80,7 @@ class Instrument:
         free_float_match = FREE_FLOAT_SEARCH(text)
         eps_match = EPS_SEARCH(text)
         sector_pe_match = SECTOR_PE_SEARCH(text)
+        related_companies = STR_TO_NUM(RELATED_COMPANIES(text)[1])
         return {
             'tmax': float(t_min_max[2])
             , 'tmin': float(t_min_max[1])
@@ -94,6 +100,7 @@ class Instrument:
             , 'week_min': float(wy_min_max[1])
             , 'year_max': float(wy_min_max[4])
             , 'year_min': float(wy_min_max[3])
+            , 'related_companies': literal_eval(related_companies)
         }
 
     def get_info(self) -> dict:
