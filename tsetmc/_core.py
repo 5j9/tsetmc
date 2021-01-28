@@ -48,7 +48,8 @@ INSTANT_MATCH = rc(
 INSTANT_INTS = {
     'pl', 'pc', 'py', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'}
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
-STR_TO_NUM = partial(rc(r"'(\d+)'").sub, r'\1')
+TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
+STR_TO_NUM = partial(rc(r"'([\d.]+)'").sub, r'\1')
 
 
 def get_content(url) -> bytes:
@@ -68,7 +69,7 @@ class Instrument:
         self.id = id
 
     def get_page_info(self) -> dict:
-        """Return the static info of the symbol's page.
+        """Return the static info found on instrument's page.
 
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
@@ -80,7 +81,9 @@ class Instrument:
         free_float_match = FREE_FLOAT_SEARCH(text)
         eps_match = EPS_SEARCH(text)
         sector_pe_match = SECTOR_PE_SEARCH(text)
-        related_companies = STR_TO_NUM(RELATED_COMPANIES(text)[1])
+        trade_history = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
+        trade_history = DataFrame(trade_history, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
+        trade_history.set_index('date', inplace=True)
         return {
             'tmax': float(t_min_max[2])
             , 'tmin': float(t_min_max[1])
@@ -100,7 +103,8 @@ class Instrument:
             , 'week_min': float(wy_min_max[1])
             , 'year_max': float(wy_min_max[4])
             , 'year_min': float(wy_min_max[3])
-            , 'related_companies': literal_eval(related_companies)
+            , 'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1]))
+            , 'trade_history': trade_history
         }
 
     def get_info(self) -> dict:
