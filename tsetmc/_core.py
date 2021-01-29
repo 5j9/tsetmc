@@ -105,7 +105,7 @@ class Instrument:
             , 'year_min': float(wy_min_max[3])
             , 'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1]))
             , 'trade_history': trade_history
-        }
+        }  # todo: add 'codal_data'
 
     def get_info(self) -> dict:
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
