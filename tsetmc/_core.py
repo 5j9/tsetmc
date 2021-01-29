@@ -16,7 +16,7 @@ GET = Session().get
 
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
-F = r'([\d\.]+)'
+F = r'(\d+(?:\.\d+)?)'  # float pattern
 SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
 TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
 FREE_FLOAT_SEARCH = rc(r"KAjCapValCpsIdx='([\d\.]+)'").search
