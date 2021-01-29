@@ -166,74 +166,145 @@ def test_get_page_info_no_sector_pe():
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
     assert Instrument(1).get_info() == {
-        'pc': 181240
-        , 'pmax': 176300
-        , 'pmin': 185000
-        , 'pf': 181600
-        , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 59)
-        , 'pl': 183250
-        , 'nav': 202821
-        , 'nav_datetime': jdatetime(1399, 8, 21, 11, 56)
-        , 'tno': 62630
-        , 'timestamp': '12:29:59'
-        , 'tval': 6085868910210
-        , 'tvol': 33579648
-        , 'py': 181110}
+        'last_info_datetime': datetime(2021, 1, 27, 12, 30)
+        , 'nav': 190671
+        , 'nav_datetime': jdatetime(1399, 11, 8, 15, 40)
+        , 'pc': 151580
+        , 'pd1': 150120
+        , 'pd2': 150000
+        , 'pd3': 149990
+        , 'pf': 147550
+        , 'pl': 150120
+        , 'pmax': 141100
+        , 'pmin': 158000
+        , 'po1': 150120
+        , 'po2': 150130
+        , 'po3': 150500
+        , 'py': 152030
+        , 'qd1': 2000
+        , 'qd2': 62729
+        , 'qd3': 3185
+        , 'qo1': 7275
+        , 'qo2': 34582
+        , 'qo3': 3862
+        , 'timestamp': '12:30:00'
+        , 'tno': 84083
+        , 'tval': 9972065145080
+        , 'tvol': 65786166
+        , 'zd1': 1
+        , 'zd2': 8
+        , 'zd3': 12
+        , 'zo1': 3
+        , 'zo2': 1
+        , 'zo3': 3}
 
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
     assert Instrument(1).get_info() == {
-        'pc': 94140
-        , 'pmax': 92001
-        , 'pmin': 96000
-        , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
-        , 'pl': 95890
+        'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
         , 'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43)
-        , 'tno': 27
+        , 'pc': 94140
+        , 'pd1': 94000
+        , 'pd2': 92350
+        , 'pd3': 91140
         , 'pf': 94440
+        , 'pl': 95890
+        , 'pmax': 92001
+        , 'pmin': 96000
+        , 'po1': 95900
+        , 'po2': 95990
+        , 'po3': 96000
+        , 'py': 93414
+        , 'qd1': 5000
+        , 'qd2': 50
+        , 'qd3': 550
+        , 'qo1': 3000
+        , 'qo2': 250
+        , 'qo3': 560
         , 'timestamp': '12:28:17'
+        , 'tno': 27
         , 'tval': 753116350
         , 'tvol': 8000
-        , 'py': 93414
-    }
+        , 'zd1': 1
+        , 'zd2': 1
+        , 'zd3': 1
+        , 'zo1': 1
+        , 'zo2': 2
+        , 'zo3': 2}
 
 
 @patch_get_content('negin.txt')
 def test_negin_instant():
     assert Instrument(1).get_info() == {
-        'pc': 50110
-        , 'pmax': 50000
-        , 'pmin': 50700
-        , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
-        , 'pl': 50000
+        'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
         , 'nav': 12190
         , 'nav_datetime': jdatetime(1398, 12, 29, 16, 0)
-        , 'tno': 29
+        , 'pc': 50110
+        , 'pd1': 50000
+        , 'pd2': 41000
+        , 'pd3': 20000
         , 'pf': 50010
+        , 'pl': 50000
+        , 'pmax': 50000
+        , 'pmin': 50700
+        , 'po1': 50700
+        , 'po2': 50750
+        , 'po3': 50950
+        , 'py': 50010
+        , 'qd1': 81526
+        , 'qd2': 1000
+        , 'qd3': 10620
+        , 'qo1': 29016
+        , 'qo2': 99
+        , 'qo3': 50000
         , 'timestamp': '12:29:37'
+        , 'tno': 29
         , 'tval': 1408671580
         , 'tvol': 28109
-        , 'py': 50010}
+        , 'zd1': 1
+        , 'zd2': 1
+        , 'zd3': 2
+        , 'zo1': 3
+        , 'zo2': 1
+        , 'zo3': 1}
 
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
     assert Instrument(1).get_info() == {
-        'pc': 19890
-        , 'pmax': 19200
-        , 'pmin': 20320
-        , 'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
-        , 'pl': 20320
+        'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'nav': None
         , 'nav_datetime': None
-        , 'tno': 26572
+        , 'pc': 19890
+        , 'pd1': 20320
+        , 'pd2': 20310
+        , 'pd3': 20300
         , 'pf': 19400
+        , 'pl': 20320
+        , 'pmax': 19200
+        , 'pmin': 20320
+        , 'po1': 20320
+        , 'po2': 20730
+        , 'po3': 20810
+        , 'py': 19360
+        , 'qd1': 29404537
+        , 'qd2': 30865
+        , 'qd3': 18843
+        , 'qo1': 57116
+        , 'qo2': 1239
+        , 'qo3': 25545
         , 'timestamp': '17:29:53'
+        , 'tno': 26572
         , 'tval': 1318025925250
         , 'tvol': 66266936
-        , 'py': 19360}
+        , 'zd1': 893
+        , 'zd2': 6
+        , 'zd3': 5
+        , 'zo1': 21
+        , 'zo2': 1
+        , 'zo3': 3}
 
 
 @patch_get_content('MarketWatchInit.aspx')
@@ -296,15 +367,33 @@ VSKHOOZ = {
     , 'nav': None
     , 'nav_datetime': None
     , 'pc': 67818
+    , 'pd1': 0
+    , 'pd2': 0
+    , 'pd3': 0
     , 'pf': 0
     , 'pl': 67810
     , 'pmax': 0
     , 'pmin': 0
+    , 'po1': 74939
+    , 'po2': 74946
+    , 'po3': 75000
     , 'py': 67818
+    , 'qd1': 0
+    , 'qd2': 0
+    , 'qd3': 0
+    , 'qo1': 44000
+    , 'qo2': 405
+    , 'qo3': 7500
     , 'timestamp': '06:42:18'
     , 'tno': 0
     , 'tval': 0
-    , 'tvol': 0}
+    , 'tvol': 0
+    , 'zd1': 0
+    , 'zd2': 0
+    , 'zd3': 0
+    , 'zo1': 1
+    , 'zo2': 1
+    , 'zo3': 1}
 
 
 @patch_get_content('vskhooz_short_response.txt')

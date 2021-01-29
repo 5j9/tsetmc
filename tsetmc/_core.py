@@ -29,22 +29,6 @@ WEAK_YEAR_MIN_MAX_SEARCH = rc(
     rf"MinWeek='{F}',MaxWeek='{F}',MinYear='{F}',MaxYear='{F}'").search
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
-INFO_MATCH = rc(
-    r'(?P<timestamp>\d\d:\d\d:\d\d),'
-    r'[^,]+,'
-    r'(?P<pl>\d+),'
-    r'(?P<pc>\d+),'
-    r'(?P<pf>\d+),'
-    r'(?P<py>\d+),'
-    r'(?P<pmin>\d+),'
-    r'(?P<pmax>\d+),'
-    r'(?P<tno>\d+),'
-    r'(?P<tvol>\d+),'
-    r'(?P<tval>\d+),'
-    r'\d+,'
-    r'(?P<last_info_datetime>\d+,\d+)'
-    r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
-).match
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(r"'([\d.]+)'").sub, r'\1')
@@ -112,15 +96,25 @@ class Instrument:
         text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             f'?i={self.id}&c=').decode()
-        splits = text.split(';')
+        # the _s are unknown
+        price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         timestamp, _, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
-            info_datetime_date, last_info_time, *nav_info = splits[0].split(',')
+            info_datetime_date, last_info_time, *nav_info = price_info.split(',')
         if nav_info:
             nav_datetime, nav = nav_info
             nav = int(nav)
             nav_datetime = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         else:
             nav_datetime, nav = None, None
+        if orders_info:
+            orders = {
+                f'{k}{i}': int(v)
+                for i, row in enumerate(orders_info.split(','), 1)
+                for (k, v) in zip(
+                    ('zd', 'qd', 'pd', 'po', 'qo', 'zo'), row.split('@'))
+                if row}  # the `if` is for the last row which is empty
+        else:
+            orders = {}
         return {
             'timestamp': timestamp
             , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
@@ -128,6 +122,7 @@ class Instrument:
             , 'pmin': int(pmin), 'pmax': int(pmax)
             , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)
             , 'nav_datetime': nav_datetime, 'nav': nav
+            , **orders
         }
 
     def get_trade_history(self, top: int) -> DataFrame:
