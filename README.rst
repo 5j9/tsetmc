@@ -1,5 +1,9 @@
+A Python library to fetch data from http://tsetmc.com.
+
 Installation
 ------------
+Requires Python 3.9+.
+
 ``pip install --user tsetmc``
 
 Overview
