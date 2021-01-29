@@ -273,38 +273,20 @@ def test_negin_instant():
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
-    assert Instrument(1).get_info() == {
+    assert Instrument(1).get_info(orders=False) == {
         'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'nav': None
         , 'nav_datetime': None
         , 'pc': 19890
-        , 'pd1': 20320
-        , 'pd2': 20310
-        , 'pd3': 20300
         , 'pf': 19400
         , 'pl': 20320
         , 'pmax': 19200
         , 'pmin': 20320
-        , 'po1': 20320
-        , 'po2': 20730
-        , 'po3': 20810
         , 'py': 19360
-        , 'qd1': 29404537
-        , 'qd2': 30865
-        , 'qd3': 18843
-        , 'qo1': 57116
-        , 'qo2': 1239
-        , 'qo3': 25545
         , 'timestamp': '17:29:53'
         , 'tno': 26572
         , 'tval': 1318025925250
-        , 'tvol': 66266936
-        , 'zd1': 893
-        , 'zd2': 6
-        , 'zd3': 5
-        , 'zo1': 21
-        , 'zo2': 1
-        , 'zo3': 3}
+        , 'tvol': 66266936}
 
 
 @patch_get_content('MarketWatchInit.aspx')

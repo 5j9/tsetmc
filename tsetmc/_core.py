@@ -89,7 +89,11 @@ class Instrument:
             , 'trade_history': trade_history
         }  # todo: add 'codal_data'
 
-    def get_info(self) -> dict:
+    def get_info(self, orders=True) -> dict:
+        """Get info using instinfodata.aspx module.
+
+        :keyword orders: parse orders and include related values.
+        """
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
@@ -106,24 +110,21 @@ class Instrument:
             nav_datetime = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         else:
             nav_datetime, nav = None, None
-        if orders_info:
-            orders = {
-                f'{k}{i}': int(v)
-                for i, row in enumerate(orders_info.split(','), 1)
-                for (k, v) in zip(
-                    ('zd', 'qd', 'pd', 'po', 'qo', 'zo'), row.split('@'))
-                if row}  # the `if` is for the last row which is empty
-        else:
-            orders = {}
-        return {
+        result = {
             'timestamp': timestamp
             , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
             , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
             , 'pmin': int(pmin), 'pmax': int(pmax)
             , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)
-            , 'nav_datetime': nav_datetime, 'nav': nav
-            , **orders
-        }
+            , 'nav_datetime': nav_datetime, 'nav': nav}
+        if orders:
+            result |= {
+                f'{k}{i}': int(v)
+                for i, row in enumerate(orders_info.split(','), 1)
+                for (k, v) in zip(
+                    ('zd', 'qd', 'pd', 'po', 'qo', 'zo'), row.split('@'))
+                if row}  # the `if` is for the last row which is empty
+        return result
 
     def get_trade_history(self, top: int) -> DataFrame:
         content = get_content(
