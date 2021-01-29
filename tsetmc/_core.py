@@ -16,10 +16,10 @@ GET = Session().get
 
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
-F = r'(\d+(?:\.\d+)?)'  # float pattern
+F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
 TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
-FREE_FLOAT_SEARCH = rc(r"KAjCapValCpsIdx='([\d\.]+)'").search
+FREE_FLOAT_SEARCH = rc(rf"KAjCapValCpsIdx='({F}+)'").search
 GROUP_NAME_SEARCH = rc(r"LSecVal='(.*?)'").search
 BASE_VOLUME_SEARCH = rc(r"BaseVol=(\d+)").search
 EPS_SEARCH = rc(r"EstimatedEPS='(\d+)'").search
@@ -31,7 +31,9 @@ MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 FIRST_NUMBER_SEARCH = rc(r'\d+').search
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
-STR_TO_NUM = partial(rc(r"'([\d.]+)'").sub, r'\1')
+STR_TO_NUM = partial(rc(rf"'({F})'").sub, r'\1')
+INDEX_CHANGE_MATCH = rc(rf"<div class='mn'>(\(?)({F})\)?</div> ({F})%").match
+INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 
 def get_content(url) -> bytes:
@@ -89,10 +91,11 @@ class Instrument:
             , 'trade_history': trade_history
         }  # todo: add 'codal_data'
 
-    def get_info(self, orders=True) -> dict:
+    def get_info(self, orders=True, index=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.
+        :keyword index: parse values related to market-index.
         """
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
@@ -102,14 +105,47 @@ class Instrument:
             f'?i={self.id}&c=').decode()
         # the _s are unknown
         price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
-        timestamp, _, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
+        timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
             info_datetime_date, last_info_time, *nav_info = price_info.split(',')
         result = {
-            'timestamp': timestamp
+            'timestamp': timestamp, 'status': status
             , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
             , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
             , 'pmin': int(pmin), 'pmax': int(pmax)
             , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+        if index:
+            market_last_transaction, tse_status, tse_index, tse_index_change\
+                , tse_value , tse_tvol, tse_tval, tse_tno \
+                , otc_status, otc_tvol, otc_tval, otc_tno\
+                , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
+                , _ = index_info.split(',')
+            m = INDEX_CHANGE_MATCH(tse_index_change)
+            if m[1]:  # parentheses represent negative value
+                tse_index_change = -float(m[2])
+            else:
+                tse_index_change = float(m[2])
+            tse_index_change_percent = float(m[3])
+            m = INDEX_TIMESTAMP_MATCH(market_last_transaction)
+            result |= {
+                'market_last_transaction': jdatetime(
+                    1300 + int(m[1]), int(m[2]), int(m[3]),
+                    int(m[4]), int(m[5]), int(m[6]))
+                , 'tse_status': tse_status
+                , 'tse_index': float(tse_index)
+                , 'tse_index_change': tse_index_change
+                , 'tse_index_change_percent': tse_index_change_percent
+                , 'tse_value': int(tse_value)
+                , 'tse_tvol': int(tse_tvol)
+                , 'tse_tval': int(tse_tval)
+                , 'tse_tno': int(tse_tval)
+                , 'otc_status': otc_status
+                , 'otc_tvol': int(otc_tvol)
+                , 'otc_tval': int(otc_tval)
+                , 'otc_tno': int(otc_tno)
+                , 'derivatives_status': derivatives_status
+                , 'derivatives_tvol': int(derivatives_tvol)
+                , 'derivatives_tval': int(derivatives_tval)
+                , 'derivatives_tno': int(derivatives_tno)}
         if nav_info:
             nav_datetime, nav = nav_info
             result['nav'] = int(nav)

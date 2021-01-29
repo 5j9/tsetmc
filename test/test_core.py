@@ -154,7 +154,7 @@ def test_get_page_info_no_sector_pe():
         , 'market': 'بازار اول (تابلوی اصلی) بورس'
         , 'month_average_volume': 212159873
         , 'l18': 'خگستر'
-        , 'sector_pe': None
+        , 'sector_pe': -32.11
         , 'z': 39605137000
         , 'week_max': 4250.0
         , 'week_min': 3670.0
@@ -165,8 +165,9 @@ def test_get_page_info_no_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).get_info() == {
-        'last_info_datetime': datetime(2021, 1, 27, 12, 30)
+    assert Instrument(1).get_info(index=True) == {
+        'status': 'A '
+        , 'last_info_datetime': datetime(2021, 1, 27, 12, 30)
         , 'nav': 190671
         , 'nav_datetime': jdatetime(1399, 11, 8, 15, 40)
         , 'pc': 151580
@@ -196,13 +197,32 @@ def test_dara1_instant():
         , 'zd3': 12
         , 'zo1': 3
         , 'zo2': 1
-        , 'zo3': 3}
+        , 'zo3': 3
+        , 'market_last_transaction': jdatetime(1399, 11, 8, 15, 21, 59)
+        , 'otc_status': 'F'
+        , 'otc_tno': 494135
+        , 'otc_tval': 122240030535934
+        , 'otc_tvol': 2168547032
+        , 'tse_index': 1207698.27
+        , 'tse_index_change': -7335.16
+        , 'tse_index_change_percent': 7335.16
+        , 'tse_status': 'F'
+        , 'tse_tno': 113961561691999
+        , 'tse_tval': 113961561691999
+        , 'tse_tvol': 10062531582
+        , 'tse_value': 48026814980146140
+        , 'derivatives_status': 'F'
+        , 'derivatives_tno': 7864
+        , 'derivatives_tval': 150982456491
+        , 'derivatives_tvol': 452251494
+    }
 
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
     assert Instrument(1).get_info() == {
-        'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
+        'status': 'A '
+        , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
         , 'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43)
         , 'pc': 94140
@@ -238,7 +258,8 @@ def test_asam_instant():
 @patch_get_content('negin.txt')
 def test_negin_instant():
     assert Instrument(1).get_info() == {
-        'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
+        'status': 'A '
+        , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
         , 'nav': 12190
         , 'nav_datetime': jdatetime(1398, 12, 29, 16, 0)
         , 'pc': 50110
@@ -274,7 +295,8 @@ def test_negin_instant():
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
     assert Instrument(1).get_info(orders=False) == {
-        'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
+        'status': 'A '
+        , 'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'pc': 19890
         , 'pf': 19400
         , 'pl': 20320
@@ -343,7 +365,8 @@ def test_get_key_stats():
 
 
 VSKHOOZ = {
-    'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18)
+    'status': 'IS'
+    , 'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18)
     , 'pc': 67818
     , 'pd1': 0
     , 'pd2': 0
@@ -405,7 +428,8 @@ def test_get_trade_history():
 @patch_get_content('vsadid.txt')
 def test_vsadid():
     assert Instrument(1).get_info() == {
-        'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
+        'status': 'IS'
+        , 'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
         , 'pc': 23810
         , 'pf': 0
         , 'pl': 23633
