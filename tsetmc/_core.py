@@ -104,19 +104,16 @@ class Instrument:
         price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         timestamp, _, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
             info_datetime_date, last_info_time, *nav_info = price_info.split(',')
-        if nav_info:
-            nav_datetime, nav = nav_info
-            nav = int(nav)
-            nav_datetime = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
-        else:
-            nav_datetime, nav = None, None
         result = {
             'timestamp': timestamp
             , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
             , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
             , 'pmin': int(pmin), 'pmax': int(pmax)
-            , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)
-            , 'nav_datetime': nav_datetime, 'nav': nav}
+            , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+        if nav_info:
+            nav_datetime, nav = nav_info
+            result['nav'] = int(nav)
+            result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         if orders:
             result |= {
                 f'{k}{i}': int(v)

@@ -275,8 +275,6 @@ def test_negin_instant():
 def test_fmelli_instant():
     assert Instrument(1).get_info(orders=False) == {
         'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
-        , 'nav': None
-        , 'nav_datetime': None
         , 'pc': 19890
         , 'pf': 19400
         , 'pl': 20320
@@ -346,8 +344,6 @@ def test_get_key_stats():
 
 VSKHOOZ = {
     'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18)
-    , 'nav': None
-    , 'nav_datetime': None
     , 'pc': 67818
     , 'pd1': 0
     , 'pd2': 0
@@ -410,8 +406,6 @@ def test_get_trade_history():
 def test_vsadid():
     assert Instrument(1).get_info() == {
         'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
-        , 'nav': None
-        , 'nav_datetime': None
         , 'pc': 23810
         , 'pf': 0
         , 'pl': 23633
