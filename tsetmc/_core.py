@@ -45,8 +45,6 @@ INFO_MATCH = rc(
     r'(?P<last_info_datetime>\d+,\d+)'
     r'(,(?P<nav_datetime>[\d\/: ]+),(?P<nav>\d+))?'
 ).match
-INFO_INTS = {
-    'pl', 'pc', 'py', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'}
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(r"'([\d.]+)'").sub, r'\1')
@@ -111,22 +109,26 @@ class Instrument:
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
-        text = fa_norm_text(
+        text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
-            f'?i={self.id}&c=')
-        group_dict = INFO_MATCH(text).groupdict()
-        for k in INFO_INTS:
-            # noinspection PyTypeChecker
-            group_dict[k] = int(group_dict[k])
-        # noinspection PyTypeChecker
-        group_dict['last_info_datetime'] = strptime(
-            group_dict['last_info_datetime'], '%Y%m%d,%H%M%S')
-        if (nav_datetime := group_dict.get('nav_datetime')) is not None:
-            # noinspection PyTypeChecker
-            group_dict['nav'] = int(group_dict['nav'])
-            group_dict['nav_datetime'] = jstrptime(
-                nav_datetime, '%Y/%m/%d %H:%M:%S')
-        return group_dict
+            f'?i={self.id}&c=').decode()
+        splits = text.split(';')
+        timestamp, _, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
+            info_datetime_date, last_info_time, *nav_info = splits[0].split(',')
+        if nav_info:
+            nav_datetime, nav = nav_info
+            nav = int(nav)
+            nav_datetime = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+        else:
+            nav_datetime, nav = None, None
+        return {
+            'timestamp': timestamp
+            , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
+            , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
+            , 'pmin': int(pmin), 'pmax': int(pmax)
+            , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)
+            , 'nav_datetime': nav_datetime, 'nav': nav
+        }
 
     def get_trade_history(self, top: int) -> DataFrame:
         content = get_content(
