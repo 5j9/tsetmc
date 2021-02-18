@@ -49,8 +49,13 @@ class Instrument:
     # warning/todo:
     # get_page_info and get_inst_info are not tested widely and fail sometimes.
 
-    def __init__(self, id: int):
+    __slots__ = 'id'
+
+    def __init__(self, id: int, l30=None):
         self.id = id
+
+    def __repr__(self):
+        return f'Instrument({self.id})'
 
     def get_page_info(self) -> dict:
         """Return the static info found on instrument's page.
@@ -102,11 +107,12 @@ class Instrument:
         # return the same response.
         text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
-            f'?i={self.id}&c=').decode()
+            # note that &e=1 parameter is required to get NAV.
+            f'?i={self.id}&c=&e=1').decode()
         # the _s are unknown
         price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
-            info_datetime_date, last_info_time, *nav_info = price_info.split(',')
+            info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
         result = {
             'timestamp': timestamp, 'status': status
             , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
@@ -146,8 +152,7 @@ class Instrument:
                 , 'derivatives_tvol': int(derivatives_tvol)
                 , 'derivatives_tval': int(derivatives_tval)
                 , 'derivatives_tno': int(derivatives_tno)}
-        if nav_info:
-            nav_datetime, nav = nav_info
+        if nav:
             result['nav'] = int(nav)
             result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         if orders:
