@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
+from pytest import raises
 
 # noinspection PyProtectedMember
 from tsetmc import Instrument, _core, get_market_watch_init, \
@@ -12,6 +13,14 @@ def patch_get_content(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         text = f.read()
     return patch.object(_core, 'get_content', lambda _: text)
+
+
+@patch.object(_core, 'get_content')
+def test_get_info_url(mock):
+    with raises(ValueError):
+        Instrument(1).get_info()
+    mock.assert_called_once_with(
+        'http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=1&c=&e=1')
 
 
 @patch_get_content('fmelli.html')

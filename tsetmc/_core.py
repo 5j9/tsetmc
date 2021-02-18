@@ -107,7 +107,7 @@ class Instrument:
         # return the same response.
         text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
-            # note that &e=1 parameter is required to get NAV.
+            # &e=1 parameter is required to get NAV
             f'?i={self.id}&c=&e=1').decode()
         # the _s are unknown
         price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
