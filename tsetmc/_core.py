@@ -28,7 +28,6 @@ ALLOWED_MIN_MAX_SEARCH = rc(rf"PSGelStaMax='{F}',PSGelStaMin='{F}").search
 WEAK_YEAR_MIN_MAX_SEARCH = rc(
     rf"MinWeek='{F}',MaxWeek='{F}',MinYear='{F}',MaxYear='{F}'").search
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
-FIRST_NUMBER_SEARCH = rc(r'\d+').search
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(rf"'({F})'").sub, r'\1')
@@ -180,7 +179,7 @@ class Instrument:
     @staticmethod
     def from_search(s: str) -> 'Instrument':
         text = fa_norm_text('http://tsetmc.com/tsev2/data/search.aspx?skey=' + s)
-        return Instrument(int(FIRST_NUMBER_SEARCH(text)[0]))
+        return Instrument(int(text.split(',', 3)[2]))
 
 
 def get_market_watch_init() -> dict:

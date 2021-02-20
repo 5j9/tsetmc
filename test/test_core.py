@@ -450,3 +450,9 @@ def test_vsadid():
         , 'tno': 0
         , 'tval': 0
         , 'tvol': 0}
+
+
+@patch_get_content('search_firuze.txt')
+def test_from_search_with_numeric_description():
+    # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
+    assert Instrument.from_search('فیروزه').id == 66036975502302203
