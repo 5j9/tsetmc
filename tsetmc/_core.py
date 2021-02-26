@@ -38,6 +38,7 @@ INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 with open(f'{__file__}/../ids.json', encoding='utf8') as f:
     KNOWN_IDS: dict[str, str] = load(f)
+KNOWN_IDS |= {v[0]: v for v in KNOWN_IDS.values()}
 
 
 def get_content(url) -> bytes:
@@ -57,7 +58,7 @@ class Instrument:
 
     def __init__(self, id: Union[int, str]):
         try:
-            self.id, self.l13, self.l18, self.isin = KNOWN_IDS[f'{id}']
+            self.id, self.l13, self.l18, self.isin = KNOWN_IDS[id]
         except KeyError:
             if isinstance(id, int):
                 self.id = id
