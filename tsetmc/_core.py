@@ -9,7 +9,7 @@ from ast import literal_eval
 
 from requests import Session
 from jdatetime import datetime as jdatetime
-from pandas import read_csv, to_numeric, DataFrame
+from pandas import read_csv, to_numeric, DataFrame, read_html
 
 
 strptime = datetime.strptime
@@ -190,6 +190,11 @@ class Instrument:
             , index_col='date'
         )
         return df
+
+    def get_identification(self) -> DataFrame:
+        """Return the information available in the identification (شناسه) tab."""
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.id}')
+        return read_html(text, index_col=0)[0]
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':

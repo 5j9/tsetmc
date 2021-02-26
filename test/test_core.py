@@ -463,3 +463,22 @@ def test_repr():
     assert repr(Instrument('IRO1MSMI0001')) == "Instrument('فملی')"
     # unknown ID
     assert repr(Instrument(1)) == "Instrument(1)"
+
+
+@patch_get_content('vsadid_identification.html')
+def test_get_identification():
+    assert Instrument(1).get_identification().to_dict() == {1: {
+        'بازار': 'بازار پایه نارنجی فرابورس',
+        'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
+        'نام شرکت': 'گروه\u200cصنعتی\u200cسدید',
+        'نام لاتین شرکت': 'Sadid Group',
+        'نماد 30 رقمی فارسی': 'گروه \u200cصنعتی\u200cسدید',
+        'نماد فارسی': 'وسدید - لغو پذیرش شده',
+        'کد 12 رقمی شرکت': 'IRO7SDIP0002',
+        'کد 12 رقمی نماد': 'IRO7SDIP0001',
+        'کد 4 رقمی شرکت': 'SDIP',
+        'کد 5 رقمی نماد': 'SDIP1',
+        'کد تابلو': '7',
+        'کد زیر گروه صنعت': '2799',
+        'کد گروه صنعت': '27',
+        'گروه صنعت': 'فلزات اساسی'}}
