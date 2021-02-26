@@ -460,7 +460,7 @@ def test_from_search_with_numeric_description():
 
 def test_repr():
     # known ID
-    assert repr(Instrument('IRO1MSMI0001')) == "Instrument('فملی')"
+    assert repr(Instrument('فملی')) == "Instrument('فملی')"
     # unknown ID
     assert repr(Instrument(1)) == "Instrument(1)"
 
