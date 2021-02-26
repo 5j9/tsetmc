@@ -1,7 +1,9 @@
 from functools import partial
 from re import compile as rc
 from datetime import datetime
+from json import load
 from io import BytesIO, StringIO
+from typing import Union
 from ast import literal_eval
 
 
@@ -34,6 +36,9 @@ STR_TO_NUM = partial(rc(rf"'({F})'").sub, r'\1')
 INDEX_CHANGE_MATCH = rc(rf"<div class='mn'>(\(?)({F})\)?</div> ({F})%").match
 INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
+with open(f'{__file__}/../ids.json', encoding='utf8') as f:
+    KNOWN_IDS: dict[str, str] = load(f)
+
 
 def get_content(url) -> bytes:
     return GET(url).content
@@ -48,13 +53,23 @@ class Instrument:
     # warning/todo:
     # get_page_info and get_inst_info are not tested widely and fail sometimes.
 
-    __slots__ = 'id'
+    __slots__ = 'id', 'isin', 'l13', 'l18'
 
-    def __init__(self, id: int, l30=None):
-        self.id = id
+    def __init__(self, id: Union[int, str]):
+        try:
+            self.id, self.l13, self.l18, self.isin = KNOWN_IDS[f'{id}']
+        except KeyError:
+            if isinstance(id, int):
+                self.id = id
+                self.l13 = self.l18 = self.isin = None
+                return
+            raise KeyError(
+                'id not found in KNOWN_IDS, try Instrument.from_search')
 
     def __repr__(self):
-        return f'Instrument({self.id})'
+        if self.l13 is None:
+            return f'Instrument({self.id})'
+        return f"Instrument('{self.l13}')"
 
     def get_page_info(self) -> dict:
         """Return the static info found on instrument's page.
@@ -178,8 +193,9 @@ class Instrument:
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':
-        text = fa_norm_text('http://tsetmc.com/tsev2/data/search.aspx?skey=' + s)
-        return Instrument(int(text.split(',', 3)[2]))
+        """Look up the ID through a web search and return Instrument."""
+        return Instrument(int(get_content(
+            'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
 
 
 def get_market_watch_init() -> dict:

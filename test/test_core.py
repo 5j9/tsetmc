@@ -456,3 +456,10 @@ def test_vsadid():
 def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
     assert Instrument.from_search('فیروزه').id == 66036975502302203
+
+
+def test_repr():
+    # known ID
+    assert repr(Instrument('IRO1MSMI0001')) == "Instrument('فملی')"
+    # unknown ID
+    assert repr(Instrument(1)) == "Instrument(1)"
