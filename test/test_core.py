@@ -465,6 +465,10 @@ def test_repr():
     assert repr(Instrument(1)) == "Instrument(1)"
 
 
+def test_equal():
+    assert Instrument('فملی') == Instrument(35425587644337450)
+
+
 @patch_get_content('vsadid_identification.html')
 def test_get_identification():
     assert Instrument(1).get_identification().to_dict() == {1: {

@@ -72,6 +72,9 @@ class Instrument:
             return f'Instrument({self.id})'
         return f"Instrument('{self.l13}')"
 
+    def __eq__(self, other):
+        return self.id == other.id
+
     def get_page_info(self) -> dict:
         """Return the static info found on instrument's page.
 
