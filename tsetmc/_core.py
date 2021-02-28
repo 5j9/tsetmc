@@ -188,7 +188,7 @@ class Instrument:
 
     def get_trade_history(self, top: int) -> DataFrame:
         content = get_content(
-            f'http://members.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.id}&Top={top}')
+            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.id}&Top={top}')
         df = read_csv(
             BytesIO(content)
             , sep='@'
