@@ -75,6 +75,9 @@ class Instrument:
     def __eq__(self, other):
         return self.id == other.id
 
+    def __hash__(self):
+        return self.id
+
     def get_page_info(self) -> dict:
         """Return the static info found on instrument's page.
 
