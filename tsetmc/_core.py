@@ -9,7 +9,7 @@ from ast import literal_eval
 
 from requests import Session
 from jdatetime import datetime as jdatetime
-from pandas import read_csv, to_numeric, DataFrame, read_html
+from pandas import read_csv, to_numeric, DataFrame, read_html, to_datetime
 
 
 strptime = datetime.strptime
@@ -90,6 +90,7 @@ class Instrument:
         sector_pe_match = SECTOR_PE_SEARCH(text)
         trade_history = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
         trade_history = DataFrame(trade_history, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
+        trade_history['date'] = to_datetime(trade_history['date'], format='%Y%m%d')
         trade_history.set_index('date', inplace=True)
         return {
             'tmax': float(t_min_max[2])
@@ -192,6 +193,7 @@ class Instrument:
             , names=['date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno']
             , low_memory=False
             , index_col='date'
+            , parse_dates=True
         )
         return df
 
