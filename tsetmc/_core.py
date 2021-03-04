@@ -199,6 +199,21 @@ class Instrument:
             , parse_dates=True)
         return df
 
+    def get_client_type(self) -> DataFrame:
+        """Get daily natural/legal history.
+
+        In column names `n_` prefix stands for natural and `l_` for legal.
+        """
+        return read_csv(
+            BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.id}'))
+            , lineterminator=b';'
+            , names=(
+                'date'
+                , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
+                , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
+                , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
+            , index_col='date', parse_dates=True , dtype='int64', low_memory=False)
+
     def get_identification(self) -> DataFrame:
         """Return the information available in the identification (شناسه) tab."""
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.id}')
