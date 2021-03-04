@@ -193,11 +193,10 @@ class Instrument:
             BytesIO(content)
             , sep='@'
             , lineterminator=';'
-            , names=['date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno']
+            , names=('date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno')
             , low_memory=False
             , index_col='date'
-            , parse_dates=True
-        )
+            , parse_dates=True)
         return df
 
     def get_identification(self) -> DataFrame:
@@ -252,8 +251,7 @@ def get_market_watch_init() -> dict:
     joined_df = state_df.join(price_df)
     # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
     return {  # todo, also add other info available in MarketWatchInit.aspx
-        'dataframe': joined_df
-    }
+        'dataframe': joined_df}
 
 
 def _split_id_rows(content: bytes, id_row_len: int) -> list:
