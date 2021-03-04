@@ -365,8 +365,8 @@ def test_get_closing_price_all():
 def test_get_client_type_all():
     df = get_client_type_all()
     assert all(df.columns == [
-        'Buy_CountI', 'Buy_CountN', 'Buy_I_Volume', 'Buy_N_Volume'
-        , 'Sell_CountI', 'Sell_CountN', 'Sell_I_Volume', 'Sell_N_Volume'])
+        'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
+        , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
     assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'id'
 

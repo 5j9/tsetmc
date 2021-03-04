@@ -241,7 +241,7 @@ def get_market_watch_init() -> dict:
         StringIO(price_rows)
         , lineterminator=';'
         , names=('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
-        , dtype="Int64"
+        , dtype='Int64'
         , low_memory=False)
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
@@ -291,15 +291,14 @@ def get_closing_price_all() -> DataFrame:
 def get_client_type_all() -> DataFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
-    For the meaning of column names refer to
-        https://cdn.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3198
+    In column names `n_` prefix stands for natural and `l_` for legal.
     """
     content = get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
     df = read_csv(
         BytesIO(content), lineterminator=b';', names=(
-            'id', 'Buy_CountI', 'Buy_CountN', 'Buy_I_Volume', 'Buy_N_Volume'
-            , 'Sell_CountI', 'Sell_CountN', 'Sell_I_Volume', 'Sell_N_Volume')
-        , dtype="int64", index_col='id', low_memory=False)
+            'id', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
+            , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
+        , dtype='int64', index_col='id', low_memory=False)
     return df
 
 
