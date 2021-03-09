@@ -8,6 +8,7 @@ from pytest import raises
 # noinspection PyProtectedMember
 from tsetmc import Instrument, _core, get_market_watch_init, \
     get_closing_price_all, get_client_type_all, get_key_stats
+from tsetmc._core import parse_index
 
 
 def patch_get_content(name):
@@ -180,56 +181,55 @@ def test_get_page_info_no_sector_pe():
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
     assert Instrument(1).get_info(index=True) == {
-        'status': 'A '
-        , 'last_info_datetime': datetime(2021, 1, 27, 12, 30)
-        , 'nav': 190671
-        , 'nav_datetime': jdatetime(1399, 11, 8, 15, 40)
-        , 'pc': 151580
-        , 'pd1': 150120
-        , 'pd2': 150000
-        , 'pd3': 149990
-        , 'pf': 147550
-        , 'pl': 150120
-        , 'pmax': 141100
-        , 'pmin': 158000
-        , 'po1': 150120
-        , 'po2': 150130
-        , 'po3': 150500
-        , 'py': 152030
-        , 'qd1': 2000
-        , 'qd2': 62729
-        , 'qd3': 3185
-        , 'qo1': 7275
-        , 'qo2': 34582
-        , 'qo3': 3862
-        , 'timestamp': '12:30:00'
-        , 'tno': 84083
-        , 'tval': 9972065145080
-        , 'tvol': 65786166
-        , 'zd1': 1
-        , 'zd2': 8
-        , 'zd3': 12
-        , 'zo1': 3
-        , 'zo2': 1
-        , 'zo3': 3
-        , 'market_last_transaction': jdatetime(1399, 11, 8, 15, 21, 59)
-        , 'otc_status': 'F'
-        , 'otc_tno': 494135
-        , 'otc_tval': 122240030535934
-        , 'otc_tvol': 2168547032
-        , 'tse_index': 1207698.27
-        , 'tse_index_change': -7335.16
-        , 'tse_index_change_percent': 7335.16
-        , 'tse_status': 'F'
-        , 'tse_tno': 113961561691999
-        , 'tse_tval': 113961561691999
-        , 'tse_tvol': 10062531582
-        , 'tse_value': 48026814980146140
-        , 'derivatives_status': 'F'
-        , 'derivatives_tno': 7864
-        , 'derivatives_tval': 150982456491
-        , 'derivatives_tvol': 452251494
-    }
+        'derivatives_status': 'F',
+        'derivatives_tno': 7864,
+        'derivatives_tval': 150982456491.0,
+        'derivatives_tvol': 452251494.0,
+        'last_info_datetime': datetime(2021, 1, 27, 12, 30),
+        'market_last_transaction': jdatetime(1399, 11, 8, 15, 21, 59),
+        'nav': 190671,
+        'nav_datetime': jdatetime(1399, 11, 8, 15, 40),
+        'otc_status': 'F',
+        'otc_tno': 494135,
+        'otc_tval': 122240030535934.0,
+        'otc_tvol': 2168547032.0,
+        'pc': 151580,
+        'pd1': 150120,
+        'pd2': 150000,
+        'pd3': 149990,
+        'pf': 147550,
+        'pl': 150120,
+        'pmax': 141100,
+        'pmin': 158000,
+        'po1': 150120,
+        'po2': 150130,
+        'po3': 150500,
+        'py': 152030,
+        'qd1': 2000,
+        'qd2': 62729,
+        'qd3': 3185,
+        'qo1': 7275,
+        'qo2': 34582,
+        'qo3': 3862,
+        'status': 'A ',
+        'timestamp': '12:30:00',
+        'tno': 84083,
+        'tse_index': 1207698.27,
+        'tse_index_change': -7335.16,
+        'tse_index_change_percent': -0.6,
+        'tse_status': 'F',
+        'tse_tno': 113961561691999.0,
+        'tse_tval': 113961561691999.0,
+        'tse_tvol': 10062531582.0,
+        'tse_value': 4.802681498014614e+16,
+        'tval': 9972065145080,
+        'tvol': 65786166,
+        'zd1': 1,
+        'zd2': 8,
+        'zd3': 12,
+        'zo1': 3,
+        'zo2': 1,
+        'zo3': 3}
 
 
 @patch_get_content('asam.txt')
@@ -495,3 +495,26 @@ def test_get_client_type():
         '\n2021-02-27,1522,9,31838,20,10893007,80000,10965618,7389,143351972120,1052800000,144307532880,97239240'
         '\n2021-02-24,2752985,1535,0,2,1014549773,480840379,0,1495390152,12645360378170,5928026392500,0,18573386770670'
         '\n')
+
+
+def test_parse_index():
+    assert {
+        'derivatives_status': 'N',
+        'derivatives_tno': 2621,
+        'derivatives_tval': 31470939000.0,
+        'derivatives_tvol': 101096.0,
+        'market_last_transaction': jdatetime(1399, 12, 16, 15, 45, 46),
+        'otc_status': 'N',
+        'otc_tno': 342228,
+        'otc_tval': 163701347122693.0,
+        'otc_tvol': 1057924358.0,
+        'tse_index': 1169760.86,
+        'tse_index_change': -8155.9,
+        'tse_index_change_percent': -0.69,
+        'tse_status': 'F',
+        'tse_tno': 34288551133025.0,
+        'tse_tval': 34288551133025.0,
+        'tse_tvol': 3055466451.0,
+        'tse_value': 4.674381234630472e+16
+    } == parse_index(
+        "99/12/16 15:45:46,F,1169760.86,<div class='mn'>(8155.90)</div> -0.69%,46743812346304720.00,3055466451.00,34288551133025.00,428601,N,1057924358.00,163701347122693.00,342228,N,101096.00,31470939000.00,2621,")

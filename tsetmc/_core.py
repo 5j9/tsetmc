@@ -21,7 +21,7 @@ FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
 TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
-FREE_FLOAT_SEARCH = rc(rf"KAjCapValCpsIdx='({F}+)'").search
+FREE_FLOAT_SEARCH = rc(rf"KAjCapValCpsIdx='{F}'").search
 GROUP_NAME_SEARCH = rc(r"LSecVal='(.*?)'").search
 BASE_VOLUME_SEARCH = rc(r"BaseVol=(\d+)").search
 EPS_SEARCH = rc(r"EstimatedEPS='(\d+)'").search
@@ -32,8 +32,8 @@ WEAK_YEAR_MIN_MAX_SEARCH = rc(
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
-STR_TO_NUM = partial(rc(rf"'({F})'").sub, r'\1')
-INDEX_CHANGE_MATCH = rc(rf"<div class='mn'>(\(?)({F})\)?</div> ({F})%").match
+STR_TO_NUM = partial(rc(rf"'{F}'").sub, r'\1')
+INDEX_CHANGE_MATCH = rc(rf"<div class='mn'>(\()?{F}\)?</div>(?: {F}%)?").match
 INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 with open(f'{__file__}/../ids.json', encoding='utf8') as f:
@@ -51,8 +51,6 @@ def fa_norm_text(url) -> str:
 
 
 class Instrument:
-    # warning/todo:
-    # get_page_info and get_inst_info are not tested widely and fail sometimes.
 
     __slots__ = 'id', 'isin', 'l13', 'l18'
 
@@ -132,6 +130,7 @@ class Instrument:
             # &e=1 parameter is required to get NAV
             f'?i={self.id}&c=&e=1').decode()
         # the _s are unknown
+        # todo: fix not enough valus to unpack
         price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
             info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
@@ -142,38 +141,7 @@ class Instrument:
             , 'pmin': int(pmin), 'pmax': int(pmax)
             , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
         if index:
-            market_last_transaction, tse_status, tse_index, tse_index_change\
-                , tse_value , tse_tvol, tse_tval, tse_tno \
-                , otc_status, otc_tvol, otc_tval, otc_tno\
-                , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
-                , _ = index_info.split(',')
-            m = INDEX_CHANGE_MATCH(tse_index_change)
-            if m[1]:  # parentheses represent negative value
-                tse_index_change = -float(m[2])
-            else:
-                tse_index_change = float(m[2])
-            tse_index_change_percent = float(m[3])
-            m = INDEX_TIMESTAMP_MATCH(market_last_transaction)
-            result |= {
-                'market_last_transaction': jdatetime(
-                    1300 + int(m[1]), int(m[2]), int(m[3]),
-                    int(m[4]), int(m[5]), int(m[6]))
-                , 'tse_status': tse_status
-                , 'tse_index': float(tse_index)
-                , 'tse_index_change': tse_index_change
-                , 'tse_index_change_percent': tse_index_change_percent
-                , 'tse_value': int(tse_value)
-                , 'tse_tvol': int(tse_tvol)
-                , 'tse_tval': int(tse_tval)
-                , 'tse_tno': int(tse_tval)
-                , 'otc_status': otc_status
-                , 'otc_tvol': int(otc_tvol)
-                , 'otc_tval': int(otc_tval)
-                , 'otc_tno': int(otc_tno)
-                , 'derivatives_status': derivatives_status
-                , 'derivatives_tvol': int(derivatives_tvol)
-                , 'derivatives_tval': int(derivatives_tval)
-                , 'derivatives_tno': int(derivatives_tno)}
+            result |= parse_index(index_info)
         if nav:
             result['nav'] = int(nav)
             result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
@@ -226,7 +194,7 @@ class Instrument:
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
 
 
-def get_market_watch_init() -> dict:
+def get_market_watch_init(index=True) -> dict:
     """Return the market status which are the info used in creating filters.
 
     For more information about filters see:
@@ -240,7 +208,7 @@ def get_market_watch_init() -> dict:
             (it's the time of last transaction in HHMMSS format)
     """
     text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
-    _, _, states, price_rows, _ = text.split('@')
+    _, index_data, states, price_rows, _ = text.split('@')
     state_df = read_csv(
         StringIO(states)
         , lineterminator=';'
@@ -265,8 +233,10 @@ def get_market_watch_init() -> dict:
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
     # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
-    return {  # todo, also add other info available in MarketWatchInit.aspx
-        'dataframe': joined_df}
+    result = {'dataframe': joined_df}
+    if index:
+        result |= parse_index(index_data)
+    return result
 
 
 def _split_id_rows(content: bytes, id_row_len: int) -> list:
@@ -332,3 +302,39 @@ def get_key_stats() -> DataFrame:
     df = df.pivot('id', 'n', 'value')
     df.columns = [f'is{c}' for c in df.columns]
     return df
+
+
+def parse_index(s: str) -> dict:
+    market_last_transaction, tse_status, tse_index, tse_index_change \
+        , tse_value, tse_tvol, tse_tval, tse_tno \
+        , otc_status, otc_tvol, otc_tval, otc_tno \
+        , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
+        , _ = s.split(',')
+    index_change_match = INDEX_CHANGE_MATCH(tse_index_change)
+    tse_index_change = float(index_change_match[2])
+    if index_change_match[1] is not None:  # negative value
+        tse_index_change *= -1
+    timestamp_match = INDEX_TIMESTAMP_MATCH(market_last_transaction)
+    result = {
+        'market_last_transaction': jdatetime(
+            1300 + int(timestamp_match[1]), int(timestamp_match[2])
+            , int(timestamp_match[3]), int(timestamp_match[4])
+            , int(timestamp_match[5]), int(timestamp_match[6]))
+        , 'tse_status': tse_status
+        , 'tse_index': float(tse_index)
+        , 'tse_index_change': tse_index_change
+        , 'tse_value': float(tse_value)
+        , 'tse_tvol': float(tse_tvol)
+        , 'tse_tval': float(tse_tval)
+        , 'tse_tno': float(tse_tval)
+        , 'otc_status': otc_status
+        , 'otc_tvol': float(otc_tvol)
+        , 'otc_tval': float(otc_tval)
+        , 'otc_tno': int(otc_tno)
+        , 'derivatives_status': derivatives_status
+        , 'derivatives_tvol': float(derivatives_tvol)
+        , 'derivatives_tval': float(derivatives_tval)
+        , 'derivatives_tno': int(derivatives_tno)}
+    if (m3 := index_change_match[3]) is not None:
+        result['tse_index_change_percent'] = float(m3)
+    return result
