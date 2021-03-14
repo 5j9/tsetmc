@@ -33,7 +33,7 @@ MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(rf"'{F}'").sub, r'\1')
-INDEX_CHANGE_MATCH = rc(rf"<div class='mn'>(\()?{F}\)?</div>(?: {F}%)?").match
+INDEX_CHANGE_MATCH = rc(rf"<div[^>]*>(\()?{F}\)?</div>(?: {F}%)?").match
 INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 with open(f'{__file__}/../ids.json', encoding='utf8') as f:
@@ -131,7 +131,11 @@ class Instrument:
             f'?i={self.id}&c=&e=1').decode()
         # the _s are unknown
         # todo: fix not enough valus to unpack
-        price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
+        try:
+            price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
+        except ValueError:
+            print(text)  # The service is unavailable.
+            raise
         timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
             info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
         result = {
