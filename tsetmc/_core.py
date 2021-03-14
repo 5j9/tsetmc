@@ -266,7 +266,7 @@ def get_closing_price_all() -> DataFrame:
         tsetmc filters. See:
             http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
     """
-    content = get_content('http://members.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
+    content = get_content('http://www.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     df = DataFrame(data, columns=(
         'id', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
