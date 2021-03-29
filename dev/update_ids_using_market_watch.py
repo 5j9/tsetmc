@@ -15,7 +15,9 @@ values = *zip(ids, l18s, l30s, isins),
 
 with open(f'{__file__}/../../tsetmc/ids.json', 'r+', encoding='utf8') as f:
     KNOWN_IDS = load(f)
-    KNOWN_IDS |= {*zip(l18s, values)}
-    f.seek(0)
-    dump(KNOWN_IDS, f, check_circular=False, ensure_ascii=False, indent=4, sort_keys=True)
-    # f.truncate() is not needed since update will always increase the size.
+    old_len = len(KNOWN_IDS)
+    KNOWN_IDS |= zip(l18s, values)
+    if len(KNOWN_IDS) != old_len:
+        f.seek(0)
+        dump(KNOWN_IDS, f, check_circular=False, ensure_ascii=False, indent=4, sort_keys=True)
+        # f.truncate() is not needed since update will always increase the size.
