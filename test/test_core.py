@@ -34,6 +34,7 @@ def test_get_page_info():
         'tmin': 19820.0
         , 'tmax': 21900.0
         , 'bvol': 5479452
+        , 'cisin': 'IRO1MSMI0000'
         , 'eps': 1639
         , 'free_float': 33
         , 'l30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c'  # todo
@@ -112,10 +113,13 @@ def test_get_page_info():
 @patch_get_content('dey.html')
 def test_get_page_info_no_free_float():
     d = Instrument(1).get_page_info()
-    assert d.items() >= {
+    d.pop('related_companies')  # too long
+    d.pop('trade_history')  # too long
+    assert d == {
         'tmin': 43722.0
         , 'tmax': 48324.0
         , 'bvol': 2231446
+        , 'cisin': 'IRO3BDYZ0003'
         , 'eps': 4326
         , 'free_float': None
         , 'l30': 'بانک دی'
@@ -129,16 +133,19 @@ def test_get_page_info_no_free_float():
         , 'week_min': 43722.0
         , 'year_max': 83000.0
         , 'year_min': 2674.0
-    }.items()
+    }
 
 
 @patch_get_content('kala.html')
 def test_get_page_info_no_eps():
     d = Instrument(1).get_page_info()
-    assert d.items() >= {
+    d.pop('related_companies')  # too long
+    d.pop('trade_history')  # too long
+    assert d == {
         'tmin': 37970.0
         , 'tmax': 41950.0
         , 'bvol': 1306165
+        , 'cisin': 'IRO1KALA0001'
         , 'eps': None
         , 'free_float': 100
         , 'l30': 'بورس کالای ایران'
@@ -152,7 +159,7 @@ def test_get_page_info_no_eps():
         , 'week_min': 37970.0
         , 'year_max': 105352.0
         , 'year_min': 12376.0
-    }.items()
+    }
 
 
 @patch_get_content('khgostar.html')

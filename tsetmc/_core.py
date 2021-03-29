@@ -119,7 +119,7 @@ class Instrument:
         trade_history.set_index('date', inplace=True)
         return {
             'bvol': int(m['BaseVol']),
-            # todo: 'cisin': cisin, # company's isin
+            'cisin': m['CIsin'],
             'eps': int(eps) if eps else None,
             'free_float': int(free_float) if free_float else None,
             'l18': title_match[2],
