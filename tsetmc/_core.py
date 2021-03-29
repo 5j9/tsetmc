@@ -145,7 +145,7 @@ class Instrument:
             , 'pmin': int(pmin), 'pmax': int(pmax)
             , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
         if index:
-            result |= parse_index(index_info)
+            result |= _parse_index(index_info)
         if nav:
             result['nav'] = int(nav)
             result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
@@ -239,7 +239,7 @@ def get_market_watch_init(index=True) -> dict:
     # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
     result = {'dataframe': joined_df}
     if index:
-        result |= parse_index(index_data)
+        result |= _parse_index(index_data)
     return result
 
 
@@ -308,7 +308,7 @@ def get_key_stats() -> DataFrame:
     return df
 
 
-def parse_index(s: str) -> dict:
+def _parse_index(s: str) -> dict:
     market_last_transaction, tse_status, tse_index, tse_index_change \
         , tse_value, tse_tvol, tse_tval, tse_tno \
         , otc_status, otc_tvol, otc_tval, otc_tno \
