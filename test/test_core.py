@@ -31,8 +31,8 @@ def test_get_page_info():
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {
-        'tmax': 19820.0
-        , 'tmin': 21900.0
+        'tmin': 19820.0
+        , 'tmax': 21900.0
         , 'bvol': 5479452
         , 'eps': 1639
         , 'free_float': 33
@@ -113,8 +113,8 @@ def test_get_page_info():
 def test_get_page_info_no_free_float():
     d = Instrument(1).get_page_info()
     assert d.items() >= {
-        'tmax': 43722.0
-        , 'tmin': 48324.0
+        'tmin': 43722.0
+        , 'tmax': 48324.0
         , 'bvol': 2231446
         , 'eps': 4326
         , 'free_float': None
@@ -136,8 +136,8 @@ def test_get_page_info_no_free_float():
 def test_get_page_info_no_eps():
     d = Instrument(1).get_page_info()
     assert d.items() >= {
-        'tmax': 37970.0
-        , 'tmin': 41950.0
+        'tmin': 37970.0
+        , 'tmax': 41950.0
         , 'bvol': 1306165
         , 'eps': None
         , 'free_float': 100
@@ -159,8 +159,8 @@ def test_get_page_info_no_eps():
 def test_get_page_info_no_sector_pe():
     d = Instrument(1).get_page_info()
     assert d.items() >= {
-        'tmax': 3670.0
-        , 'tmin': 4050.0
+        'tmin': 3670.0
+        , 'tmax': 4050.0
         , 'bvol': 15842055
         , 'eps': 450
         , 'free_float': 52

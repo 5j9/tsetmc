@@ -19,6 +19,7 @@ GET = Session().get
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'(-?\d+(?:\.\d+)?)'  # float pattern
+PAGE_VARS = rc(r"TopInst='(?P<TopInst>[^,]*)',LVal18AFC='[^,]*',DEven='(?P<DEven>[^,]*)',LSecVal='(?P<LSecVal>[^,]*)',CgrValCot='(?P<CgrValCot>[^,]*)',Flow='(?P<Flow>[^,]*)',InstrumentID='(?P<InstrumentID>[^,]*)',InsCode='(?P<InsCode>[^,]*)',BaseVol=(?P<BaseVol>[^,]*),EstimatedEPS='(?P<EstimatedEPS>[^,]*)',ZTitad=(?P<ZTitad>[^,]*),CIsin='(?P<CIsin>[^,]*)',LVal18AFC='(?P<LVal18AFC>[^,]*)',CSecVal='(?P<CSecVal>[^,]*)',PdrCotVal='(?P<PdrCotVal>[^,]*)',PClosing='(?P<PClosing>[^,]*)',PSGelStaMax='(?P<PSGelStaMax>[^,]*)',PSGelStaMin='(?P<PSGelStaMin>[^,]*)',Title='(?P<Title>[^,]*)',FaraDesc ='(?P<FaraDesc>[^,]*)',MinWeek='(?P<MinWeek>[^,]*)',MaxWeek='(?P<MaxWeek>[^,]*)',MinYear='(?P<MinYear>[^,]*)',MaxYear='(?P<MaxYear>[^,]*)',QTotTran5JAvg='(?P<QTotTran5JAvg>[^,]*)',SectorPE='(?P<SectorPE>[^,]*)',KAjCapValCpsIdx='(?P<KAjCapValCpsIdx>[^,]*)',PriceMin=(?P<PriceMin>[^,]*),PriceMax=(?P<PriceMax>[^,]*),PriceYesterday=(?P<PriceYesterday>[^;]*);ThemeCount='(?P<ThemeCount>[^;]*)';ContractSize='(?P<ContractSize>[^;]*)';(NAV='(?P<NAV>[^;]*)';)?").search
 SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
 TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
 FREE_FLOAT_SEARCH = rc(rf"KAjCapValCpsIdx='{F}'").search
@@ -26,7 +27,6 @@ GROUP_NAME_SEARCH = rc(r"LSecVal='(.*?)'").search
 BASE_VOLUME_SEARCH = rc(r"BaseVol=(\d+)").search
 EPS_SEARCH = rc(r"EstimatedEPS='(\d+)'").search
 SHARES_SEARCH = rc(r'ZTitad=(\d+)').search
-ALLOWED_MIN_MAX_SEARCH = rc(rf"PSGelStaMax='{F}',PSGelStaMin='{F}").search
 WEAK_YEAR_MIN_MAX_SEARCH = rc(
     rf"MinWeek='{F}',MaxWeek='{F}',MinYear='{F}',MaxYear='{F}'").search
 MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
@@ -83,7 +83,7 @@ class Instrument:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
         text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
-        t_min_max = ALLOWED_MIN_MAX_SEARCH(text)
+        m = PAGE_VARS(text)
         wy_min_max = WEAK_YEAR_MIN_MAX_SEARCH(text)
         title_match = TITLE_SEARCH(text)
         free_float_match = FREE_FLOAT_SEARCH(text)
@@ -104,8 +104,8 @@ class Instrument:
             'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1])),
             'sector_name': GROUP_NAME_SEARCH(text)[1],
             'sector_pe': float(sector_pe_match[1]) if sector_pe_match is not None else None,
-            'tmax': float(t_min_max[2]),
-            'tmin': float(t_min_max[1]),
+            'tmax': float(m['PSGelStaMax']),
+            'tmin': float(m['PSGelStaMin']),
             'trade_history': trade_history,
             'week_max': float(wy_min_max[2]),
             'week_min': float(wy_min_max[1]),
