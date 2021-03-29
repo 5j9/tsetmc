@@ -94,26 +94,24 @@ class Instrument:
         trade_history['date'] = to_datetime(trade_history['date'], format='%Y%m%d')
         trade_history.set_index('date', inplace=True)
         return {
-            'tmax': float(t_min_max[2])
-            , 'tmin': float(t_min_max[1])
-            , 'bvol': int(BASE_VOLUME_SEARCH(text)[1])
-            , 'eps': int(eps_match[1]) if eps_match is not None else None
-            , 'free_float': int(
-                free_float_match[1]) if free_float_match is not None else None
-            , 'l30': title_match[1]
-            , 'sector_name': GROUP_NAME_SEARCH(text)[1]
-            , 'market': title_match[3]
-            , 'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1])
-            , 'l18': title_match[2]
-            , 'sector_pe': float(
-                sector_pe_match[1]) if sector_pe_match is not None else None
-            , 'z': int(SHARES_SEARCH(text)[1])
-            , 'week_max': float(wy_min_max[2])
-            , 'week_min': float(wy_min_max[1])
-            , 'year_max': float(wy_min_max[4])
-            , 'year_min': float(wy_min_max[3])
-            , 'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1]))
-            , 'trade_history': trade_history
+            'bvol': int(BASE_VOLUME_SEARCH(text)[1]),
+            'eps': int(eps_match[1]) if eps_match is not None else None,
+            'free_float': int(free_float_match[1]) if free_float_match is not None else None,
+            'l18': title_match[2],
+            'l30': title_match[1],
+            'market': title_match[3],
+            'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1]),
+            'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1])),
+            'sector_name': GROUP_NAME_SEARCH(text)[1],
+            'sector_pe': float(sector_pe_match[1]) if sector_pe_match is not None else None,
+            'tmax': float(t_min_max[2]),
+            'tmin': float(t_min_max[1]),
+            'trade_history': trade_history,
+            'week_max': float(wy_min_max[2]),
+            'week_min': float(wy_min_max[1]),
+            'year_max': float(wy_min_max[4]),
+            'year_min': float(wy_min_max[3]),
+            'z': int(SHARES_SEARCH(text)[1]),
         }  # todo: add 'codal_data'
 
     def get_info(self, orders=True, index=False) -> dict:
