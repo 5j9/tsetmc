@@ -54,7 +54,7 @@ PAGE_VARS = rc(
     'PriceYesterday=(?P<PriceYesterday>[^;]*);'
     "ThemeCount='(?P<ThemeCount>[^;]*)';"
 ).search
-TITLE_FULLMATCH = rc(r"(.*?) \((.*?)\) \- ([^']*)").fullmatch
+TITLE_FULLMATCH = rc(r"(.*?) \(.*?\) \- ([^']*)").fullmatch
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(rf"'{F}'").sub, r'\1')
@@ -120,11 +120,15 @@ class Instrument:
         return {
             'bvol': int(m['BaseVol']),
             'cisin': m['CIsin'],
+            'cs': int(m['CSecVal'].lstrip()),
             'eps': int(eps) if eps else None,
+            'flow': int(m['Flow']),
             'free_float': int(free_float) if free_float else None,
-            'l18': title_match[2],
+            'group_code': m['CgrValCot'],
+            'isin': m['InstrumentID'],
+            'l18': m['LVal18AFC'],
             'l30': title_match[1],
-            'market': title_match[3],
+            'market': title_match[2],
             'month_average_volume': int(m['QTotTran5JAvg']),
             'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1])),
             'sector_name': m['LSecVal'],

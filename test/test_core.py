@@ -31,23 +31,27 @@ def test_get_page_info():
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {
-        'tmin': 19820.0
-        , 'tmax': 21900.0
-        , 'bvol': 5479452
-        , 'cisin': 'IRO1MSMI0000'
-        , 'eps': 1639
-        , 'free_float': 33
-        , 'l30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c'  # todo
-        , 'sector_name': 'فلزات اساسی'
-        , 'market': 'بازار اول (تابلوی اصلی) بورس'
-        , 'month_average_volume': 98322903
-        , 'l18': 'فملی'
-        , 'sector_pe': 15.4
-        , 'z': 101400000000
-        , 'week_max': 22000.0
-        , 'week_min': 20010.0
-        , 'year_max': 39810.0
-        , 'year_min': 5181.0}
+        'bvol': 5479452,
+        'cisin': 'IRO1MSMI0000',
+        'cs': 27,
+        'eps': 1639,
+        'flow': 1,
+        'free_float': 33,
+        'group_code': 'N1',
+        'isin': 'IRO1MSMI0001',
+        'l18': 'فملی',
+        'l30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
+        'market': 'بازار اول (تابلوی اصلی) بورس',
+        'month_average_volume': 98322903,
+        'sector_name': 'فلزات اساسی',
+        'sector_pe': 15.4,
+        'tmax': 21900.0,
+        'tmin': 19820.0,
+        'week_max': 22000.0,
+        'week_min': 20010.0,
+        'year_max': 39810.0,
+        'year_min': 5181.0,
+        'z': 101400000000}
     assert related_companies == [
             [46348559193224090, 'فولاد', 'فولاد مبارکه اصفهان']
             , [35425587644337450, 'فملی', 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c']
@@ -116,24 +120,27 @@ def test_get_page_info_no_free_float():
     d.pop('related_companies')  # too long
     d.pop('trade_history')  # too long
     assert d == {
-        'tmin': 43722.0
-        , 'tmax': 48324.0
-        , 'bvol': 2231446
-        , 'cisin': 'IRO3BDYZ0003'
-        , 'eps': 4326
-        , 'free_float': None
-        , 'l30': 'بانک دی'
-        , 'sector_name': 'بانکها و موسسات اعتباری'
-        , 'market': 'بازار دوم فرابورس'
-        , 'month_average_volume': 25836324
-        , 'l18': 'دی'
-        , 'sector_pe': 16.69
-        , 'z': 6400000000
-        , 'week_max': 49934.0
-        , 'week_min': 43722.0
-        , 'year_max': 83000.0
-        , 'year_min': 2674.0
-    }
+        'bvol': 2231446,
+        'cisin': 'IRO3BDYZ0003',
+        'cs': 57,
+        'eps': 4326,
+        'flow': 2,
+        'free_float': None,
+        'group_code': 'Z1',
+        'isin': 'IRO3BDYZ0001',
+        'l18': 'دی',
+        'l30': 'بانک دی',
+        'market': 'بازار دوم فرابورس',
+        'month_average_volume': 25836324,
+        'sector_name': 'بانکها و موسسات اعتباری',
+        'sector_pe': 16.69,
+        'tmax': 48324.0,
+        'tmin': 43722.0,
+        'week_max': 49934.0,
+        'week_min': 43722.0,
+        'year_max': 83000.0,
+        'year_min': 2674.0,
+        'z': 6400000000}
 
 
 @patch_get_content('kala.html')
@@ -142,24 +149,27 @@ def test_get_page_info_no_eps():
     d.pop('related_companies')  # too long
     d.pop('trade_history')  # too long
     assert d == {
-        'tmin': 37970.0
-        , 'tmax': 41950.0
-        , 'bvol': 1306165
-        , 'cisin': 'IRO1KALA0001'
-        , 'eps': None
-        , 'free_float': 100
-        , 'l30': 'بورس کالای ایران'
-        , 'sector_name': 'فعالیتهای کمکی به نهادهای مالی واسط'
-        , 'market': 'بازار اول (تابلوی فرعی) بورس'
-        , 'month_average_volume': 5720005
-        , 'l18': 'کالا'
-        , 'sector_pe': 26.22
-        , 'z': 2500000000
-        , 'week_max': 46870.0
-        , 'week_min': 37970.0
-        , 'year_max': 105352.0
-        , 'year_min': 12376.0
-    }
+        'bvol': 1306165,
+        'cisin': 'IRO1KALA0001',
+        'cs': 67,
+        'eps': None,
+        'flow': 1,
+        'free_float': 100,
+        'group_code': 'N1',
+        'isin': 'IRO1KALA0001',
+        'l18': 'کالا',
+        'l30': 'بورس کالای ایران',
+        'market': 'بازار اول (تابلوی فرعی) بورس',
+        'month_average_volume': 5720005,
+        'sector_name': 'فعالیتهای کمکی به نهادهای مالی واسط',
+        'sector_pe': 26.22,
+        'tmax': 41950.0,
+        'tmin': 37970.0,
+        'week_max': 46870.0,
+        'week_min': 37970.0,
+        'year_max': 105352.0,
+        'year_min': 12376.0,
+        'z': 2500000000}
 
 
 @patch_get_content('khgostar.html')
