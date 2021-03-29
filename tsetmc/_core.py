@@ -54,14 +54,7 @@ PAGE_VARS = rc(
     'PriceYesterday=(?P<PriceYesterday>[^;]*);'
     "ThemeCount='(?P<ThemeCount>[^;]*)';"
 ).search
-SECTOR_PE_SEARCH = rc(rf"SectorPE='{F}'").search
-TITLE_SEARCH = rc(r"Title='(.*?) \((.*?)\) \- ([^']*)'").search
-FREE_FLOAT_SEARCH = rc(rf"KAjCapValCpsIdx='{F}'").search
-GROUP_NAME_SEARCH = rc(r"LSecVal='(.*?)'").search
-BASE_VOLUME_SEARCH = rc(r"BaseVol=(\d+)").search
-EPS_SEARCH = rc(r"EstimatedEPS='(\d+)'").search
-SHARES_SEARCH = rc(r'ZTitad=(\d+)').search
-MONTH_AVG_VOL_SEARCH = rc(r"QTotTran5JAvg='(\d+)'").search
+TITLE_FULLMATCH = rc(r"(.*?) \((.*?)\) \- ([^']*)").fullmatch
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
 TRADE_HISTORY = rc(r"var TradeHistory=(\[.*\]);").search
 STR_TO_NUM = partial(rc(rf"'{F}'").sub, r'\1')
@@ -116,25 +109,26 @@ class Instrument:
         """
         text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
         m = PAGE_VARS(text)
-        title_match = TITLE_SEARCH(text)
-        free_float_match = FREE_FLOAT_SEARCH(text)
-        eps_match = EPS_SEARCH(text)
-        sector_pe_match = SECTOR_PE_SEARCH(text)
+        title_match = TITLE_FULLMATCH(m['Title'])
+        free_float = m['KAjCapValCpsIdx']
+        eps = m['EstimatedEPS']
+        sector_pe = m['SectorPE']
         trade_history = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
         trade_history = DataFrame(trade_history, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
         trade_history['date'] = to_datetime(trade_history['date'], format='%Y%m%d')
         trade_history.set_index('date', inplace=True)
         return {
-            'bvol': int(BASE_VOLUME_SEARCH(text)[1]),
-            'eps': int(eps_match[1]) if eps_match is not None else None,
-            'free_float': int(free_float_match[1]) if free_float_match is not None else None,
+            'bvol': int(m['BaseVol']),
+            # todo: 'cisin': cisin, # company's isin
+            'eps': int(eps) if eps else None,
+            'free_float': int(free_float) if free_float else None,
             'l18': title_match[2],
             'l30': title_match[1],
             'market': title_match[3],
-            'month_average_volume': int(MONTH_AVG_VOL_SEARCH(text)[1]),
+            'month_average_volume': int(m['QTotTran5JAvg']),
             'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1])),
-            'sector_name': GROUP_NAME_SEARCH(text)[1],
-            'sector_pe': float(sector_pe_match[1]) if sector_pe_match is not None else None,
+            'sector_name': m['LSecVal'],
+            'sector_pe': float(sector_pe) if sector_pe else None,
             'tmax': float(m['PSGelStaMax']),
             'tmin': float(m['PSGelStaMin']),
             'trade_history': trade_history,
@@ -142,7 +136,7 @@ class Instrument:
             'week_min': float(m['MinWeek']),
             'year_max': float(m['MaxYear']),
             'year_min': float(m['MinYear']),
-            'z': int(SHARES_SEARCH(text)[1]),
+            'z': int(m['ZTitad']),
         }  # todo: add 'codal_data'
 
     def get_info(self, orders=True, index=False) -> dict:
