@@ -79,7 +79,7 @@ class Instrument:
 
     __slots__ = 'ins_code', 'l18', 'l30'
 
-    def __init__(self, id_: Union[int, str]):
+    def __init__(self, id_: Union[int, str], /):
         try:
             self.ins_code, self.l18, self.l30 = KNOWN_IDS[id_]
         except KeyError:
