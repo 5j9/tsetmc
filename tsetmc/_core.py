@@ -240,7 +240,7 @@ class Instrument:
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
 
 
-def get_market_watch_init(index=True) -> dict:
+def get_market_watch_init(index=False) -> dict:
     """Return the market status which are the info used in creating filters.
 
     For more information about filters see:
