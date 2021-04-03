@@ -77,15 +77,15 @@ def fa_norm_text(url) -> str:
 
 class Instrument:
 
-    __slots__ = 'id', 'isin', 'l13', 'l18'
+    __slots__ = 'id', 'l13', 'l18'
 
     def __init__(self, id: Union[int, str]):
         try:
-            self.id, self.l13, self.l18, self.isin = KNOWN_IDS[id]
+            self.id, self.l13, self.l18 = KNOWN_IDS[id]
         except KeyError:
             if isinstance(id, int):
                 self.id = id
-                self.l13 = self.l18 = self.isin = None
+                self.l13 = self.l18 = None
                 return
             raise KeyError(
                 'id not found in KNOWN_IDS, try Instrument.from_search')
