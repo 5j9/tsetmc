@@ -155,7 +155,7 @@ class Instrument:
         # todo: add 'codal_data'
         return result
 
-    def get_info(self, price=True, orders=False, index=False) -> dict:
+    def get_info(self, general=True, orders=False, index=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.
@@ -175,7 +175,7 @@ class Instrument:
             # todo: fix not enough valus to unpack
             print(text)  # The service is unavailable.
             raise
-        if price:
+        if general:
             timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
                 info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
             result = {
