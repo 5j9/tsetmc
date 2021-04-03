@@ -19,8 +19,8 @@ GET = Session().get
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'(-?\d+(?:\.\d+)?)'  # float pattern
-# This regex is generated using page_vars_regex_generator.py.
-# Fix and update that script before making changes this regex.
+# This regex is generated using dev/page_vars_regex_generator.py.
+# Fix and update that script before making changes.
 PAGE_VARS = rc(
     "TopInst='(?P<TopInst>[^,]*)',"
     "LVal18AFC='[^,]*',"
@@ -354,7 +354,7 @@ def _parse_index(s: str) -> dict:
         , 'tse_status': tse_status
         , 'tse_index': float(tse_index)
         , 'tse_index_change': tse_index_change
-        , 'tse_value': float(tse_value)
+        , 'tse_value': float(tse_value or 0)
         , 'tse_tvol': float(tse_tvol)
         , 'tse_tval': float(tse_tval)
         , 'tse_tno': float(tse_tval)
