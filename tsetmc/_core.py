@@ -118,7 +118,7 @@ class Instrument:
         result = {
             'bvol': int(m['BaseVol']),
             'cisin': m['CIsin'],
-            'cs': int(m['CSecVal'].lstrip()),
+            'cs': int(m['CSecVal']),
             'eps': int(eps) if eps else None,
             'flow': int(m['Flow']),
             'free_float': int(free_float) if free_float else None,
@@ -360,7 +360,7 @@ def _parse_index(s: str) -> dict:
         , 'tse_status': tse_status
         , 'tse_index': float(tse_index)
         , 'tse_index_change': tse_index_change
-        , 'tse_value': float(tse_value or 0)
+        , 'tse_value': float(tse_value or 0.0)
         , 'tse_tvol': float(tse_tvol)
         , 'tse_tval': float(tse_tval)
         , 'tse_tno': float(tse_tval)
