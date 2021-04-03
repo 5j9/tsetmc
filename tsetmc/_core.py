@@ -149,7 +149,7 @@ class Instrument:
             result['trade_history'] = th
         return result
 
-    def get_info(self, orders=True, index=False) -> dict:
+    def get_info(self, orders=False, index=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.

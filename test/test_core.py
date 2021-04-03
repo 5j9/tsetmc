@@ -193,7 +193,7 @@ def test_get_page_info_no_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).get_info(index=True) == {
+    assert Instrument(1).get_info(index=True, orders=True) == {
         'derivatives_status': 'F',
         'derivatives_tno': 7864,
         'derivatives_tval': 150982456491.0,
@@ -247,7 +247,7 @@ def test_dara1_instant():
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
-    assert Instrument(1).get_info() == {
+    assert Instrument(1).get_info(orders=True) == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
@@ -290,33 +290,15 @@ def test_negin_instant():
         , 'nav': 12190
         , 'nav_datetime': jdatetime(1398, 12, 29, 16, 0)
         , 'pc': 50110
-        , 'pd1': 50000
-        , 'pd2': 41000
-        , 'pd3': 20000
         , 'pf': 50010
         , 'pl': 50000
         , 'pmax': 50000
         , 'pmin': 50700
-        , 'po1': 50700
-        , 'po2': 50750
-        , 'po3': 50950
         , 'py': 50010
-        , 'qd1': 81526
-        , 'qd2': 1000
-        , 'qd3': 10620
-        , 'qo1': 29016
-        , 'qo2': 99
-        , 'qo3': 50000
         , 'timestamp': '12:29:37'
         , 'tno': 29
         , 'tval': 1408671580
-        , 'tvol': 28109
-        , 'zd1': 1
-        , 'zd2': 1
-        , 'zd3': 2
-        , 'zo1': 3
-        , 'zo2': 1
-        , 'zo3': 1}
+        , 'tvol': 28109}
 
 
 @patch_get_content('fmelli.txt')
@@ -395,33 +377,15 @@ VSKHOOZ = {
     'status': 'IS'
     , 'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18)
     , 'pc': 67818
-    , 'pd1': 0
-    , 'pd2': 0
-    , 'pd3': 0
     , 'pf': 0
     , 'pl': 67810
     , 'pmax': 0
     , 'pmin': 0
-    , 'po1': 74939
-    , 'po2': 74946
-    , 'po3': 75000
     , 'py': 67818
-    , 'qd1': 0
-    , 'qd2': 0
-    , 'qd3': 0
-    , 'qo1': 44000
-    , 'qo2': 405
-    , 'qo3': 7500
     , 'timestamp': '06:42:18'
     , 'tno': 0
     , 'tval': 0
-    , 'tvol': 0
-    , 'zd1': 0
-    , 'zd2': 0
-    , 'zd3': 0
-    , 'zo1': 1
-    , 'zo2': 1
-    , 'zo3': 1}
+    , 'tvol': 0}
 
 
 @patch_get_content('vskhooz_short_response.txt')
