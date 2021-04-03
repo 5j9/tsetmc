@@ -8,6 +8,7 @@ from pytest import raises
 # noinspection PyProtectedMember
 from tsetmc import Instrument, _core, get_market_watch_init, \
     get_closing_price_all, get_client_type_all, get_key_stats
+# noinspection PyProtectedMember
 from tsetmc._core import _parse_index
 
 
@@ -27,7 +28,7 @@ def test_get_info_url(mock):
 
 @patch_get_content('fmelli.html')
 def test_get_page_info():
-    d = Instrument(1).get_page_data(True, True)
+    d = Instrument(1).get_page_data(True, True, True)
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {

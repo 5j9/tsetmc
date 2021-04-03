@@ -101,55 +101,61 @@ class Instrument:
     def __hash__(self):
         return self.ins_code
 
-    def get_page_data(self, trade_history=False, related_companies=False) -> dict:
+    def get_page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.
 
+        :param general: parse general data incduling bvol, cisin, etc.
         :param trade_history: include trade_history in the result.
         :param related_companies: parse and include related_companies.
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
         text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.ins_code}')
-        m = PAGE_VARS(text)
-        title_match = TITLE_FULLMATCH(m['Title'])
-        free_float = m['KAjCapValCpsIdx']
-        eps = m['EstimatedEPS']
-        sector_pe = m['SectorPE']
-        result = {
-            'bvol': int(m['BaseVol']),
-            'cisin': m['CIsin'],
-            'cs': int(m['CSecVal']),
-            'eps': int(eps) if eps else None,
-            'flow': int(m['Flow']),
-            'free_float': int(free_float) if free_float else None,
-            'group_code': m['CgrValCot'],
-            'isin': m['InstrumentID'],
-            'l18': m['LVal18AFC'],
-            'l30': title_match[1],
-            'market': title_match[2],
-            'month_average_volume': int(m['QTotTran5JAvg']),
-            'sector_name': m['LSecVal'],
-            'sector_pe': float(sector_pe) if sector_pe else None,
-            'tmax': float(m['PSGelStaMax']),
-            'tmin': float(m['PSGelStaMin']),
-            'week_max': float(m['MaxWeek']),
-            'week_min': float(m['MinWeek']),
-            'year_max': float(m['MaxYear']),
-            'year_min': float(m['MinYear']),
-            'z': int(m['ZTitad']),
-        }  # todo: add 'codal_data'
-        if related_companies:
-            result['related_companies'] = literal_eval(
-                STR_TO_NUM(RELATED_COMPANIES(text)[1]))
+        if general:
+            m = PAGE_VARS(text)
+            title_match = TITLE_FULLMATCH(m['Title'])
+            free_float = m['KAjCapValCpsIdx']
+            eps = m['EstimatedEPS']
+            sector_pe = m['SectorPE']
+            result = {
+                'bvol': int(m['BaseVol']),
+                'cisin': m['CIsin'],
+                'cs': int(m['CSecVal']),
+                'eps': int(eps) if eps else None,
+                'flow': int(m['Flow']),
+                'free_float': int(free_float) if free_float else None,
+                'group_code': m['CgrValCot'],
+                'isin': m['InstrumentID'],
+                'l18': m['LVal18AFC'],
+                'l30': title_match[1],
+                'market': title_match[2],
+                'month_average_volume': int(m['QTotTran5JAvg']),
+                'sector_name': m['LSecVal'],
+                'sector_pe': float(sector_pe) if sector_pe else None,
+                'tmax': float(m['PSGelStaMax']),
+                'tmin': float(m['PSGelStaMin']),
+                'week_max': float(m['MaxWeek']),
+                'week_min': float(m['MinWeek']),
+                'year_max': float(m['MaxYear']),
+                'year_min': float(m['MinYear']),
+                'z': int(m['ZTitad'])}
+        else:
+            result = {}
+            m = None
         if trade_history:
-            th = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
+            m = TRADE_HISTORY(text, m.end())
+            th = literal_eval(STR_TO_NUM(m[1]))
             th = DataFrame(th, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
             th['date'] = to_datetime(th['date'], format='%Y%m%d')
             th.set_index('date', inplace=True)
             result['trade_history'] = th
+        if related_companies:
+            m = RELATED_COMPANIES(text, m.end())
+            result['related_companies'] = literal_eval(STR_TO_NUM(m[1]))
+        # todo: add 'codal_data'
         return result
 
-    def get_info(self, orders=False, index=False) -> dict:
+    def get_info(self, price=True, orders=False, index=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.
@@ -163,25 +169,28 @@ class Instrument:
             # &e=1 parameter is required to get NAV
             f'?i={self.ins_code}&c=&e=1').decode()
         # the _s are unknown
-        # todo: fix not enough valus to unpack
         try:
             price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         except ValueError:
+            # todo: fix not enough valus to unpack
             print(text)  # The service is unavailable.
             raise
-        timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
-            info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
-        result = {
-            'timestamp': timestamp, 'status': status
-            , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
-            , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
-            , 'pmin': int(pmin), 'pmax': int(pmax)
-            , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+        if price:
+            timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
+                info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
+            result = {
+                'timestamp': timestamp, 'status': status
+                , 'last_info_datetime': strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
+                , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
+                , 'pmin': int(pmin), 'pmax': int(pmax)
+                , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+            if nav:
+                result['nav'] = int(nav)
+                result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+        else:
+            result = {}
         if index:
             result |= _parse_index(index_info)
-        if nav:
-            result['nav'] = int(nav)
-            result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         if orders:
             result |= {
                 f'{k}{i}': int(v)
