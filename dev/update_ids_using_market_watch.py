@@ -17,7 +17,7 @@ with open(f'{__file__}/../../tsetmc/ids.json', 'r+', encoding='utf8') as f:
     KNOWN_IDS = load(f)
     old_len = len(KNOWN_IDS)
     KNOWN_IDS |= zip(l18s, values)
-    diff = len(KNOWN_IDS) != old_len
+    diff = len(KNOWN_IDS) - old_len
     if diff:
         f.seek(0)
         dump(KNOWN_IDS, f, check_circular=False, ensure_ascii=False, indent=4, sort_keys=True)
