@@ -337,7 +337,7 @@ def test_get_market_watch_init():
         , 'po3': 'Int64', 'qd3': 'Int64', 'qo3': 'Int64'
         , 'zd3': 'Int64', 'zo3': 'Int64'}
     index = df.index
-    assert index.names == ['id', 'isin', 'l18', 'l30']
+    assert index.names == ['ins_code', 'isin', 'l18', 'l30']
     assert index.dtype == 'O'
     # in pandas 1.3 there will be no need for `.to_frame()`
     assert index.to_frame().dtypes.to_list() == ['int64', 'O', 'O', 'O']
@@ -351,7 +351,7 @@ def test_get_closing_price_all():
         , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64', 'py': 'int64'
         , 'pf': 'int64'}
     index = df.index
-    assert index.names == ['id', 'n']
+    assert index.names == ['ins_code', 'n']
     assert index.dtype == 'O'
     # in pandas 1.3 there will be no need for `.to_frame()`
     assert index.to_frame().dtypes.to_list() == ['int64', 'int64']
@@ -364,14 +364,14 @@ def test_get_client_type_all():
         'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
         , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
     assert all(dt == 'int64' for dt in df.dtypes)
-    assert df.index.name == 'id'
+    assert df.index.name == 'ins_code'
 
 
 @patch_get_content('InstValue.aspx')
 def test_get_key_stats():
     df = get_key_stats()
     assert all(df.columns.str.startswith('is'))
-    assert df.index.name == 'id'
+    assert df.index.name == 'ins_code'
 
 
 VSKHOOZ = {

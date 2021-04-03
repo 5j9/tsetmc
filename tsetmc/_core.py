@@ -259,22 +259,22 @@ def get_market_watch_init(index=False) -> dict:
         StringIO(states)
         , lineterminator=';'
         , names=(
-            'id', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
+            'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
             , 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount'
             , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval')
         # unlike int64, Int64 is nullable
         , dtype={'tmin': "Int64", 'tmax': "Int64"}
         , low_memory=False
-        , index_col=['id', 'isin', 'l18', 'l30'])
+        , index_col=['ins_code', 'isin', 'l18', 'l30'])
     price_df = read_csv(
         StringIO(price_rows)
         , lineterminator=';'
-        , names=('id', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
+        , names=('ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
         , dtype='Int64'
         , low_memory=False)
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    price_df.set_index(['id', 'row'], inplace=True)
+    price_df.set_index(['ins_code', 'row'], inplace=True)
     price_df = price_df.unstack(fill_value=0).sort_index(1, 1)
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
@@ -311,11 +311,11 @@ def get_closing_price_all() -> DataFrame:
     content = get_content('http://www.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     df = DataFrame(data, columns=(
-        'id', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
+        'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
         , 'pmin', 'pmax', 'py', 'pf'))
     # noinspection PyTypeChecker
     df = df.apply(to_numeric)
-    df.set_index(['id', 'n'], inplace=True)
+    df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
 
@@ -327,9 +327,9 @@ def get_client_type_all() -> DataFrame:
     content = get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
     df = read_csv(
         BytesIO(content), lineterminator=b';', names=(
-            'id', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
+            'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
             , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
-        , dtype='int64', index_col='id', low_memory=False)
+        , dtype='int64', index_col='ins_code', low_memory=False)
     return df
 
 
@@ -342,10 +342,10 @@ def get_key_stats() -> DataFrame:
     """
     content = get_content('http://www.tsetmc.com/tsev2/data/InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
-    df = DataFrame(data, columns=('id', 'n', 'value'))
+    df = DataFrame(data, columns=('ins_code', 'n', 'value'))
     # noinspection PyTypeChecker
     df = df.apply(to_numeric)
-    df = df.pivot('id', 'n', 'value')
+    df = df.pivot('ins_code', 'n', 'value')
     df.columns = [f'is{c}' for c in df.columns]
     return df
 
