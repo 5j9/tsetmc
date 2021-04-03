@@ -101,9 +101,11 @@ class Instrument:
     def __hash__(self):
         return self.id
 
-    def get_page_info(self) -> dict:
+    def get_page_data(self, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.
 
+        :param trade_history: include trade_history in the result.
+        :param related_companies: parse and include related_companies.
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
@@ -113,11 +115,7 @@ class Instrument:
         free_float = m['KAjCapValCpsIdx']
         eps = m['EstimatedEPS']
         sector_pe = m['SectorPE']
-        trade_history = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
-        trade_history = DataFrame(trade_history, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
-        trade_history['date'] = to_datetime(trade_history['date'], format='%Y%m%d')
-        trade_history.set_index('date', inplace=True)
-        return {
+        result = {
             'bvol': int(m['BaseVol']),
             'cisin': m['CIsin'],
             'cs': int(m['CSecVal'].lstrip()),
@@ -130,18 +128,26 @@ class Instrument:
             'l30': title_match[1],
             'market': title_match[2],
             'month_average_volume': int(m['QTotTran5JAvg']),
-            'related_companies': literal_eval(STR_TO_NUM(RELATED_COMPANIES(text)[1])),
             'sector_name': m['LSecVal'],
             'sector_pe': float(sector_pe) if sector_pe else None,
             'tmax': float(m['PSGelStaMax']),
             'tmin': float(m['PSGelStaMin']),
-            'trade_history': trade_history,
             'week_max': float(m['MaxWeek']),
             'week_min': float(m['MinWeek']),
             'year_max': float(m['MaxYear']),
             'year_min': float(m['MinYear']),
             'z': int(m['ZTitad']),
         }  # todo: add 'codal_data'
+        if related_companies:
+            result['related_companies'] = literal_eval(
+                STR_TO_NUM(RELATED_COMPANIES(text)[1]))
+        if trade_history:
+            th = literal_eval(STR_TO_NUM(TRADE_HISTORY(text)[1]))
+            th = DataFrame(th, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
+            th['date'] = to_datetime(th['date'], format='%Y%m%d')
+            th.set_index('date', inplace=True)
+            result['trade_history'] = th
+        return result
 
     def get_info(self, orders=True, index=False) -> dict:
         """Get info using instinfodata.aspx module.

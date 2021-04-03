@@ -27,7 +27,7 @@ def test_get_info_url(mock):
 
 @patch_get_content('fmelli.html')
 def test_get_page_info():
-    d = Instrument(1).get_page_info()
+    d = Instrument(1).get_page_data(True, True)
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {
@@ -116,9 +116,7 @@ def test_get_page_info():
 
 @patch_get_content('dey.html')
 def test_get_page_info_no_free_float():
-    d = Instrument(1).get_page_info()
-    d.pop('related_companies')  # too long
-    d.pop('trade_history')  # too long
+    d = Instrument(1).get_page_data()
     assert d == {
         'bvol': 2231446,
         'cisin': 'IRO3BDYZ0003',
@@ -145,9 +143,7 @@ def test_get_page_info_no_free_float():
 
 @patch_get_content('kala.html')
 def test_get_page_info_no_eps():
-    d = Instrument(1).get_page_info()
-    d.pop('related_companies')  # too long
-    d.pop('trade_history')  # too long
+    d = Instrument(1).get_page_data()
     assert d == {
         'bvol': 1306165,
         'cisin': 'IRO1KALA0001',
@@ -174,7 +170,7 @@ def test_get_page_info_no_eps():
 
 @patch_get_content('khgostar.html')
 def test_get_page_info_no_sector_pe():
-    d = Instrument(1).get_page_info()
+    d = Instrument(1).get_page_data()
     assert d.items() >= {
         'tmin': 3670.0
         , 'tmax': 4050.0
