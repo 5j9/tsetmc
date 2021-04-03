@@ -77,14 +77,14 @@ def fa_norm_text(url) -> str:
 
 class Instrument:
 
-    __slots__ = 'id', 'l18', 'l30'
+    __slots__ = 'ins_code', 'l18', 'l30'
 
     def __init__(self, id: Union[int, str]):
         try:
-            self.id, self.l18, self.l30 = KNOWN_IDS[id]
+            self.ins_code, self.l18, self.l30 = KNOWN_IDS[id]
         except KeyError:
             if isinstance(id, int):
-                self.id = id
+                self.ins_code = id
                 self.l18 = self.l30 = None
                 return
             raise KeyError(
@@ -92,14 +92,14 @@ class Instrument:
 
     def __repr__(self):
         if self.l18 is None:
-            return f'Instrument({self.id})'
+            return f'Instrument({self.ins_code})'
         return f"Instrument('{self.l18}')"
 
     def __eq__(self, other):
-        return self.id == other.id
+        return self.ins_code == other.ins_code
 
     def __hash__(self):
-        return self.id
+        return self.ins_code
 
     def get_page_data(self, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.
@@ -109,7 +109,7 @@ class Instrument:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.id}')
+        text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.ins_code}')
         m = PAGE_VARS(text)
         title_match = TITLE_FULLMATCH(m['Title'])
         free_float = m['KAjCapValCpsIdx']
@@ -161,7 +161,7 @@ class Instrument:
         text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             # &e=1 parameter is required to get NAV
-            f'?i={self.id}&c=&e=1').decode()
+            f'?i={self.ins_code}&c=&e=1').decode()
         # the _s are unknown
         # todo: fix not enough valus to unpack
         try:
@@ -193,7 +193,7 @@ class Instrument:
 
     def get_trade_history(self, top: int) -> DataFrame:
         content = get_content(
-            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.id}&Top={top}')
+            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.ins_code}&Top={top}')
         df = read_csv(
             BytesIO(content)
             , sep='@'
@@ -210,7 +210,7 @@ class Instrument:
         In column names `n_` prefix stands for natural and `l_` for legal.
         """
         return read_csv(
-            BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.id}'))
+            BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.ins_code}'))
             , lineterminator=b';'
             , names=(
                 'date'
@@ -221,7 +221,7 @@ class Instrument:
 
     def get_identification(self) -> DataFrame:
         """Return the information available in the identification (شناسه) tab."""
-        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.id}')
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.ins_code}')
         return read_html(text, index_col=0)[0]
 
     @staticmethod

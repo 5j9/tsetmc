@@ -5,12 +5,11 @@ from tsetmc import get_market_watch_init
 
 df = get_market_watch_init()['dataframe']
 glv = df.index.get_level_values
-ids = glv('id')
-str_ids = map(str, ids)
+ins_codes = glv('ins_code')
 l18s = glv('l18')
 l30s = glv('l30')
 # zip create an iterator which will be consumed on the first run
-values = *zip(ids, l18s, l30s),
+values = *zip(ins_codes, l18s, l30s),
 
 with open(f'{__file__}/../../tsetmc/ids.json', 'r+', encoding='utf8') as f:
     KNOWN_IDS = load(f)
