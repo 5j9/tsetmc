@@ -360,7 +360,6 @@ def _parse_index(s: str) -> dict:
         , 'tse_status': tse_status
         , 'tse_index': float(tse_index)
         , 'tse_index_change': tse_index_change
-        , 'tse_value': float(tse_value or 0.0)
         , 'tse_tvol': float(tse_tvol)
         , 'tse_tval': float(tse_tval)
         , 'tse_tno': float(tse_tval)
@@ -372,6 +371,8 @@ def _parse_index(s: str) -> dict:
         , 'derivatives_tvol': float(derivatives_tvol)
         , 'derivatives_tval': float(derivatives_tval)
         , 'derivatives_tno': int(derivatives_tno)}
+    if tse_value:
+        result['tse_value'] = float(tse_value)
     if (m3 := index_change_match[3]) is not None:
         result['tse_index_change_percent'] = float(m3)
     return result

@@ -475,6 +475,7 @@ def test_get_client_type():
 
 
 def test_parse_index():
+    # no tse_value
     assert _parse_index("00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,") == {
         'derivatives_status': 'C',
         'derivatives_tno': 0,
@@ -490,8 +491,7 @@ def test_parse_index():
         'tse_status': 'F',
         'tse_tno': 0.0,
         'tse_tval': 0.0,
-        'tse_tvol': 0.0,
-        'tse_value': 0.0}
+        'tse_tvol': 0.0}
 
     assert {
         'derivatives_status': 'N',
