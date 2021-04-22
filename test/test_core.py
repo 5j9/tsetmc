@@ -328,7 +328,7 @@ def test_get_market_watch_init():
         , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64'
         , 'py': 'int64', 'eps': 'float64', 'bvol': 'int64'
         , 'visitcount': 'int64', 'flow': 'int64'
-        , 'cs': 'int64', 'tmax': 'Int64', 'tmin': 'Int64'
+        , 'cs': 'int64', 'tmax': 'float64', 'tmin': 'float64'
         , 'z': 'int64', 'yval': 'int64', 'pd1': 'Int64'
         , 'po1': 'Int64', 'qd1': 'Int64', 'qo1': 'Int64'
         , 'zd1': 'Int64', 'zo1': 'Int64', 'pd2': 'Int64'
@@ -534,3 +534,9 @@ def test_parse_index():
         'tse_tvol': 9682732949.0,
         'tse_value': 4.973605456635374e+16} == _parse_index(
         "99/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
+
+
+@patch_get_content('MarketWatchInit2.aspx')
+def test_get_market_watch_init_non_int_tmin_tmax():
+    # ins_code 12785301426418659
+    get_market_watch_init()

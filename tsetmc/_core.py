@@ -262,8 +262,6 @@ def get_market_watch_init(index=False) -> dict:
             'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
             , 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount'
             , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval')
-        # unlike int64, Int64 is nullable
-        , dtype={'tmin': "Int64", 'tmax': "Int64"}
         , low_memory=False
         , index_col=['ins_code', 'isin', 'l18', 'l30'])
     price_df = read_csv(
