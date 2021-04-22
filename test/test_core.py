@@ -539,4 +539,6 @@ def test_parse_index():
 @patch_get_content('MarketWatchInit2.aspx')
 def test_get_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
+    # used to raise
+    # TypeError: cannot safely cast non-equivalent float64 to int64
     get_market_watch_init()
