@@ -6,7 +6,7 @@ from os.path import dirname
 
 setup(
     name='tsetmc',
-    version='0.21.1.dev0',
+    version='0.22.0',
     long_description=open(
         f'{dirname(__file__)}/README.rst', encoding='utf-8').read(),
     long_description_content_type='text/x-rst',
