@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
-from pandas import DatetimeIndex
+from pandas import DataFrame, DatetimeIndex, read_csv
 from pytest import raises
 
 # noinspection PyProtectedMember
@@ -542,3 +542,42 @@ def test_get_market_watch_init_non_int_tmin_tmax():
     # used to raise
     # TypeError: cannot safely cast non-equivalent float64 to int64
     get_market_watch_init()
+
+
+@patch_get_content('ava_holders.txt')
+def test_get_holders_with_cisin():
+    holders = Instrument(1).get_holders(cisin=1)
+    assert holders.to_csv(line_terminator='\n') == (
+       ',سهامدار/دارنده,سهم,درصد,تغییر,id_cisin\n'
+       '0,ETFکدرزروصندوقهای سرمایه گذاری قابل معامله,98 M,19.51,12 M,"21790,IRT3AVAF0003"\n'
+       '1,BFMصندوق سرمایه گذاری.ا.بازارگردانی معیار,24 M,4.82,1 M,"60500,IRT3AVAF0003"\n'
+       '2,صندوق سرمایه گذاری توازن معیار,10 M,2.05,0,"62783,IRT3AVAF0003"\n'
+       '3,شرکت توسعه سامانه تحلیل گری سپیدار-سهامی خاص-,9 M,1.83,-953440,"69558,IRT3AVAF0003"\n'
+       '4,شرکت مشاورسرمایه گذاری معیار-سهامی خاص-,9 M,1.82,0,"60679,IRT3AVAF0003"\n'
+       '5,شخص حقیقی,7 M,1.31,-10000,"69867,IRT3AVAF0003"\n'
+       '6,شرکت آرمان اندیشان رستاک-سهامی خاص-,5 M,1.0,0,"21346,IRT3AVAF0003"\n')
+
+
+@patch_get_content('ava_holder.txt')
+def test_get_holder():
+    inst = Instrument(1)
+    # has no other holdings
+    hist, oth = inst.get_holder('69867,IRT3AVAF0003', True, True)
+    assert hist.to_csv(line_terminator='\n').startswith('date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n')
+    assert oth.to_csv(line_terminator='\n') == 'ins_code,name,shares,percent\n'
+    hist = inst.get_holder('69867,IRT3AVAF0003', True)
+    assert type(hist) is DataFrame
+    oth = inst.get_holder('69867,IRT3AVAF0003', False, True)
+    assert type(oth) is DataFrame
+    result = inst.get_holder('69867,IRT3AVAF0003', False)
+    assert oth.equals(result)
+
+
+@patch_get_content('vsadid_identification.html')
+def test_get_holders_without_cisin():
+    inst = Instrument(1)
+    assert inst.get_identification().loc['کد 12 رقمی شرکت', 1] == 'IRO7SDIP0002'
+    with patch.object(Instrument, 'get_identification', side_effect=NotImplementedError) as get_identification:
+        with raises(NotImplementedError):
+            inst.get_holders()
+    get_identification.assert_called_once()

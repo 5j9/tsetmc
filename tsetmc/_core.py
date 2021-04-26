@@ -1,5 +1,5 @@
 from functools import partial
-from re import compile as rc
+from re import compile as rc, findall
 from datetime import datetime
 from json import load
 from io import BytesIO, StringIO
@@ -238,6 +238,57 @@ class Instrument:
         """Look up the ID through a web search and return Instrument."""
         return Instrument(int(get_content(
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
+
+    def get_holders(self, cisin=None) -> DataFrame:
+        """Get list of major unit/share holders.
+
+        If `cisin` is not provided, it will be fetched using
+        `self.get_identification`.
+        """
+        if cisin is None:
+            cisin = self.get_identification().loc['کد 12 رقمی شرکت', 1]
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
+        df = read_html(text)[0]
+        df.drop(columns='Unnamed: 4', inplace=True)
+        df['id_cisin'] = findall(r"ShowShareHolder\('([^']*)'\)", text)
+        return df
+
+    @staticmethod
+    def get_holder(id_cisin=None, history=True, other_holdings=False) -> Union[DataFrame, tuple[DataFrame, DataFrame]]:
+        """Return history/other holdings for the given holder id_cisin.
+
+        `id_cisin` is usually obtained using `self.get_holders`.
+
+        If both `history` and `other_holdings` are True, then a tuple of
+        DataFrames will be returned.
+        """
+        text = fa_norm_text(f'http://www.tsetmc.com/tsev2/data/ShareHolder.aspx?i={id_cisin}')
+        hist, _, oth = text.partition('#')
+
+        def history_df() -> DataFrame:
+            return read_csv(
+                StringIO(hist),
+                lineterminator=';',
+                names=('date', 'shares'),
+                dtype='int64',
+                index_col='date',
+                parse_dates=True,
+                low_memory=False)
+
+        def other_holdings_df() -> DataFrame:
+            return read_csv(
+                StringIO(oth),
+                lineterminator=';',
+                names=('ins_code', 'name', 'shares', 'percent'),
+                index_col='ins_code',
+                low_memory=False)
+
+        if history and other_holdings:
+            return history_df(), other_holdings_df()
+        elif history:
+            return history_df()
+        else:
+            return other_holdings_df()
 
 
 def get_market_watch_init(index=False) -> dict:
