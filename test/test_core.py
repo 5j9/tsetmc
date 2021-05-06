@@ -42,7 +42,7 @@ def test_get_page_info():
         'isin': 'IRO1MSMI0001',
         'l18': 'فملی',
         'l30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
-        'market': 'بازار اول (تابلوی اصلی) بورس',
+        'flow_name': 'بازار اول (تابلوی اصلی) بورس',
         'month_average_volume': 98322903,
         'sector_name': 'فلزات اساسی',
         'sector_pe': 15.4,
@@ -129,7 +129,7 @@ def test_get_page_info_no_free_float():
         'isin': 'IRO3BDYZ0001',
         'l18': 'دی',
         'l30': 'بانک دی',
-        'market': 'بازار دوم فرابورس',
+        'flow_name': 'بازار دوم فرابورس',
         'month_average_volume': 25836324,
         'sector_name': 'بانکها و موسسات اعتباری',
         'sector_pe': 16.69,
@@ -156,7 +156,7 @@ def test_get_page_info_no_eps():
         'isin': 'IRO1KALA0001',
         'l18': 'کالا',
         'l30': 'بورس کالای ایران',
-        'market': 'بازار اول (تابلوی فرعی) بورس',
+        'flow_name': 'بازار اول (تابلوی فرعی) بورس',
         'month_average_volume': 5720005,
         'sector_name': 'فعالیتهای کمکی به نهادهای مالی واسط',
         'sector_pe': 26.22,
@@ -180,7 +180,7 @@ def test_get_page_info_no_sector_pe():
         , 'free_float': 52
         , 'l30': 'گسترش\u200cسرمایه\u200cگذاری\u200cایران\u200cخودرو'
         , 'sector_name': 'خودرو و ساخت قطعات'
-        , 'market': 'بازار اول (تابلوی اصلی) بورس'
+        , 'flow_name': 'بازار اول (تابلوی اصلی) بورس'
         , 'month_average_volume': 212159873
         , 'l18': 'خگستر'
         , 'sector_pe': -32.11

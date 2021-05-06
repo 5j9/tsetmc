@@ -128,7 +128,7 @@ class Instrument:
                 'isin': m['InstrumentID'],
                 'l18': m['LVal18AFC'],
                 'l30': title_match[1],
-                'market': title_match[2],
+                'flow_name': title_match[2],
                 'month_average_volume': int(m['QTotTran5JAvg']),
                 'sector_name': m['LSecVal'],
                 'sector_pe': float(sector_pe) if sector_pe else None,
