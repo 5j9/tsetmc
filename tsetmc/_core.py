@@ -1,4 +1,5 @@
 from functools import partial
+from logging import warning
 from re import compile as rc, findall
 from datetime import datetime
 from json import load
@@ -172,8 +173,8 @@ class Instrument:
         try:
             price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         except ValueError:
-            # todo: fix not enough valus to unpack
-            print(text)  # The service is unavailable.
+            # todo: fix not enough values to unpack
+            warning(text)  # The service is unavailable.
             raise
         if general:
             timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
@@ -250,6 +251,7 @@ class Instrument:
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
         df = read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
+        # todo: use separate columns
         df['id_cisin'] = findall(r"ShowShareHolder\('([^']*)'\)", text)
         return df
 
@@ -289,6 +291,114 @@ class Instrument:
             return history_df()
         else:
             return other_holdings_df()
+
+    def get_intraday(
+        self, date: Union[int, str], *,
+        general=False,
+        thresholds=False,
+        closings=False,
+        candles=False,
+        states=True,
+        trades=True,
+        holders=False,
+        yesterday_holders=False,
+        client_types=True,
+        best_limits=True,
+    ):
+        """Get intraday info for the given date in YYYYMMDD format."""
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.ins_code}&d={date}')
+        find = text.find
+        find_start = 0
+        result = {}
+        if general:
+            find_start = find('InstSimpleData=') + 15
+            end = find('];', find_start)
+            result['general'] = dict(zip(
+                ('l30', 'l18', 'market', 'flow_name', 'flow', 'group_code', 'cisin', 'isin', 'z', 'bvol'),
+                literal_eval(text[find_start: end + 1])))
+            find_start = end
+        if thresholds:
+            find_start = find('StaticTreshholdData=') + 20
+            end = find('];', find_start)
+            result['thresholds'] = DataFrame(literal_eval(text[find_start: end + 1]), columns=('time', 'tmax', 'tmin'))
+            find_start = end
+        if closings:
+            find_start = find('ClosingPriceData=', find_start) + 17
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            closings = DataFrame(evaluated, columns=(
+                'date', '?1', 'pl', 'pc', 'pf', 'py', 'pmin', 'pmax', 'tno',
+                'tvol', 'tval', '?2', 'heven'))
+            if len(closings['?1'].unique()) != 1 or closings['?2'].unique() != 1:
+                # See if you can find the meaning of ?2 column
+                warning(f'Unusual ?1 or ?2. Parameters: {date=} {self.ins_code}. Please report this at https://github.com/5j9/tsetmc/issues.')
+            result['closings'] = closings
+            find_start = end
+        if candles:
+            find_start = find('IntraDayPriceData=', find_start) + 18
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            result['candles'] = DataFrame(evaluated, columns=('time', 'high', 'low', 'open', 'close', 'tvol'))
+            find_start = end
+        if states:
+            find_start = find('InstrumentStateData=', find_start) + 20
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            result['states'] = DataFrame(evaluated, columns=('date', 'time', 'state'))
+            find_start = end
+        if trades:
+            find_start = find('IntraTradeData=', find_start) + 15
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            find_start = end
+            trades = DataFrame(evaluated, columns=('-', 'time', 'tvol', 'pl', 'annulled'))
+            trades['annulled'] = trades['annulled'].astype(bool)
+            numeric_cols = ['-', 'tvol', 'pl']
+            trades[numeric_cols] = trades[numeric_cols].apply(to_numeric)
+            trades.set_index('-', inplace=True)
+            trades.sort_index(inplace=True)
+            result['trades'] = trades
+        if holders or yesterday_holders:
+            holder_cols = ('id', 'cisin', 'shares', 'percent', 'change', 'name')
+        if holders:
+            find_start = find('ShareHolderData=', find_start) + 16
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            # noinspection PyUnboundLocalVariable
+            result['holders'] = DataFrame(evaluated, columns=holder_cols)
+            find_start = end
+        if yesterday_holders:
+            find_start = find('ShareHolderDataYesterday=', find_start) + 25
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            result['yesterday_holders'] = DataFrame(evaluated, columns=holder_cols)
+            find_start = end
+        if client_types:
+            find_start = find('ClientTypeData=', find_start) + 15
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            result['client_types'] = dict(zip((
+                'n_buy_count', 'l_buy_count',
+                'n_sell_count', 'l_sell_count',
+                'n_buy_volume', 'l_buy_volume',
+                'n_sell_volume', 'l_sell_volume',
+                'n_buy_percent', 'l_buy_percent',
+                'n_sell_percent', 'l_sell_percent',
+                'n_buy_value', 'l_buy_value',
+                'n_sell_value', 'l_sell_value',
+                'n_mean_buy_price', 'l_mean_buy_price',
+                'n_mean_sell_price', 'l_mean_sell_price',
+            ), evaluated))
+            find_start = end
+        if best_limits:
+            find_start = find('var BestLimitData=', find_start) + 18
+            end = find('];', find_start)
+            evaluated = literal_eval(text[find_start: end + 1])
+            best_limits_df = DataFrame(evaluated, columns=('time', 'row', 'zd', 'qd', 'pd', 'po', 'qo', 'zo'))
+            best_limits_df : DataFrame = best_limits_df.apply(to_numeric)
+            best_limits_df.set_index('time', inplace=True)
+            result['best_limits'] = best_limits_df
+        return result
 
 
 def get_market_watch_init(index=False) -> dict:
