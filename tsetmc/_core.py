@@ -402,7 +402,9 @@ class Instrument:
 
     def get_adjustments(self) -> DataFrame:
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.ins_code}')
-        return read_html(text)[0]
+        df = read_html(text)[0]
+        df['تاریخ'] = df['تاریخ'].apply(partial(jstrptime, format='%Y/%m/%d'))
+        return df
 
 
 def get_market_watch_init(index=False) -> dict:

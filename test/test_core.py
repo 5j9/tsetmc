@@ -653,4 +653,4 @@ def test_get_intraday_general():
 def test_get_adjustments():
     adj_df = Instrument(1).get_adjustments()
     assert len(adj_df) == 18
-    assert adj_df.loc[0].values.tolist() == ['1399/5/1', 35720, 35970]
+    assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
