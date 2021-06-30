@@ -647,3 +647,10 @@ def test_get_intraday_general():
     assert result['best_limits'].loc[133707].to_dict() == {
         'row': 5, 'zd': 31, 'qd': 534434, 'pd': 12430, 'po': 12520,
         'qo': 111906, 'zo': 15}
+
+
+@patch_get_content('fmelli_price_adjustment.html')
+def test_get_adjustments():
+    adj_df = Instrument(1).get_adjustments()
+    assert len(adj_df) == 18
+    assert adj_df.loc[0].values.tolist() == ['1399/5/1', 35720, 35970]

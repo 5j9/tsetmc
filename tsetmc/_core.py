@@ -400,6 +400,10 @@ class Instrument:
             result['best_limits'] = best_limits_df
         return result
 
+    def get_adjustments(self) -> DataFrame:
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.ins_code}')
+        return read_html(text)[0]
+
 
 def get_market_watch_init(index=False) -> dict:
     """Return the market status which are the info used in creating filters.
