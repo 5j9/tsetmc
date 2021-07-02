@@ -54,6 +54,9 @@ PAGE_VARS = rc(
     'PriceMax=(?P<PriceMax>[^,]*),'
     'PriceYesterday=(?P<PriceYesterday>[^;]*);'
     "ThemeCount='(?P<ThemeCount>[^;]*)';"
+    "ContractSize='(?P<ContractSize>[^;]*)';"
+    "NAV='(?P<NAV>[^;]*)';"
+    "PSR='(?P<PSR>[^;]*)';"
 ).search
 TITLE_FULLMATCH = rc(r"(.*?) \(.*?\) \- ([^']*)").fullmatch
 RELATED_COMPANIES = rc(r"var RelatedCompanies=(\[.*\]);").search
@@ -117,12 +120,14 @@ class Instrument:
             title_match = TITLE_FULLMATCH(m['Title'])
             free_float = m['KAjCapValCpsIdx']
             eps = m['EstimatedEPS']
+            sps = m['PSR']
             sector_pe = m['SectorPE']
             result = {
                 'bvol': int(m['BaseVol']),
                 'cisin': m['CIsin'],
                 'cs': int(m['CSecVal']),
                 'eps': int(eps) if eps else None,
+                'sps': float(sps) if sps else None,
                 'flow': int(m['Flow']),
                 'free_float': int(free_float) if free_float else None,
                 'group_code': m['CgrValCot'],
