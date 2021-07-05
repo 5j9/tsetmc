@@ -23,7 +23,7 @@ its instantaneous information (``get_info``), and its trading history (``get_tra
 .. code-block:: python
 
     >>> from tsetmc import Instrument
-    >>> inst = Instrument('فملی')
+    >>> inst = Instrument.from_l18('فملی')
     >>> inst.get_trade_history(top=2)
                  pmax     pmin       pc  ...          tval       tvol    tno
     date                                 ...

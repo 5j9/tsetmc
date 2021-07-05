@@ -83,16 +83,10 @@ class Instrument:
 
     __slots__ = 'ins_code', 'l18', 'l30'
 
-    def __init__(self, id_: Union[int, str], /):
-        try:
-            self.ins_code, self.l18, self.l30 = KNOWN_IDS[id_]
-        except KeyError:
-            if isinstance(id_, int):
-                self.ins_code = id_
-                self.l18 = self.l30 = None
-                return
-            raise KeyError(
-                'id not found in KNOWN_IDS, try Instrument.from_search')
+    def __init__(self, ins_code: int, l18: str = None, l30: str = None):
+        self.ins_code = ins_code
+        self.l18 = l18
+        self.l30 = l30
 
     def __repr__(self):
         if self.l18 is None:
@@ -104,6 +98,15 @@ class Instrument:
 
     def __hash__(self):
         return self.ins_code
+
+    @staticmethod
+    def from_l18(l18: str, /):
+        try:
+            ins_code, _, l30 = KNOWN_IDS[l18]
+        except KeyError:
+            raise KeyError(
+                'l18 not found in KNOWN_IDS, try Instrument.from_search')
+        return Instrument(ins_code, l18, l30)
 
     def get_page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.

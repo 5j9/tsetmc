@@ -447,13 +447,13 @@ def test_from_search_with_numeric_description():
 
 def test_repr():
     # known ID
-    assert repr(Instrument('فملی')) == "Instrument('فملی')"
+    assert repr(Instrument.from_l18('فملی')) == "Instrument('فملی')"
     # unknown ID
     assert repr(Instrument(1)) == "Instrument(1)"
 
 
 def test_equal():
-    assert Instrument('فملی') == Instrument(35425587644337450)
+    assert Instrument.from_l18('فملی') == Instrument(35425587644337450)
 
 
 @patch_get_content('vsadid_identification.html')
