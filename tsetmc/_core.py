@@ -1,22 +1,23 @@
-from functools import partial
-from logging import warning
-from re import compile as rc, findall
-from datetime import datetime
-from json import load
-from io import BytesIO, StringIO
-from typing import Union
 from ast import literal_eval
+from datetime import datetime
+from functools import partial
+from io import BytesIO, StringIO
+from json import load
+from logging import warning
+from os.path import abspath
+from re import compile as rc, findall
+from typing import Union
 
 
-from requests import Session
 from jdatetime import datetime as jdatetime
 from pandas import read_csv, to_numeric, DataFrame, read_html, to_datetime
+from requests import Session
 
 
 strptime = datetime.strptime
 jstrptime = jdatetime.strptime
 GET = Session().get
-
+DB_PATH = abspath(f'{__file__}/../database/ids.json')
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'(-?\d+(?:\.\d+)?)'  # float pattern
@@ -65,9 +66,9 @@ STR_TO_NUM = partial(rc(rf"'{F}'").sub, r'\1')
 INDEX_CHANGE_MATCH = rc(rf"<div[^>]*>(\()?{F}\)?</div>(?: {F}%)?").match
 INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
-with open(f'{__file__}/../ids.json', encoding='utf8') as f:
-    KNOWN_IDS: dict[str, str] = load(f)
-KNOWN_IDS |= {v[0]: v for v in KNOWN_IDS.values()}
+with open(DB_PATH, encoding='utf8') as f:
+    L18S: dict[str, str] = load(f)
+INSCODES = {v[0]: v for v in L18S.values()}
 
 
 def get_content(url) -> bytes:
@@ -102,7 +103,7 @@ class Instrument:
     @staticmethod
     def from_l18(l18: str, /):
         try:
-            ins_code, _, l30 = KNOWN_IDS[l18]
+            ins_code, _, l30 = L18S[l18]
         except KeyError:
             raise KeyError(
                 'l18 not found in KNOWN_IDS, try Instrument.from_search')

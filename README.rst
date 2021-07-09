@@ -270,11 +270,12 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     11  1392-03-20 00:00:00       2872          4774
     12  1392-03-19 00:00:00       4774          5794
     13  1391-04-06 00:00:00       3959          4659
-    14  1390-04-14 00:00:00       4911         12991
+    14  1390-04-14 00:00:00       4911         12991c
     15  1390-04-14 00:00:00      12991         15241
     16  1389-04-12 00:00:00       6494          7694
     17  1388-04-24 00:00:00       4827          5627
-    >>> # try Instrument.search if Instrument.from_l18 fails (may happen if the symbol is new and the database is not up-to-date)
+    >>> # try Instrument.search if Instrument.from_l18 fails
+    >>> # (may happen if the symbol is new and the database is not up-to-date)
     >>> Instrument.from_search('لطیف')
     Instrument(16422980660132735)
 
