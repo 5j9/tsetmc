@@ -477,7 +477,7 @@ def test_get_identification():
 
 @patch_get_content('opal_client_types.txt')
 def test_get_client_type():
-    assert Instrument('اپال').get_client_type().to_csv(line_terminator='\n') == (
+    assert Instrument(1).get_client_type().to_csv(line_terminator='\n') == (
         'date,n_buy_count,l_buy_count,n_sell_count,l_sell_count,n_buy_volume,l_buy_volume,n_sell_volume,l_sell_volume,n_buy_value,l_buy_value,n_sell_value,l_sell_value'
         '\n2021-03-03,45996,40,536073,152,371944945,124311191,445956261,50299875,6032526703800,2001293803740,7203106931130,830713576410'
         '\n2021-03-02,1390,5,68895,24,42463945,909997,29432662,13941280,664560739250,14241453050,460621160300,218181032000'
@@ -665,5 +665,6 @@ def test_get_intraday_general():
 @patch_get_content('fmelli_price_adjustment.html')
 def test_get_adjustments():
     adj_df = Instrument(1).get_adjustments()
+    assert adj_df.columns.tolist() == ['date', 'adj_pc', 'pc']
     assert len(adj_df) == 18
     assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]

@@ -16,6 +16,7 @@ from requests import Session
 
 strptime = datetime.strptime
 jstrptime = jdatetime.strptime
+j_ymd_parse = partial(jstrptime, format='%Y/%m/%d')
 GET = Session().get
 DB_PATH = abspath(f'{__file__}/../database/ids.json')
 
@@ -239,7 +240,12 @@ class Instrument:
             , index_col='date', parse_dates=True , dtype='int64', low_memory=False)
 
     def get_identification(self) -> DataFrame:
-        """Return the information available in the identification (شناسه) tab."""
+        """Return the information available in the identification (شناسه) tab.
+
+        Related API descriptions:
+            https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
+            http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
+        """
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.ins_code}')
         return read_html(text, index_col=0)[0]
 
@@ -314,7 +320,11 @@ class Instrument:
         client_types=True,
         best_limits=True,
     ):
-        """Get intraday info for the given date in YYYYMMDD format."""
+        """Get intraday info for the given date in YYYYMMDD format.
+
+        For the meaning of instrument state codes refer to
+            http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
+        """
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.ins_code}&d={date}')
         find = text.find
         find_start = 0
@@ -412,11 +422,12 @@ class Instrument:
     def get_adjustments(self) -> DataFrame:
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.ins_code}')
         df = read_html(text)[0]
-        df['تاریخ'] = df['تاریخ'].apply(partial(jstrptime, format='%Y/%m/%d'))
+        df.columns = ('date', 'adj_pc', 'pc')
+        df['date'] = df['date'].apply(j_ymd_parse)
         return df
 
 
-def get_market_watch_init(index=False) -> dict:
+def get_market_watch_init(index=False) -> MarketWatchInitDict:
     """Return the market status which are the info used in creating filters.
 
     For more information about filters see:
