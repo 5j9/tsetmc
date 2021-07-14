@@ -97,6 +97,18 @@ class MarketWatchInitDict(TypedDict, total=False):
     derivatives_status: int
 
 
+class IntraDayDict(TypedDict, total=False):
+    general: dict
+    thresholds: DataFrame
+    closings: DataFrame
+    candles: DataFrame
+    states: DataFrame
+    trades: DataFrame
+    holders: DataFrame
+    yesterday_holders: DataFrame
+    client_types: dict[str, int]
+    best_limits: DataFrame
+
 
 class Instrument:
 
@@ -119,7 +131,7 @@ class Instrument:
         return self.ins_code
 
     @staticmethod
-    def from_l18(l18: str, /):
+    def from_l18(l18: str, /) -> 'Instrument':
         try:
             ins_code, _, l30 = L18S[l18]
         except KeyError:
@@ -336,7 +348,7 @@ class Instrument:
         yesterday_holders=False,
         client_types=True,
         best_limits=True,
-    ):
+    ) -> IntraDayDict:
         """Get intraday info for the given date in YYYYMMDD format.
 
         For the meaning of instrument state codes refer to

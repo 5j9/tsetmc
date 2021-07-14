@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
-from pandas import DataFrame, DatetimeIndex, read_csv
+from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
 # noinspection PyProtectedMember
