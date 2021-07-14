@@ -288,5 +288,8 @@ The following functions can be used to fetch all the data available for creating
 * ``get_key_stats``
 
 
+The ``get_price_adjustments`` function gets all the price adjustments for a specified flow.
+
+
 .. _pandas: https://pandas.pydata.org/
 .. _filters on tsetmc.com: http://www.tsetmc.com/Loader.aspx?ParTree=15131F

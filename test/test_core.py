@@ -7,7 +7,8 @@ from pytest import raises
 
 # noinspection PyProtectedMember
 from tsetmc import Instrument, _core, get_market_watch_init, \
-    get_closing_price_all, get_client_type_all, get_key_stats
+    get_closing_price_all, get_client_type_all, get_key_stats, \
+    get_price_adjustments
 # noinspection PyProtectedMember
 from tsetmc._core import _parse_index
 
@@ -668,3 +669,11 @@ def test_get_adjustments():
     assert adj_df.columns.tolist() == ['date', 'adj_pc', 'pc']
     assert len(adj_df) == 18
     assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
+
+
+@patch_get_content('ajustments_flow_7.html')
+def test_get_price_adjustments():
+    df = get_price_adjustments(7)
+    assert df.columns.to_list() == ['l18', 'l30', 'date', 'adj_pc', 'pc']
+    assert len(df) == 6
+    assert df.iat[-1, -1] == 1000

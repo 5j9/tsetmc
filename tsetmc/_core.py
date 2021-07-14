@@ -587,3 +587,16 @@ def _parse_index(s: str) -> dict:
     if (m3 := index_change_match[3]) is not None:
         result['tse_index_change_percent'] = float(m3)
     return result
+
+
+def get_price_adjustments(flow: int) -> DataFrame:
+    """Get price adjustments for a particular flow.
+
+    Related APIs:
+        http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
+    """
+    text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?Partree=151319&Flow={flow}')
+    df = read_html(text)[0]
+    df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
+    df['date'] = df['date'].apply(j_ymd_parse)
+    return df
