@@ -6,7 +6,7 @@ from json import load
 from logging import warning
 from os.path import abspath
 from re import compile as rc, findall
-from typing import Union
+from typing import Union, TypedDict
 
 
 from jdatetime import datetime as jdatetime
@@ -79,6 +79,23 @@ def get_content(url) -> bytes:
 def fa_norm_text(url) -> str:
     # replace Arabic [ي ك] with Persian [ی ک]
     return get_content(url).decode().translate(FARSI_NORM)
+
+
+class MarketWatchInitDict(TypedDict, total=False):
+    dataframe: DataFrame
+    market_last_transaction: jdatetime
+    tset_status: str
+    tset_index: float
+    tset_index_change: float
+    tse_tvol: float
+    tse_tval: float
+    tse_tno: float
+    otc_status: str
+    otc_tvol: float
+    otc_tval: float
+    otc_tno: int
+    derivatives_status: int
+
 
 
 class Instrument:
