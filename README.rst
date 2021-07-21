@@ -123,11 +123,27 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
      'tval': 701852286450}
     >>> # getting the daily trade history for the last n days (as a DataFrame)
     >>> inst.get_trade_history(top=2)
-                 pmax     pmin       pc  ...          tval       tvol    tno
-    date                                 ...
-    20210120  10400.0  10120.0  10380.0  ...  4.984848e+11   48013394   7284
-    20210119  10380.0   9400.0   9910.0  ...  2.649416e+12  267389256  36765
+                   pmax     pmin       pc  ...          tval      tvol    tno
+    date                                   ...
+    2021-07-18  12880.0  12530.0  12650.0  ...  1.114773e+12  88106162  14485
+    2021-07-17  12960.0  12550.0  12750.0  ...  8.740106e+11  68542961  14327
     [2 rows x 9 columns]
+    >>> # getting adjusted daily prices
+    >>> inst.get_price_history(adjusted=True)
+                 pmax   pmin     pf     pl       tvol     pc
+    date
+    2007-02-04     45     41     45     42  172898994     42
+    2007-02-05     43     43     43     43   10826496     43
+    2007-02-06     44     44     44     44   26850133     44
+    2007-02-07     45     45     45     45   31086849     45
+    2007-02-10     45     45     45     45   40645528     45
+               ...    ...    ...    ...        ...    ...
+    2021-07-12  13340  12840  13110  12860  106208763  13020
+    2021-07-13  13010  12640  12840  12680   66812306  12770
+    2021-07-14  12830  12450  12540  12690   70277940  12670
+    2021-07-17  12960  12550  12800  12640   68542961  12750
+    2021-07-18  12880  12530  12600  12630   88106162  12650
+    [3192 rows x 6 columns]
     >>> # getting legal/natural client types (the result is a DataFrame)
     >>> inst.get_client_type()
                 n_buy_count  l_buy_count  ...  n_sell_value  l_sell_value

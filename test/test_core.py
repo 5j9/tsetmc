@@ -677,3 +677,12 @@ def test_get_price_adjustments():
     assert df.columns.to_list() == ['l18', 'l30', 'date', 'adj_pc', 'pc']
     assert len(df) == 6
     assert df.iat[-1, -1] == 1000
+
+
+@patch_get_content('latif_financial_aph.aspx')
+def test_get_adjusted_price_history():
+    adj_df = Instrument(1).get_price_history()
+    assert adj_df.columns.tolist() == ['pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc']
+    assert adj_df.index.name == 'date'
+    assert len(adj_df) == 18
+    assert adj_df.iloc[-1].values.tolist() == [68410, 62366, 63500, 67508, 14222269, 65636]

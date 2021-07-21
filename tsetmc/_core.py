@@ -253,6 +253,16 @@ class Instrument:
             , parse_dates=True)
         return df
 
+    def get_price_history(self, adjusted: bool = True) -> DataFrame:
+        content = get_content(
+            f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.ins_code}&t=ph&a={adjusted:d}')
+        df = read_csv(
+            BytesIO(content)
+            , lineterminator=';'
+            , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
+            , low_memory=False, index_col='date', parse_dates=True)
+        return df
+
     def get_client_type(self) -> DataFrame:
         """Get daily natural/legal history.
 
