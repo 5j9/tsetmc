@@ -9,7 +9,7 @@ from tsetmc._core import DB_PATH, Instrument, get_market_watch_init, \
 
 def dump_l18s():
     with open(DB_PATH, 'w', encoding='utf8') as f:
-        dump(L18S, f, check_circular=False, ensure_ascii=False, indent=4, sort_keys=True)
+        dump(L18S, f, check_circular=False, ensure_ascii=False, indent='\t', sort_keys=True)
 
 
 def add_instrument_to_db(inst: Instrument) -> None:
