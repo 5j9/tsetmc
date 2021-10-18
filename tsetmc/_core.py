@@ -90,10 +90,10 @@ class MarketWatchInitDict(TypedDict, total=False):
     tse_tvol: float
     tse_tval: float
     tse_tno: float
-    otc_status: str
-    otc_tvol: float
-    otc_tval: float
-    otc_tno: int
+    fb_status: str
+    fb_tvol: float
+    fb_tval: float
+    fb_tno: int
     derivatives_status: int
 
 
@@ -499,7 +499,7 @@ def get_market_watch_init(index=False) -> MarketWatchInitDict:
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
     price_df.set_index(['ins_code', 'row'], inplace=True)
-    price_df = price_df.unstack(fill_value=0).sort_index(1, 1)
+    price_df = price_df.unstack(fill_value=0).sort_index(axis=1, level=1)
     price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
     joined_df = state_df.join(price_df)
     # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
@@ -577,7 +577,7 @@ def get_key_stats() -> DataFrame:
 def _parse_index(s: str) -> dict:
     market_last_transaction, tse_status, tse_index, tse_index_change \
         , tse_value, tse_tvol, tse_tval, tse_tno \
-        , otc_status, otc_tvol, otc_tval, otc_tno \
+        , fb_status, fb_tvol, fb_tval, fb_tno \
         , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
         , _ = s.split(',')
     index_change_match = INDEX_CHANGE_MATCH(tse_index_change)
@@ -596,10 +596,10 @@ def _parse_index(s: str) -> dict:
         , 'tse_tvol': float(tse_tvol)
         , 'tse_tval': float(tse_tval)
         , 'tse_tno': float(tse_tval)
-        , 'otc_status': otc_status
-        , 'otc_tvol': float(otc_tvol)
-        , 'otc_tval': float(otc_tval)
-        , 'otc_tno': int(otc_tno)
+        , 'fb_status': fb_status
+        , 'fb_tvol': float(fb_tvol)
+        , 'fb_tval': float(fb_tval)
+        , 'fb_tno': int(fb_tno)
         , 'derivatives_status': derivatives_status
         , 'derivatives_tvol': float(derivatives_tvol)
         , 'derivatives_tval': float(derivatives_tval)

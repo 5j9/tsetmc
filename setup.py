@@ -2,8 +2,6 @@ from setuptools import setup
 from os.path import dirname
 
 
-
-
 setup(
     name='tsetmc',
     version='0.28.1.dev0',
