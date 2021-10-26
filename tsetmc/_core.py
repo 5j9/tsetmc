@@ -69,7 +69,6 @@ INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 with open(DB_PATH, encoding='utf8') as f:
     L18S: dict[str, str] = load(f)
-INSCODES = {v[0]: v for v in L18S.values()}
 
 
 def get_content(url) -> bytes:
