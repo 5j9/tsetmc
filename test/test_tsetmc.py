@@ -6,20 +6,20 @@ from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
 # noinspection PyProtectedMember
-from tsetmc import Instrument, _core, market_watch_init, \
+from tsetmc import Instrument, _tsetmc, market_watch_init, \
     closing_price_all, client_type_all, key_stats, \
     price_adjustments
 # noinspection PyProtectedMember
-from tsetmc._core import _parse_index
+from tsetmc._tsetmc import _parse_index
 
 
 def patch_get_content(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         text = f.read()
-    return patch.object(_core, 'get_content', lambda _: text)
+    return patch.object(_tsetmc, 'get_content', lambda _: text)
 
 
-@patch.object(_core, 'get_content')
+@patch.object(_tsetmc, 'get_content')
 def test_info_url(mock):
     with raises(ValueError):
         Instrument(1).info()
