@@ -671,7 +671,7 @@ def test_adjustments():
     assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
 
 
-@patch_get_content('ajustments_flow_7.html')
+@patch_get_content('adjustments_flow_7.html')
 def test_price_adjustments():
     df = price_adjustments(7)
     assert df.columns.to_list() == ['l18', 'l30', 'date', 'adj_pc', 'pc']
