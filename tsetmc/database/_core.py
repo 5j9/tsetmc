@@ -1,6 +1,6 @@
 from json import dump
 
-from tsetmc._core import DB_PATH, Instrument, get_market_watch_init, \
+from tsetmc._core import DB_PATH, Instrument, market_watch_init, \
     L18S
 
 
@@ -15,7 +15,7 @@ def dump_l18s():
 def add_instrument_to_db(inst: Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.ins_code
-    df = inst.get_identification()
+    df = inst.identification()
     # isin = df.at['کد 12 رقمی نماد', 1]
     l18 = df.at['نماد فارسی', 1].partition(' ')[0]
     l30 = df.at['نماد 30 رقمی فارسی', 1]
@@ -25,7 +25,7 @@ def add_instrument_to_db(inst: Instrument) -> None:
 
 def update_db_using_market_watch() -> None:
     global L18S
-    df = get_market_watch_init()['dataframe']
+    df = market_watch_init()['dataframe']
     glv = df.index.get_level_values
     ins_codes = glv('ins_code')
     l18s = glv('l18')

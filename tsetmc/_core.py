@@ -139,7 +139,7 @@ class Instrument:
                 'l18 not found in KNOWN_IDS, try Instrument.from_search')
         return Instrument(ins_code, l18, l30)
 
-    def get_page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
+    def page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.
 
         :param general: parse general data incduling bvol, cisin, etc.
@@ -195,7 +195,7 @@ class Instrument:
         # todo: add 'codal_data'
         return result
 
-    def get_info(self, general=True, orders=False, index=False) -> dict:
+    def info(self, general=True, orders=False, index=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.
@@ -240,7 +240,7 @@ class Instrument:
                 if row}  # the `if` is for the last row which is empty
         return result
 
-    def get_trade_history(self, top: int) -> DataFrame:
+    def trade_history(self, top: int) -> DataFrame:
         content = get_content(
             f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.ins_code}&Top={top}')
         df = read_csv(
@@ -253,7 +253,7 @@ class Instrument:
             , parse_dates=True)
         return df
 
-    def get_price_history(self, adjusted: bool = True) -> DataFrame:
+    def price_history(self, adjusted: bool = True) -> DataFrame:
         content = get_content(
             f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.ins_code}&t=ph&a={adjusted:d}')
         df = read_csv(
@@ -263,7 +263,7 @@ class Instrument:
             , low_memory=False, index_col='date', parse_dates=True)
         return df
 
-    def get_client_type(self) -> DataFrame:
+    def client_type(self) -> DataFrame:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
@@ -278,7 +278,7 @@ class Instrument:
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
             , index_col='date', parse_dates=True , dtype='int64', low_memory=False)
 
-    def get_identification(self) -> DataFrame:
+    def identification(self) -> DataFrame:
         """Return the information available in the identification (شناسه) tab.
 
         Related API descriptions:
@@ -294,14 +294,14 @@ class Instrument:
         return Instrument(int(get_content(
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
 
-    def get_holders(self, cisin=None) -> DataFrame:
+    def holders(self, cisin=None) -> DataFrame:
         """Get list of major unit/share holders.
 
         If `cisin` is not provided, it will be fetched using
         `self.get_identification`.
         """
         if cisin is None:
-            cisin = self.get_identification().loc['کد 12 رقمی شرکت', 1]
+            cisin = self.identification().loc['کد 12 رقمی شرکت', 1]
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
         df = read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
@@ -310,7 +310,7 @@ class Instrument:
         return df
 
     @staticmethod
-    def get_holder(id_cisin=None, history=True, other_holdings=False) -> Union[DataFrame, tuple[DataFrame, DataFrame]]:
+    def holder(id_cisin=None, history=True, other_holdings=False) -> Union[DataFrame, tuple[DataFrame, DataFrame]]:
         """Return history/other holdings for the given holder id_cisin.
 
         `id_cisin` is usually obtained using `self.get_holders`.
@@ -346,7 +346,7 @@ class Instrument:
         else:
             return other_holdings_df()
 
-    def get_intraday(
+    def intraday(
         self, date: Union[int, str], *,
         general=False,
         thresholds=False,
@@ -458,7 +458,7 @@ class Instrument:
             result['best_limits'] = best_limits_df
         return result
 
-    def get_adjustments(self) -> DataFrame:
+    def adjustments(self) -> DataFrame:
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.ins_code}')
         df = read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
@@ -466,7 +466,7 @@ class Instrument:
         return df
 
 
-def get_market_watch_init(index=False) -> MarketWatchInitDict:
+def market_watch_init(index=False) -> MarketWatchInitDict:
     """Return the market status which are the info used in creating filters.
 
     For more information about filters see:
@@ -523,7 +523,7 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list:
     return data
 
 
-def get_closing_price_all() -> DataFrame:
+def closing_price_all() -> DataFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
@@ -543,7 +543,7 @@ def get_closing_price_all() -> DataFrame:
     return df
 
 
-def get_client_type_all() -> DataFrame:
+def client_type_all() -> DataFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
@@ -557,7 +557,7 @@ def get_client_type_all() -> DataFrame:
     return df
 
 
-def get_key_stats() -> DataFrame:
+def key_stats() -> DataFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
@@ -611,7 +611,7 @@ def _parse_index(s: str) -> dict:
     return result
 
 
-def get_price_adjustments(flow: int) -> DataFrame:
+def price_adjustments(flow: int) -> DataFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:

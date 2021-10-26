@@ -6,9 +6,9 @@ from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
 # noinspection PyProtectedMember
-from tsetmc import Instrument, _core, get_market_watch_init, \
-    get_closing_price_all, get_client_type_all, get_key_stats, \
-    get_price_adjustments
+from tsetmc import Instrument, _core, market_watch_init, \
+    closing_price_all, client_type_all, key_stats, \
+    price_adjustments
 # noinspection PyProtectedMember
 from tsetmc._core import _parse_index
 
@@ -20,16 +20,16 @@ def patch_get_content(name):
 
 
 @patch.object(_core, 'get_content')
-def test_get_info_url(mock):
+def test_info_url(mock):
     with raises(ValueError):
-        Instrument(1).get_info()
+        Instrument(1).info()
     mock.assert_called_once_with(
         'http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=1&c=&e=1')
 
 
 @patch_get_content('fmelli.html')
-def test_get_page_info():
-    d = Instrument(1).get_page_data(True, True, True)
+def test_page_info():
+    d = Instrument(1).page_data(True, True, True)
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {
@@ -123,8 +123,8 @@ def test_get_page_info():
 
 
 @patch_get_content('dey.html')
-def test_get_page_info_no_free_float():
-    d = Instrument(1).get_page_data()
+def test_page_info_no_free_float():
+    d = Instrument(1).page_data()
     assert d == {
         'bvol': 54000000,
         'cisin': 'IRO3BDYZ0003',
@@ -151,8 +151,8 @@ def test_get_page_info_no_free_float():
 
 
 @patch_get_content('kala.html')
-def test_get_page_info_no_eps():
-    d = Instrument(1).get_page_data()
+def test_page_info_no_eps():
+    d = Instrument(1).page_data()
     assert d == {
         'bvol': 1000000,
         'cisin': 'IRO1KALA0001',
@@ -179,8 +179,8 @@ def test_get_page_info_no_eps():
 
 
 @patch_get_content('khgostar.html')
-def test_get_page_info_negative_sector_pe():
-    d = Instrument(1).get_page_data()
+def test_page_info_negative_sector_pe():
+    d = Instrument(1).page_data()
     assert d == {
         'bvol': 15842055,
         'cisin': 'IRO1GOST0003',
@@ -208,7 +208,7 @@ def test_get_page_info_negative_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).get_info(index=True, orders=True) == {
+    assert Instrument(1).info(index=True, orders=True) == {
         'derivatives_status': 'F',
         'derivatives_tno': 7864,
         'derivatives_tval': 150982456491.0,
@@ -262,7 +262,7 @@ def test_dara1_instant():
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
-    assert Instrument(1).get_info(orders=True) == {
+    assert Instrument(1).info(orders=True) == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
@@ -299,7 +299,7 @@ def test_asam_instant():
 
 @patch_get_content('negin.txt')
 def test_negin_instant():
-    assert Instrument(1).get_info() == {
+    assert Instrument(1).info() == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
         , 'nav': 12190
@@ -318,7 +318,7 @@ def test_negin_instant():
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
-    assert Instrument(1).get_info(orders=False) == {
+    assert Instrument(1).info(orders=False) == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'pc': 19890
@@ -334,8 +334,8 @@ def test_fmelli_instant():
 
 
 @patch_get_content('MarketWatchInit.aspx')
-def test_get_market_watch_init():
-    df = get_market_watch_init()['dataframe']
+def test_market_watch_init():
+    df = market_watch_init()['dataframe']
     assert df.dtypes.to_dict() == {
         'heven': 'int64', 'pf': 'int64', 'pc': 'int64'
         , 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
@@ -358,8 +358,8 @@ def test_get_market_watch_init():
 
 
 @patch_get_content('ClosingPriceAll.aspx')
-def test_get_closing_price_all():
-    df = get_closing_price_all()
+def test_closing_price_all():
+    df = closing_price_all()
     assert df.dtypes.to_dict() == {
         'pc': 'int64', 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
         , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64', 'py': 'int64'
@@ -372,8 +372,8 @@ def test_get_closing_price_all():
 
 
 @patch_get_content('ClientTypeAll.aspx')
-def test_get_client_type_all():
-    df = get_client_type_all()
+def test_client_type_all():
+    df = client_type_all()
     assert all(df.columns == [
         'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
         , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
@@ -382,8 +382,8 @@ def test_get_client_type_all():
 
 
 @patch_get_content('InstValue.aspx')
-def test_get_key_stats():
-    df = get_key_stats()
+def test_key_stats():
+    df = key_stats()
     assert all(df.columns.str.startswith('is'))
     assert df.index.name == 'ins_code'
 
@@ -405,17 +405,17 @@ VSKHOOZ = {
 
 @patch_get_content('vskhooz_short_response.txt')
 def test_vskhooz_short():
-    assert Instrument(1).get_info() == VSKHOOZ
+    assert Instrument(1).info() == VSKHOOZ
 
 
 @patch_get_content('vskhooz_long_response.txt')
 def test_vskhooz_long():
-    assert Instrument(1).get_info() == VSKHOOZ
+    assert Instrument(1).info() == VSKHOOZ
 
 
 @patch_get_content('fmelli_trade_history_top2.txt')
-def test_get_trade_history():
-    df = Instrument(1).get_trade_history(2)
+def test_trade_history():
+    df = Instrument(1).trade_history(2)
     assert df.to_csv(line_terminator='\n') == (
         'date,pmax,pmin,pc,pl,pf,py,tval,tvol,tno\n'
         '2021-01-20,10400.0,10120.0,10380.0,10400.0,10350.0,9910.0,498484813880.0,48013394,7284\n'
@@ -425,7 +425,7 @@ def test_get_trade_history():
 
 @patch_get_content('vsadid.txt')
 def test_vsadid():
-    assert Instrument(1).get_info() == {
+    assert Instrument(1).info() == {
         'status': 'IS'
         , 'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
         , 'pc': 23810
@@ -458,8 +458,8 @@ def test_equal():
 
 
 @patch_get_content('vsadid_identification.html')
-def test_get_identification():
-    assert Instrument(1).get_identification().to_dict() == {1: {
+def test_identification():
+    assert Instrument(1).identification().to_dict() == {1: {
         'بازار': 'بازار پایه نارنجی فرابورس',
         'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
         'نام شرکت': 'گروه\u200cصنعتی\u200cسدید',
@@ -477,8 +477,8 @@ def test_get_identification():
 
 
 @patch_get_content('opal_client_types.txt')
-def test_get_client_type():
-    assert Instrument(1).get_client_type().to_csv(line_terminator='\n') == (
+def test_client_type():
+    assert Instrument(1).client_type().to_csv(line_terminator='\n') == (
         'date,n_buy_count,l_buy_count,n_sell_count,l_sell_count,n_buy_volume,l_buy_volume,n_sell_volume,l_sell_volume,n_buy_value,l_buy_value,n_sell_value,l_sell_value'
         '\n2021-03-03,45996,40,536073,152,371944945,124311191,445956261,50299875,6032526703800,2001293803740,7203106931130,830713576410'
         '\n2021-03-02,1390,5,68895,24,42463945,909997,29432662,13941280,664560739250,14241453050,460621160300,218181032000'
@@ -551,16 +551,16 @@ def test_parse_index():
 
 
 @patch_get_content('MarketWatchInit2.aspx')
-def test_get_market_watch_init_non_int_tmin_tmax():
+def test_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
     # used to raise
     # TypeError: cannot safely cast non-equivalent float64 to int64
-    get_market_watch_init()
+    market_watch_init()
 
 
 @patch_get_content('ava_holders.txt')
-def test_get_holders_with_cisin():
-    holders = Instrument(1).get_holders(cisin=1)
+def test_holders_with_cisin():
+    holders = Instrument(1).holders(cisin=1)
     assert holders.to_csv(line_terminator='\n') == (
        ',سهامدار/دارنده,سهم,درصد,تغییر,id_cisin\n'
        '0,ETFکدرزروصندوقهای سرمایه گذاری قابل معامله,98 M,19.51,12 M,"21790,IRT3AVAF0003"\n'
@@ -573,33 +573,33 @@ def test_get_holders_with_cisin():
 
 
 @patch_get_content('ava_holder.txt')
-def test_get_holder():
+def test_holder():
     inst = Instrument(1)
     # has no other holdings
-    hist, oth = inst.get_holder('69867,IRT3AVAF0003', True, True)
+    hist, oth = inst.holder('69867,IRT3AVAF0003', True, True)
     assert hist.to_csv(line_terminator='\n').startswith('date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n')
     assert oth.to_csv(line_terminator='\n') == 'ins_code,name,shares,percent\n'
-    hist = inst.get_holder('69867,IRT3AVAF0003', True)
+    hist = inst.holder('69867,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
-    oth = inst.get_holder('69867,IRT3AVAF0003', False, True)
+    oth = inst.holder('69867,IRT3AVAF0003', False, True)
     assert type(oth) is DataFrame
-    result = inst.get_holder('69867,IRT3AVAF0003', False)
+    result = inst.holder('69867,IRT3AVAF0003', False)
     assert oth.equals(result)
 
 
 @patch_get_content('vsadid_identification.html')
-def test_get_holders_without_cisin():
+def test_holders_without_cisin():
     inst = Instrument(1)
-    assert inst.get_identification().loc['کد 12 رقمی شرکت', 1] == 'IRO7SDIP0002'
-    with patch.object(Instrument, 'get_identification', side_effect=NotImplementedError) as get_identification:
+    assert inst.identification().loc['کد 12 رقمی شرکت', 1] == 'IRO7SDIP0002'
+    with patch.object(Instrument, 'identification', side_effect=NotImplementedError) as identification:
         with raises(NotImplementedError):
-            inst.get_holders()
-    get_identification.assert_called_once()
+            inst.holders()
+    identification.assert_called_once()
 
 
 @patch_get_content('fmelli_20210602_intraday.html')
-def test_get_intraday_general():
-    result = Instrument(1).get_intraday(
+def test_intraday_general():
+    result = Instrument(1).intraday(
         20210602, general=True, thresholds=True, closings=True, candles=True,
         holders=True, yesterday_holders=True)
     assert len(result) == 10
@@ -664,24 +664,24 @@ def test_get_intraday_general():
 
 
 @patch_get_content('fmelli_price_adjustment.html')
-def test_get_adjustments():
-    adj_df = Instrument(1).get_adjustments()
+def test_adjustments():
+    adj_df = Instrument(1).adjustments()
     assert adj_df.columns.tolist() == ['date', 'adj_pc', 'pc']
     assert len(adj_df) == 18
     assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
 
 
 @patch_get_content('ajustments_flow_7.html')
-def test_get_price_adjustments():
-    df = get_price_adjustments(7)
+def test_price_adjustments():
+    df = price_adjustments(7)
     assert df.columns.to_list() == ['l18', 'l30', 'date', 'adj_pc', 'pc']
     assert len(df) == 6
     assert df.iat[-1, -1] == 1000
 
 
 @patch_get_content('latif_financial_aph.aspx')
-def test_get_adjusted_price_history():
-    adj_df = Instrument(1).get_price_history()
+def test_adjusted_price_history():
+    adj_df = Instrument(1).price_history()
     assert adj_df.columns.tolist() == ['pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc']
     assert adj_df.index.name == 'date'
     assert len(adj_df) == 18

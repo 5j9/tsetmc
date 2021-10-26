@@ -20,7 +20,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     >>> from tsetmc import Instrument
     >>> inst = Instrument.from_l18('فملی')
     >>> # getting the static data available in the main page of the symbol
-    >>> inst.get_page_data(general=True, trade_history=True, related_companies=True)
+    >>> inst.page_data(general=True, trade_history=True, related_companies=True)
     {'bvol': 9803922,
      'cisin': 'IRO1MSMI0000',
      'cs': 27,
@@ -108,7 +108,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
       [45507655586782998, 'فجهان', 'مجتمع جهان فولاد سیرجان'],
       [44846320603450383, 'فروسیل', 'فروسیلیسیم خمین']]}
     >>> # getting the latest price information
-    >>> inst.get_info()
+    >>> inst.info()
     {'timestamp': '12:30:00',
      'status': 'A ',
      'last_info_datetime': datetime.datetime(2021, 7, 5, 12, 30),
@@ -122,14 +122,14 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
      'tvol': 57477120,
      'tval': 701852286450}
     >>> # getting the daily trade history for the last n days (as a DataFrame)
-    >>> inst.get_trade_history(top=2)
+    >>> inst.trade_history(top=2)
                    pmax     pmin       pc  ...          tval      tvol    tno
     date                                   ...
     2021-07-18  12880.0  12530.0  12650.0  ...  1.114773e+12  88106162  14485
     2021-07-17  12960.0  12550.0  12750.0  ...  8.740106e+11  68542961  14327
     [2 rows x 9 columns]
     >>> # getting adjusted daily prices
-    >>> inst.get_price_history(adjusted=True)
+    >>> inst.price_history(adjusted=True)
                  pmax   pmin     pf     pl       tvol     pc
     date
     2007-02-04     45     41     45     42  172898994     42
@@ -145,7 +145,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     2021-07-18  12880  12530  12600  12630   88106162  12650
     [3192 rows x 6 columns]
     >>> # getting legal/natural client types (the result is a DataFrame)
-    >>> inst.get_client_type()
+    >>> inst.client_type()
                 n_buy_count  l_buy_count  ...  n_sell_value  l_sell_value
     date                                  ...
     2021-07-04         4447           14  ...  586457311950  137504028420
@@ -161,7 +161,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     2008-11-26            1            1  ...       1487409         46600
     [2715 rows x 12 columns]
     >>> # getting the data in identification (شناسه) tab of the symbol
-    >>> inst.get_identification()  # the result is a DataFrame
+    >>> inst.identification()  # the result is a DataFrame
                                                    1
     0
     کد 12 رقمی نماد                     IRO1MSMI0001
@@ -174,7 +174,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     کد 12 رقمی شرکت                     IRO1MSMI0000
     بازار               بازار اول (تابلوی اصلی) بورس
     >>> # getting the share/unit holders
-    >>> inst.get_holders()
+    >>> inst.holders()
                                         سهامدار/دارنده  ...            id_cisin
     0    سازمان توسعه ونوسازی معادن وصنایع معدنی ایران  ...    104,IRO1MSMI0000
     1    موسسه صندوق بازنشستگی شرکت ملی صنایع مس ایران  ...    770,IRO1MSMI0000
@@ -199,7 +199,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     20      شرکت گروه توسعه مالی مهرآیندگان-سهامی عام-  ...  21630,IRO1MSMI0000
     [21 rows x 5 columns]
     >>> # getting information of a specific share/unit holder
-    >>> inst.get_holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+    >>> inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
     (                shares
      date
      2021-02-17  2003857980
@@ -256,7 +256,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
      8603978909726038        ص.س.جسورانه فناوری آرمانی       50000     8.33
      57585821705408565              ص.ج.فیروزه10%تادیه       30000     6.00)
     >>> # getting intraday data
-    >>> inst.get_intraday(
+    >>> inst.intraday(
         date=20210704,
         general=False,
         thresholds=False,
@@ -270,7 +270,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
         best_limits=True,
     )  # the result is too long and not shown here
     >>> # getting the history of price adjustments
-    >>> inst.get_adjustments()  # the result is a DataFrame
+    >>> inst.adjustments()  # the result is a DataFrame
                        date  adj_pc     pc
     0   1399-05-01 00:00:00   35720  35970
     1   1398-04-26 00:00:00    4269   4419
@@ -298,13 +298,13 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
 
 The following functions can be used to fetch all the data available for creating `filters on tsetmc.com`_:
 
-* ``get_market_watch_init``
-* ``get_closing_price_all``
-* ``get_client_type_all``
-* ``get_key_stats``
+* ``market_watch_init``
+* ``closing_price_all``
+* ``client_type_all``
+* ``key_stats``
 
 
-The ``get_price_adjustments`` function gets all the price adjustments for a specified flow.
+The ``price_adjustments`` function gets all the price adjustments for a specified flow.
 
 
 .. _pandas: https://pandas.pydata.org/
