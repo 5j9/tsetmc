@@ -1,6 +1,6 @@
 from json import dump
 
-from tsetmc._core import DB_PATH, Instrument, market_watch_init, \
+from tsetmc._tsetmc import DB_PATH, Instrument, market_watch_init, \
     L18S
 
 
