@@ -4,7 +4,6 @@ from functools import partial
 from io import BytesIO, StringIO
 from json import load
 from logging import warning
-from os.path import abspath
 from re import compile as rc, findall
 from typing import Union, TypedDict
 
@@ -18,7 +17,7 @@ strptime = datetime.strptime
 jstrptime = jdatetime.strptime
 j_ymd_parse = partial(jstrptime, format='%Y/%m/%d')
 GET = Session().get
-DB_PATH = abspath(f'{__file__}/../database/ids.json')
+DB_PATH = f'{__file__}/../database/ids.json'
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
 F = r'(-?\d+(?:\.\d+)?)'  # float pattern
@@ -134,8 +133,7 @@ class Instrument:
         try:
             ins_code, _, l30 = L18S[l18]
         except KeyError:
-            raise KeyError(
-                'l18 not found in KNOWN_IDS, try Instrument.from_search')
+            return Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
     def page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
