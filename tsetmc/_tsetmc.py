@@ -111,23 +111,23 @@ class IntraDayDict(TypedDict, total=False):
 
 class Instrument:
 
-    __slots__ = 'ins_code', 'l18', 'l30'
+    __slots__ = 'code', 'l18', 'l30'
 
-    def __init__(self, ins_code: int, l18: str = None, l30: str = None):
-        self.ins_code = ins_code
+    def __init__(self, code: int, l18: str = None, l30: str = None):
+        self.code = code
         self.l18 = l18
         self.l30 = l30
 
     def __repr__(self):
         if self.l18 is None:
-            return f'Instrument({self.ins_code})'
+            return f'Instrument({self.code})'
         return f"Instrument('{self.l18}')"
 
     def __eq__(self, other):
-        return self.ins_code == other.ins_code
+        return self.code == other.code
 
     def __hash__(self):
-        return self.ins_code
+        return self.code
 
     @staticmethod
     def from_l18(l18: str, /) -> 'Instrument':
@@ -147,7 +147,7 @@ class Instrument:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.ins_code}')
+        text = fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.code}')
         if general:
             m = PAGE_VARS(text)
             title_match = TITLE_FULLMATCH(m['Title'])
@@ -206,7 +206,7 @@ class Instrument:
         text = get_content(
             f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
             # &e=1 parameter is required to get NAV
-            f'?i={self.ins_code}&c=&e=1').decode()
+            f'?i={self.code}&c=&e=1').decode()
         # the _s are unknown
         try:
             price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
@@ -241,7 +241,7 @@ class Instrument:
 
     def trade_history(self, top: int) -> DataFrame:
         content = get_content(
-            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.ins_code}&Top={top}')
+            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.code}&Top={top}')
         df = read_csv(
             BytesIO(content)
             , sep='@'
@@ -254,7 +254,7 @@ class Instrument:
 
     def price_history(self, adjusted: bool = True) -> DataFrame:
         content = get_content(
-            f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.ins_code}&t=ph&a={adjusted:d}')
+            f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = read_csv(
             BytesIO(content)
             , lineterminator=';'
@@ -268,7 +268,7 @@ class Instrument:
         In column names `n_` prefix stands for natural and `l_` for legal.
         """
         return read_csv(
-            BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.ins_code}'))
+            BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.code}'))
             , lineterminator=b';'
             , names=(
                 'date'
@@ -284,7 +284,7 @@ class Instrument:
             https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
         """
-        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.ins_code}')
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.code}')
         return read_html(text, index_col=0)[0]
 
     @staticmethod
@@ -363,7 +363,7 @@ class Instrument:
         For the meaning of instrument state codes refer to
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
         """
-        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.ins_code}&d={date}')
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.code}&d={date}')
         find = text.find
         find_start = 0
         result = {}
@@ -388,7 +388,7 @@ class Instrument:
                 'tvol', 'tval', '?2', 'heven'))
             if len(closings['?1'].unique()) != 1 or closings['?2'].unique() != 1:
                 # See if you can find the meaning of ?2 column
-                warning(f'Unusual ?1 or ?2. Parameters: {date=} {self.ins_code}. Please report this at https://github.com/5j9/tsetmc/issues.')
+                warning(f'Unusual ?1 or ?2. Parameters: {date=} {self.code}. Please report this at https://github.com/5j9/tsetmc/issues.')
             result['closings'] = closings
             find_start = end
         if candles:
@@ -458,7 +458,7 @@ class Instrument:
         return result
 
     def adjustments(self) -> DataFrame:
-        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.ins_code}')
+        text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}')
         df = read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(j_ymd_parse)

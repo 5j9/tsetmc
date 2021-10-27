@@ -443,7 +443,7 @@ def test_vsadid():
 @patch_get_content('search_firuze.txt')
 def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
-    assert Instrument.from_search('فیروزه').ins_code == 66036975502302203
+    assert Instrument.from_search('فیروزه').code == 66036975502302203
 
 
 def test_repr():

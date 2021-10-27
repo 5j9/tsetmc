@@ -14,7 +14,7 @@ def dump_l18s():
 
 def add_instrument_to_db(inst: Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
-    ins_code = inst.ins_code
+    ins_code = inst.code
     df = inst.identification()
     # isin = df.at['کد 12 رقمی نماد', 1]
     l18 = df.at['نماد فارسی', 1].partition(' ')[0]
