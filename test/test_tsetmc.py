@@ -447,9 +447,10 @@ def test_from_search_with_numeric_description():
 
 
 def test_repr():
-    # known ID
-    assert repr(Instrument.from_l18('فملی')) == "Instrument('فملی')"
-    # unknown ID
+    # known l18
+    assert repr(
+        Instrument.from_l18('فملی')) == "Instrument(35425587644337450, 'فملی')"
+    # unknown l18
     assert repr(Instrument(1)) == "Instrument(1)"
 
 

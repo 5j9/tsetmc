@@ -120,7 +120,7 @@ class Instrument:
     def __repr__(self):
         if self.l18 is None:
             return f'Instrument({self.code})'
-        return f"Instrument('{self.l18}')"
+        return f"Instrument({self.code}, {self.l18!r})"
 
     def __eq__(self, other):
         return self.code == other.code
