@@ -8,7 +8,7 @@ from pytest import raises
 # noinspection PyProtectedMember
 from tsetmc import Instrument, _tsetmc, market_watch_init, \
     closing_price_all, client_type_all, key_stats, \
-    price_adjustments
+    price_adjustments, search
 # noinspection PyProtectedMember
 from tsetmc._tsetmc import _parse_index
 
@@ -702,3 +702,13 @@ def test_adjusted_price_history():
     assert adj_df.index.name == 'date'
     assert len(adj_df) == 18
     assert adj_df.iloc[-1].values.tolist() == [68410, 62366, 63500, 67508, 14222269, 65636]
+
+
+@patch_get_content('search_mellat.txt')
+def test_search():
+    df = search('ملت')
+    assert type(df) is DataFrame
+    assert len(df) == 41
+    assert df.columns.to_list() == [
+        'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
+        '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5']
