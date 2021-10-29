@@ -140,7 +140,7 @@ class Instrument:
         return self.code
     
     @property
-    def l18(self):
+    def l18(self) -> str:
         if (l18 := self._l18) is not None:
             return l18
         try:
@@ -150,7 +150,7 @@ class Instrument:
         return self._l18
 
     @property
-    def l30(self):
+    def l30(self) -> str:
         if (l30 := self._l30) is not None:
             return l30
         try:
@@ -160,7 +160,7 @@ class Instrument:
         return self._l30
 
     @property
-    def cisin(self):
+    def cisin(self) -> str:
         try:
             return self._cisin
         except AttributeError:
@@ -677,5 +677,4 @@ def search(skey: str, /) -> DataFrame:
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
             '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'),
-        lineterminator=';',
-    )
+        lineterminator=';')

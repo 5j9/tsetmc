@@ -667,3 +667,7 @@ def test_search():
     assert df.columns.to_list() == [
         'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
         '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5']
+
+
+def test_l18_without_web_request():
+    assert Instrument(46348559193224090).l18 == 'فولاد'
