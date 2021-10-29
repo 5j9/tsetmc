@@ -42,7 +42,12 @@ def test_info_url(mock):
 
 @patch_get_content('fmelli.html')
 def test_page_info():
-    d = Instrument(1).page_data(True, True, True)
+    ins = Instrument(1)
+    assert ins._l18 is ins._l30 is None
+    d = ins.page_data(True, True, True)
+    assert ins.l18 == 'فملی'
+    assert ins.l30 == 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c'
+    assert ins.cisin == 'IRO1MSMI0000'
     trade_history = d.pop('trade_history')
     related_companies = d.pop('related_companies')
     assert d == {
