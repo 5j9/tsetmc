@@ -67,14 +67,23 @@ INDEX_CHANGE_MATCH = rc(rf"<div[^>]*>(\()?{F}\)?</div>(?: {F}%)?").match
 INDEX_TIMESTAMP_MATCH = rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 with open(DB_PATH, encoding='utf8') as f:
-    L18S: dict[str, str] = load(f)
+    L18S: dict[str, tuple] = load(f)
+
+INS_CODE_TO_L18 = None
 
 
-def get_content(url) -> bytes:
+def _l18_l30(ins_code: int) -> tuple:
+    global INS_CODE_TO_L18
+    if INS_CODE_TO_L18 is None:
+        INS_CODE_TO_L18 = {v[0]: k for k, v in L18S.items()}
+    return L18S[INS_CODE_TO_L18[ins_code]][1:]
+
+
+def get_content(url: str) -> bytes:
     return GET(url).content
 
 
-def fa_norm_text(url) -> str:
+def fa_norm_text(url: str) -> str:
     # replace Arabic [ي ك] with Persian [ی ک]
     return get_content(url).decode().translate(FARSI_NORM)
 
@@ -110,23 +119,56 @@ class IntraDayDict(TypedDict, total=False):
 
 class Instrument:
 
-    __slots__ = 'code', 'l18', 'l30'
+    __slots__ = 'code', '_l18', '_l30', '_cisin'
 
     def __init__(self, code: int, l18: str = None, l30: str = None):
         self.code = code
-        self.l18 = l18
-        self.l30 = l30
+        self._l18 = l18
+        self._l30 = l30
 
     def __repr__(self):
-        if self.l18 is None:
+        # not using self.l18 because it can cause a while when viewing a list
+        # of Instruments.
+        if self._l18 is None:
             return f'Instrument({self.code})'
-        return f"Instrument({self.code}, {self.l18!r})"
+        return f"Instrument({self.code}, {self._l18!r})"
 
     def __eq__(self, other):
         return self.code == other.code
 
     def __hash__(self):
         return self.code
+    
+    @property
+    def l18(self):
+        if (l18 := self._l18) is not None:
+            return l18
+        try:
+            self._l18, self._l30 = _l18_l30(self.code)
+        except KeyError:
+            self.page_data()
+        return self._l18
+
+    @property
+    def l30(self):
+        if (l30 := self._l30) is not None:
+            return l30
+        try:
+            self._l18, self._l30 = _l18_l30(self.code)
+        except KeyError:
+            self.page_data()
+        return self._l30
+
+    @property
+    def cisin(self):
+        try:
+            return self._cisin
+        except AttributeError:
+            # can also be fetched using self.identification()
+            # but that won't load self._l18 since 'نماد فارسی'
+            # sometimes contains descriptions like "وسديد - لغو پذیرش شده".
+            self.page_data()
+        return self._cisin
 
     @staticmethod
     def from_l18(l18: str, /) -> 'Instrument':
@@ -139,7 +181,7 @@ class Instrument:
     def page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
         """Return the static info found on instrument's page.
 
-        :param general: parse general data incduling bvol, cisin, etc.
+        :param general: parse general data including bvol, cisin, etc.
         :param trade_history: include trade_history in the result.
         :param related_companies: parse and include related_companies.
         For the meaning of keys see:
@@ -153,9 +195,12 @@ class Instrument:
             eps = m['EstimatedEPS']
             sps = m['PSR']
             sector_pe = m['SectorPE']
+            l30 = self._l30 = title_match[1]
+            l18 = self._l18 = m['LVal18AFC']
+            cisin = self._cisin = m['CIsin']
             result = {
                 'bvol': int(m['BaseVol']),
-                'cisin': m['CIsin'],
+                'cisin': cisin,
                 'cs': int(m['CSecVal']),
                 'eps': int(eps) if eps else None,
                 'sps': float(sps) if sps else None,
@@ -163,8 +208,8 @@ class Instrument:
                 'free_float': int(free_float) if free_float else None,
                 'group_code': m['CgrValCot'],
                 'isin': m['InstrumentID'],
-                'l18': m['LVal18AFC'],
-                'l30': title_match[1],
+                'l18': l18,
+                'l30': l30,
                 'flow_name': title_match[2],
                 'month_average_volume': int(m['QTotTran5JAvg']),
                 'sector_name': m['LSecVal'],
@@ -275,7 +320,7 @@ class Instrument:
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
             , index_col='date', parse_dates=True , dtype='int64', low_memory=False)
 
-    def identification(self) -> DataFrame:
+    def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.
 
         Related API descriptions:
@@ -283,22 +328,22 @@ class Instrument:
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
         """
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.code}')
-        return read_html(text, index_col=0)[0]
+        df = read_html(text)[0]
+        return dict(zip(df[0], df[1]))
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':
-        """Look up the ID through a web search and return Instrument."""
-        return Instrument(int(get_content(
-            'http://tsetmc.com/tsev2/data/search.aspx?skey=' + s).split(b',', 3)[2]))
+        """`search(s)` and return the first result as Instrument."""
+        l18, l30, ins_code = search(s).iloc[0][:3]
+        return Instrument(ins_code, l18, l30)
 
     def holders(self, cisin=None) -> DataFrame:
         """Get list of major unit/share holders.
 
-        If `cisin` is not provided, it will be fetched using
-        `self.get_identification`.
+        If `cisin` is not provided, it will be fetched using a web request.
         """
         if cisin is None:
-            cisin = self.identification().loc['کد 12 رقمی شرکت', 1]
+            cisin = self.cisin
         text = fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
         df = read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
@@ -619,3 +664,16 @@ def price_adjustments(flow: int) -> DataFrame:
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
     df['date'] = df['date'].apply(j_ymd_parse)
     return df
+
+
+def search(skey: str, /) -> DataFrame:
+    """`skey` (search key) is usually part of the l18 or l30."""
+    return read_csv(
+        StringIO(fa_norm_text(
+            'http://tsetmc.com/tsev2/data/search.aspx?skey=' + skey)),
+        header=None,
+        names=(
+            'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
+            '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'),
+        lineterminator=';',
+    )

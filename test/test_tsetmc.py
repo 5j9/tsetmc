@@ -13,6 +13,19 @@ from tsetmc import Instrument, _tsetmc, market_watch_init, \
 from tsetmc._tsetmc import _parse_index
 
 
+get_patcher = patch.object(
+    _tsetmc, 'get_content', side_effect=NotImplementedError(
+        'tests should not call get_content without patching'))
+
+
+def setup_module():
+    get_patcher.start()
+
+
+def teardown_module():
+    get_patcher.stop()
+
+
 def patch_get_content(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         text = f.read()
@@ -443,7 +456,9 @@ def test_vsadid():
 @patch_get_content('search_firuze.txt')
 def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
-    assert Instrument.from_search('فیروزه').code == 66036975502302203
+    i = Instrument.from_search('فیروزه')
+    assert i.code == 66036975502302203
+    assert i.l18 == 'فیروزه'
 
 
 def test_repr():
@@ -460,7 +475,7 @@ def test_equal():
 
 @patch_get_content('vsadid_identification.html')
 def test_identification():
-    assert Instrument(1).identification().to_dict() == {1: {
+    assert Instrument(1).identification() == {
         'بازار': 'بازار پایه نارنجی فرابورس',
         'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
         'نام شرکت': 'گروه\u200cصنعتی\u200cسدید',
@@ -474,7 +489,7 @@ def test_identification():
         'کد تابلو': '7',
         'کد زیر گروه صنعت': '2799',
         'کد گروه صنعت': '27',
-        'گروه صنعت': 'فلزات اساسی'}}
+        'گروه صنعت': 'فلزات اساسی'}
 
 
 @patch_get_content('opal_client_types.txt')
@@ -591,11 +606,11 @@ def test_holder():
 @patch_get_content('vsadid_identification.html')
 def test_holders_without_cisin():
     inst = Instrument(1)
-    assert inst.identification().loc['کد 12 رقمی شرکت', 1] == 'IRO7SDIP0002'
-    with patch.object(Instrument, 'identification', side_effect=NotImplementedError) as identification:
+    assert inst.identification()['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
+    with patch.object(Instrument, 'page_data', side_effect=NotImplementedError) as page_data:
         with raises(NotImplementedError):
             inst.holders()
-    identification.assert_called_once()
+    page_data.assert_called_once()
 
 
 @patch_get_content('fmelli_20210602_intraday.html')
