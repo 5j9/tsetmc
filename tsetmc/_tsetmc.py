@@ -357,7 +357,7 @@ class Instrument:
     def holder(id_cisin=None, history=True, other_holdings=False) -> Union[DataFrame, tuple[DataFrame, DataFrame]]:
         """Return history/other holdings for the given holder id_cisin.
 
-        `id_cisin` is usually obtained using `self.get_holders`.
+        `id_cisin` is usually obtained using `self.holders`.
 
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
