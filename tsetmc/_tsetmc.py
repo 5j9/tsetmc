@@ -233,7 +233,9 @@ class Instrument:
             result['trade_history'] = th
         if related_companies:
             m = RELATED_COMPANIES(text, m.end())
-            result['related_companies'] = literal_eval(STR_TO_NUM(m[1]))
+            result['related_companies'] = [
+                Instrument(code, l18, l30) for (code, l18, l30) in
+                literal_eval(STR_TO_NUM(m[1]))]
         # todo: add 'codal_data'
         return result
 
