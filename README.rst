@@ -114,18 +114,21 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     2008-11-26            1            1  ...       1487409         46600
     [2715 rows x 12 columns]
     >>> # getting the data in identification (شناسه) tab of the symbol
-    >>> inst.identification()  # the result is a DataFrame
-                                                   1
-    0
-    کد 12 رقمی نماد                     IRO1MSMI0001
-    کد 5 رقمی نماد                             MSMI1
-    نام لاتین شرکت                   S*I. N. C. Ind.
-    کد 4 رقمی شرکت                              MSMI
-    نام شرکت                 ملی‌ صنایع‌ مس‌ ایران‌‌
-    نماد فارسی                                  فملی
-    نماد 30 رقمی فارسی        ملی‌ صنایع‌ مس‌ ایران‌
-    کد 12 رقمی شرکت                     IRO1MSMI0000
-    بازار               بازار اول (تابلوی اصلی) بورس
+    >>> inst.identification()
+    {'بازار': 'بازار اول (تابلوی اصلی) بورس',
+     'زیر گروه صنعت': 'تولید فلزات گرانبهای غیرآهن',
+     'نام شرکت': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c\u200c',
+     'نام لاتین شرکت': 'S*I. N. C. Ind.',
+     'نماد 30 رقمی فارسی': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
+     'نماد فارسی': 'فملی',
+     'کد 12 رقمی شرکت': 'IRO1MSMI0000',
+     'کد 12 رقمی نماد': 'IRO1MSMI0001',
+     'کد 4 رقمی شرکت': 'MSMI',
+     'کد 5 رقمی نماد': 'MSMI1',
+     'کد تابلو': '1',
+     'کد زیر گروه صنعت': '2720',
+     'کد گروه صنعت': '27',
+     'گروه صنعت': 'فلزات اساسی'}
     >>> # getting the share/unit holders
     >>> inst.holders()
                                         سهامدار/دارنده  ...            id_cisin
@@ -243,10 +246,8 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     15  1390-04-14 00:00:00   12991  15241
     16  1389-04-12 00:00:00    6494   7694
     17  1388-04-24 00:00:00    4827   5627
-    >>> # try Instrument.search if Instrument.from_l18 fails
-    >>> # (may happen if the symbol is new and the database is not up-to-date)
-    >>> Instrument.from_search('لطیف')
-    Instrument(16422980660132735)
+    >>> Instrument.from_search('توسعه اندوخته آینده')
+    Instrument(11427939669935844, 'اطلس')
 
 
 The following functions can be used to fetch all the data available for creating `filters on tsetmc.com`_:
