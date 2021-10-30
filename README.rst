@@ -264,6 +264,12 @@ The ``price_adjustments`` function gets all the price adjustments for a specifie
 If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them on github.
 
 
+See also
+--------
+
+* https://github.com/5j9/fipiran
+
+
 .. _pandas: https://pandas.pydata.org/
 .. _filters on tsetmc.com: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues
