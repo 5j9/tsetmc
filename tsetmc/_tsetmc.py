@@ -88,8 +88,7 @@ def fa_norm_text(url: str) -> str:
     return get_content(url).decode().translate(FARSI_NORM)
 
 
-class MarketWatchInitDict(TypedDict, total=False):
-    dataframe: DataFrame
+class MarketState(TypedDict, total=False):
     market_last_transaction: jdatetime
     tset_status: str
     tset_index: float
@@ -104,7 +103,13 @@ class MarketWatchInitDict(TypedDict, total=False):
     derivatives_status: int
 
 
-class IntraDayDict(TypedDict, total=False):
+class MarketWatchInit(TypedDict, total=False):
+    prices: DataFrame
+    best_limits: DataFrame
+    market_state: MarketState
+
+
+class IntraDay(TypedDict, total=False):
     general: dict
     thresholds: DataFrame
     closings: DataFrame
@@ -239,11 +244,11 @@ class Instrument:
         # todo: add 'codal_data'
         return result
 
-    def info(self, general=True, orders=False, index=False) -> dict:
+    def info(self, general=True, orders=False, market_state=False) -> dict:
         """Get info using instinfodata.aspx module.
 
         :keyword orders: parse orders and include related values.
-        :keyword index: parse values related to market-index.
+        :keyword market_state: parse values related to market state.
         """
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
@@ -273,8 +278,8 @@ class Instrument:
                 result['nav_datetime'] = jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
         else:
             result = {}
-        if index:
-            result |= _parse_index(index_info)
+        if market_state:
+            result |= _parse_market_state(index_info)
         if orders:
             result |= {
                 f'{k}{i}': int(v)
@@ -402,7 +407,7 @@ class Instrument:
         yesterday_holders=False,
         client_types=True,
         best_limits=True,
-    ) -> IntraDayDict:
+    ) -> IntraDay:
         """Get intraday info for the given date in YYYYMMDD format.
 
         For the meaning of instrument state codes refer to
@@ -510,8 +515,13 @@ class Instrument:
         return df
 
 
-def market_watch_init(index=False) -> MarketWatchInitDict:
+def market_watch_init(
+    market_state=False, prices=True, best_limits=True, join=True
+) -> MarketWatchInit:
     """Return the market status which are the info used in creating filters.
+
+    If `join` is True, `best_limits` will be joined to `prices`, otherwise
+        it will be returned as a separate dataframes.
 
     For more information about filters see:
         http://tsetmc.com/Loader.aspx?ParTree=15131F
@@ -525,31 +535,34 @@ def market_watch_init(index=False) -> MarketWatchInitDict:
     """
     text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, index_data, states, price_rows, _ = text.split('@')
-    state_df = read_csv(
-        StringIO(states)
-        , lineterminator=';'
-        , names=(
-            'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl', 'tno'
-            , 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol', 'visitcount'
-            , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval')
-        , low_memory=False
-        , index_col=['ins_code', 'isin', 'l18', 'l30'])
-    price_df = read_csv(
-        StringIO(price_rows)
-        , lineterminator=';'
-        , names=('ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
-        , dtype='Int64'
-        , low_memory=False)
-    # merge multiple rows sharing the same `row` number into one row.
-    # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    price_df.set_index(['ins_code', 'row'], inplace=True)
-    price_df = price_df.unstack(fill_value=0).sort_index(axis=1, level=1)
-    price_df.columns = [f'{c}{i}' for c, i in price_df.columns]
-    joined_df = state_df.join(price_df)
-    # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
-    result = {'dataframe': joined_df}
-    if index:
-        result |= _parse_index(index_data)
+    result = {}
+    if prices:
+        result['prices'] = price_df = read_csv(
+            StringIO(states),
+            lineterminator=';',
+            names=(
+                'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl',
+                'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol',
+                'visitcount' , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
+            low_memory=False, index_col=['ins_code', 'isin', 'l18', 'l30'])
+    if best_limits:
+        result['best_limits'] = best_limits_df = read_csv(
+            StringIO(price_rows), lineterminator=';', names=(
+                'ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
+            dtype='Int64', low_memory=False)
+    if join and prices and best_limits:
+        # merge multiple rows sharing the same `row` number into one row.
+        # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
+        # noinspection PyUnboundLocalVariable
+        best_limits_df.set_index(['ins_code', 'row'], inplace=True)
+        best_limits_df = best_limits_df.unstack(fill_value=0).sort_index(axis=1, level=1)
+        best_limits_df.columns = [f'{c}{i}' for c, i in best_limits_df.columns]
+        # noinspection PyUnboundLocalVariable
+        joined = best_limits_df.join(price_df)
+        # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
+        result['prices'] = joined
+    if market_state:
+        result['market_state'] = _parse_market_state(index_data)
     return result
 
 
@@ -618,7 +631,7 @@ def key_stats() -> DataFrame:
     return df
 
 
-def _parse_index(s: str) -> dict:
+def _parse_market_state(s: str) -> MarketState:
     market_last_transaction, tse_status, tse_index, tse_index_change \
         , tse_value, tse_tvol, tse_tval, tse_tno \
         , fb_status, fb_tvol, fb_tval, fb_tno \

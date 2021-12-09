@@ -10,7 +10,7 @@ from tsetmc import Instrument, _tsetmc, market_watch_init, \
     closing_price_all, client_type_all, key_stats, \
     price_adjustments, search
 # noinspection PyProtectedMember
-from tsetmc._tsetmc import _parse_index
+from tsetmc._tsetmc import _parse_market_state
 
 
 get_patcher = patch.object(
@@ -176,7 +176,7 @@ def test_page_info_negative_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).info(index=True, orders=True) == {
+    assert Instrument(1).info(market_state=True, orders=True) == {
         'derivatives_status': 'F',
         'derivatives_tno': 7864,
         'derivatives_tval': 150982456491.0,
@@ -303,7 +303,7 @@ def test_fmelli_instant():
 
 @patch_get_content('MarketWatchInit.aspx')
 def test_market_watch_init():
-    df = market_watch_init()['dataframe']
+    df = market_watch_init()['prices']
     assert df.dtypes.to_dict() == {
         'heven': 'int64', 'pf': 'int64', 'pc': 'int64'
         , 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
@@ -462,7 +462,7 @@ def test_client_type():
 
 def test_parse_index():
     # no tse_value
-    assert _parse_index("00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,") == {
+    assert _parse_market_state("00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,") == {
         'derivatives_status': 'C',
         'derivatives_tno': 0,
         'derivatives_tval': 0.0,
@@ -497,7 +497,7 @@ def test_parse_index():
         'tse_tval': 34288551133025.0,
         'tse_tvol': 3055466451.0,
         'tse_value': 4.674381234630472e+16
-    } == _parse_index(
+    } == _parse_market_state(
         "99/12/16 15:45:46,F,1169760.86,<div class='mn'>(8155.90)</div> -0.69%,46743812346304720.00,3055466451.00,34288551133025.00,428601,N,1057924358.00,163701347122693.00,342228,N,101096.00,31470939000.00,2621,")
 
     assert {
@@ -517,7 +517,7 @@ def test_parse_index():
         'tse_tno': 75828635544957.0,
         'tse_tval': 75828635544957.0,
         'tse_tvol': 9682732949.0,
-        'tse_value': 4.973605456635374e+16} == _parse_index(
+        'tse_value': 4.973605456635374e+16} == _parse_market_state(
         "99/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
 
 
