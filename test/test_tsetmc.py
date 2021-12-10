@@ -303,26 +303,39 @@ def test_fmelli_instant():
 
 @patch_get_content('MarketWatchInit.aspx')
 def test_market_watch_init():
-    df = market_watch_init()['prices']
-    assert df.dtypes.to_dict() == {
+    dtypes = {
         'heven': 'int64', 'pf': 'int64', 'pc': 'int64'
         , 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
         , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64'
         , 'py': 'int64', 'eps': 'float64', 'bvol': 'int64'
         , 'visitcount': 'int64', 'flow': 'int64'
         , 'cs': 'int64', 'tmax': 'float64', 'tmin': 'float64'
-        , 'z': 'int64', 'yval': 'int64', 'pd1': 'Int64'
-        , 'po1': 'Int64', 'qd1': 'Int64', 'qo1': 'Int64'
-        , 'zd1': 'Int64', 'zo1': 'Int64', 'pd2': 'Int64'
-        , 'po2': 'Int64', 'qd2': 'Int64', 'qo2': 'Int64'
-        , 'zd2': 'Int64', 'zo2': 'Int64', 'pd3': 'Int64'
-        , 'po3': 'Int64', 'qd3': 'Int64', 'qo3': 'Int64'
-        , 'zd3': 'Int64', 'zo3': 'Int64'}
-    index = df.index
-    assert index.names == ['ins_code', 'isin', 'l18', 'l30']
-    assert index.dtype == 'O'
-    # in pandas 1.3 there will be no need for `.to_frame()`
-    assert index.to_frame().dtypes.to_list() == ['int64', 'O', 'O', 'O']
+        , 'z': 'int64', 'yval': 'int64'}
+
+    mwi = market_watch_init(join=False, market_state=False)
+    assert mwi['prices'].dtypes.to_dict() == dtypes
+    assert mwi['best_limits'].index.names == ['ins_code', 'row']
+    assert 'market_state' not in mwi
+
+    mwi = market_watch_init(market_state=True)
+    prices = mwi['prices']
+    assert 'market_state' in mwi
+    assert 'best_limits' in mwi
+    assert prices.dtypes.to_dict() == {
+        **dtypes, 'pd1': 'int64'
+        , 'po1': 'int64', 'qd1': 'int64', 'qo1': 'int64'
+        , 'zd1': 'int64', 'zo1': 'int64', 'pd2': 'int64'
+        , 'po2': 'int64', 'qd2': 'int64', 'qo2': 'int64'
+        , 'zd2': 'int64', 'zo2': 'int64', 'pd3': 'int64'
+        , 'po3': 'int64', 'qd3': 'int64', 'qo3': 'int64'
+        , 'zd3': 'int64', 'zo3': 'int64'}
+    assert prices.index.dtypes.to_dict() == {
+        'ins_code': 'int64', 'isin': 'O', 'l18': 'O', 'l30': 'O'}
+
+    mwi = market_watch_init(prices=False, market_state=False)
+    assert 'prices' not in mwi
+    assert mwi['best_limits'].index.dtypes.to_dict() == {
+        'ins_code': 'int64', 'row': 'int64'}
 
 
 @patch_get_content('ClosingPriceAll.aspx')

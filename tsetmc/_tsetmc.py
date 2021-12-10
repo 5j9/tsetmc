@@ -125,6 +125,9 @@ class IntraDay(TypedDict, total=False):
     best_limits: DataFrame
 
 
+PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin'
@@ -516,7 +519,7 @@ class Instrument:
 
 
 def market_watch_init(
-    market_state=False, prices=True, best_limits=True, join=True
+    *, market_state=True, prices=True, best_limits=True, join=True
 ) -> MarketWatchInit:
     """Return the market status which are the info used in creating filters.
 
@@ -534,7 +537,7 @@ def market_watch_init(
             (it's the time of last transaction in HHMMSS format)
     """
     text = fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
-    _, index_data, states, price_rows, _ = text.split('@')
+    _, market_state_str, states, price_rows, _ = text.split('@')
     result = {}
     if prices:
         result['prices'] = price_df = read_csv(
@@ -544,17 +547,17 @@ def market_watch_init(
                 'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl',
                 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol',
                 'visitcount' , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
-            index_col=['ins_code', 'isin', 'l18', 'l30'])
+            index_col=PRICE_INDEX_COLS)
     if best_limits:
         result['best_limits'] = best_limits_df = read_csv(
             StringIO(price_rows), lineterminator=';', names=(
                 'ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
-            dtype='Int64')
+            dtype='int64', index_col=('ins_code', 'row'))
+        # best_limits_df.set_index(['ins_code', 'row'], inplace=True)
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
         # noinspection PyUnboundLocalVariable
-        best_limits_df.set_index(['ins_code', 'row'], inplace=True)
         best_limits_df = best_limits_df.unstack(fill_value=0).sort_index(axis=1, level=1)
         best_limits_df.columns = [f'{c}{i}' for c, i in best_limits_df.columns]
         # noinspection PyUnboundLocalVariable
@@ -562,7 +565,7 @@ def market_watch_init(
         # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
         result['prices'] = joined
     if market_state:
-        result['market_state'] = _parse_market_state(index_data)
+        result['market_state'] = _parse_market_state(market_state_str)
     return result
 
 
