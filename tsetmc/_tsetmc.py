@@ -72,6 +72,9 @@ with open(DB_PATH, encoding='utf8') as f:
 INS_CODE_TO_L18 = None
 
 
+read_csv = partial(read_csv, low_memory=False, engine='c')
+
+
 def _l18_l30(ins_code: int) -> tuple:
     global INS_CODE_TO_L18
     if INS_CODE_TO_L18 is None:
@@ -297,7 +300,6 @@ class Instrument:
             , sep='@'
             , lineterminator=';'
             , names=('date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno')
-            , low_memory=False
             , index_col='date'
             , parse_dates=True)
         return df
@@ -309,7 +311,7 @@ class Instrument:
             BytesIO(content)
             , lineterminator=';'
             , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
-            , low_memory=False, index_col='date', parse_dates=True)
+            , index_col='date', parse_dates=True)
         return df
 
     def client_type(self) -> DataFrame:
@@ -325,7 +327,7 @@ class Instrument:
                 , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
                 , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
-            , index_col='date', parse_dates=True , dtype='int64', low_memory=False)
+            , index_col='date', parse_dates=True , dtype='int64')
 
     def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.
@@ -377,16 +379,14 @@ class Instrument:
                 names=('date', 'shares'),
                 dtype='int64',
                 index_col='date',
-                parse_dates=True,
-                low_memory=False)
+                parse_dates=True)
 
         def other_holdings_df() -> DataFrame:
             return read_csv(
                 StringIO(oth),
                 lineterminator=';',
                 names=('ins_code', 'name', 'shares', 'percent'),
-                index_col='ins_code',
-                low_memory=False)
+                index_col='ins_code')
 
         if history and other_holdings:
             return history_df(), other_holdings_df()
@@ -544,12 +544,12 @@ def market_watch_init(
                 'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl',
                 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol',
                 'visitcount' , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
-            low_memory=False, index_col=['ins_code', 'isin', 'l18', 'l30'])
+            index_col=['ins_code', 'isin', 'l18', 'l30'])
     if best_limits:
         result['best_limits'] = best_limits_df = read_csv(
             StringIO(price_rows), lineterminator=';', names=(
                 'ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
-            dtype='Int64', low_memory=False)
+            dtype='Int64')
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
@@ -610,7 +610,7 @@ def client_type_all() -> DataFrame:
         BytesIO(content), lineterminator=b';', names=(
             'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
             , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
-        , dtype='int64', index_col='ins_code', low_memory=False)
+        , dtype='int64', index_col='ins_code')
     return df
 
 
