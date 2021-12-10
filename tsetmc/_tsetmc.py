@@ -128,6 +128,46 @@ class IntraDay(TypedDict, total=False):
 PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
 
 
+PRICE_DTYPES = {
+    'l18': 'string',
+    'l30': 'string',
+    'isin': 'string',
+    'heven': 'uint32',
+    'pl': 'uint32',
+    'pc': 'uint32',
+    'py': 'uint32',
+    'pf': 'uint32',
+    'tno': 'uint32',
+    'tvol': 'uint64',
+    'tval': 'uint64',
+    'pmin': 'uint32',
+    'pmax': 'uint32',
+    'tmin': 'float32',
+    'tmax': 'float32',
+    'bvol': 'uint32',
+    'visitcount': 'uint32',
+    # 0-7 /dev/docs/Instrument_service.html
+    'flow': 'uint8',
+    # 1-98 /dev/docs/cs_table.html
+    'cs': 'uint8',
+    'z': 'uint64',
+    # 67-701 /dev/docs/Instrument_service.html
+    'yval': 'uint16',
+    'ins_code': 'uint64',
+}
+
+BEST_LIMITS_DTYPES = {
+    'ins_code': 'uint64',
+    'row': 'uint8',
+    'zo': 'uint32',
+    'zd': 'uint32',
+    'pd': 'uint32',
+    'po': 'uint32',
+    'qd': 'uint32',
+    'qo': 'uint32',
+}
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin'
@@ -547,13 +587,12 @@ def market_watch_init(
                 'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl',
                 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol',
                 'visitcount' , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
-            index_col=PRICE_INDEX_COLS)
+            index_col=PRICE_INDEX_COLS, dtype=PRICE_DTYPES)
     if best_limits:
         result['best_limits'] = best_limits_df = read_csv(
             StringIO(price_rows), lineterminator=';', names=(
                 'ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
-            dtype='int64', index_col=('ins_code', 'row'))
-        # best_limits_df.set_index(['ins_code', 'row'], inplace=True)
+            dtype=BEST_LIMITS_DTYPES, index_col=('ins_code', 'row'))
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757

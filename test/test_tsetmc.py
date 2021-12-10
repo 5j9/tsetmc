@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
+from numpy import dtype
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
@@ -304,13 +305,16 @@ def test_fmelli_instant():
 @patch_get_content('MarketWatchInit.aspx')
 def test_market_watch_init():
     dtypes = {
-        'heven': 'int64', 'pf': 'int64', 'pc': 'int64'
-        , 'pl': 'int64', 'tno': 'int64', 'tvol': 'int64'
-        , 'tval': 'int64', 'pmin': 'int64', 'pmax': 'int64'
-        , 'py': 'int64', 'eps': 'float64', 'bvol': 'int64'
-        , 'visitcount': 'int64', 'flow': 'int64'
-        , 'cs': 'int64', 'tmax': 'float64', 'tmin': 'float64'
-        , 'z': 'int64', 'yval': 'int64'}
+        'heven': dtype('uint32'), 'pf': dtype('uint32'),
+        'pc': dtype('uint32'), 'pl': dtype('uint32'),
+        'tno': dtype('uint32'), 'tvol': dtype('uint64'),
+        'tval': dtype('uint64'), 'pmin': dtype('uint32'),
+        'pmax': dtype('uint32'), 'py': dtype('uint32'),
+        'eps': dtype('float64'), 'bvol': dtype('uint32'),
+        'visitcount': dtype('uint32'), 'flow': dtype('uint8'),
+        'cs': dtype('uint8'), 'tmax': dtype('float32'),
+        'tmin': dtype('float32'), 'z': dtype('uint64'),
+        'yval': dtype('uint16')}
 
     mwi = market_watch_init(join=False, market_state=False)
     assert mwi['prices'].dtypes.to_dict() == dtypes
@@ -322,20 +326,20 @@ def test_market_watch_init():
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
     assert prices.dtypes.to_dict() == {
-        **dtypes, 'pd1': 'int64'
-        , 'po1': 'int64', 'qd1': 'int64', 'qo1': 'int64'
-        , 'zd1': 'int64', 'zo1': 'int64', 'pd2': 'int64'
-        , 'po2': 'int64', 'qd2': 'int64', 'qo2': 'int64'
-        , 'zd2': 'int64', 'zo2': 'int64', 'pd3': 'int64'
-        , 'po3': 'int64', 'qd3': 'int64', 'qo3': 'int64'
-        , 'zd3': 'int64', 'zo3': 'int64'}
+        **dtypes, 'pd1': dtype('uint32'), 'po1': dtype('uint32'), 
+        'qd1': dtype('uint32'), 'qo1': dtype('uint32'), 'zd1': dtype('uint32'),
+        'zo1': dtype('uint32'), 'pd2': dtype('uint32'), 'po2': dtype('uint32'), 
+        'qd2': dtype('uint32'), 'qo2': dtype('uint32'), 'zd2': dtype('uint32'),
+        'zo2': dtype('uint32'), 'pd3': dtype('uint32'), 'po3': dtype('uint32'),
+        'qd3': dtype('uint32'), 'qo3': dtype('uint32'), 'zd3': dtype('uint32'),
+        'zo3': dtype('uint32')}
     assert prices.index.dtypes.to_dict() == {
-        'ins_code': 'int64', 'isin': 'O', 'l18': 'O', 'l30': 'O'}
+        'ins_code': dtype('uint64'), 'isin': 'O', 'l18': 'O', 'l30': 'O'}
 
     mwi = market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     assert mwi['best_limits'].index.dtypes.to_dict() == {
-        'ins_code': 'int64', 'row': 'int64'}
+        'ins_code': dtype('uint64'), 'row': dtype('uint64')}
 
 
 @patch_get_content('ClosingPriceAll.aspx')
