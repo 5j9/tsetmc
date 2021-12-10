@@ -10,13 +10,12 @@ from typing import Union, TypedDict
 
 from jdatetime import datetime as jdatetime
 from pandas import read_csv, to_numeric, DataFrame, read_html, to_datetime
-from requests import Session
+from requests import get
 
 
 strptime = datetime.strptime
 jstrptime = jdatetime.strptime
 j_ymd_parse = partial(jstrptime, format='%Y/%m/%d')
-GET = Session().get
 DB_PATH = f'{__file__}/../database/ids.json'
 
 FARSI_NORM = ''.maketrans('يك', 'یک')
@@ -83,7 +82,7 @@ def _l18_l30(ins_code: int) -> tuple:
 
 
 def get_content(url: str) -> bytes:
-    return GET(url).content
+    return get(url).content
 
 
 def fa_norm_text(url: str) -> str:
