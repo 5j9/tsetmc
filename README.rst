@@ -4,7 +4,7 @@ Note: The API is provisional and may change without deprecation.
 
 Installation
 ------------
-Requires Python 3.9+.
+Requires Python 3.10+.
 
 ``pip install tsetmc``
 
