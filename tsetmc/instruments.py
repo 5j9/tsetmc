@@ -4,6 +4,7 @@ from functools import partial as _partial
 from json import load as _jload
 from logging import warning as _warning
 from re import findall as _findall
+from pathlib import Path
 
 from jdatetime import datetime as _jdatetime
 from pandas import read_html as _read_html, to_datetime as _to_datetime
@@ -16,8 +17,8 @@ from . import _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
 _strptime = _datetime.strptime
 _jstrptime = _jdatetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-# keep in sync with MANIFEST.in
-_DB_PATH = f'{__file__}/../database/ids.json'
+print(f'{__file__=}')
+_DB_PATH = Path(__file__).parent / 'database/ids.json'
 
 # This regex is generated using dev/page_vars_regex_generator.py.
 # Fix and update that script before making changes.
