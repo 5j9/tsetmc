@@ -35,6 +35,8 @@ _PRICE_DTYPES = {
     # 67-701 /dev/docs/Instrument_service.html
     'yval': 'uint16',
 }
+_PRICE_COLUMNS = _PRICE_DTYPES.keys()
+_PRICE_UPDATE_COLUMNS = ('ins_code', *(*_PRICE_COLUMNS,)[4:13])
 
 
 class _MarketWatchInit(_TypedDict, total=False):
@@ -67,7 +69,7 @@ def market_watch_init(
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
-            names=_PRICE_DTYPES.keys(),
+            names=_PRICE_COLUMNS,
             index_col=_PRICE_INDEX_COLS, dtype=_PRICE_DTYPES)
     if best_limits:
         result['best_limits'] = best_limits_df = _csv2df(
@@ -121,14 +123,14 @@ def market_watch_plus(
         inst_prices = [ip.split(',') for ip in inst_price.split(';')]
         if new_prices:
             lst = [ip for ip in inst_prices if len(ip) != 10]
-            df = _DF(lst, columns=_PRICE_DTYPES.keys())
+            df = _DF(lst, columns=_PRICE_COLUMNS)
             df['eps'].replace('', _nan, inplace=True)
             df = df.astype(_PRICE_DTYPES, False)
             df.set_index(_PRICE_INDEX_COLS, inplace=True)
             result['new_prices'] = df
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
-            df = _DF(lst, columns=('ins_code', *(*_PRICE_DTYPES.keys(),)[4:13]))
+            df = _DF(lst, columns=_PRICE_UPDATE_COLUMNS)
             df = df.astype('uint64', False)
             df.set_index('ins_code', inplace=True)
             result['price_updates'] = df
