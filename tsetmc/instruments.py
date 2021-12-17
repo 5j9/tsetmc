@@ -16,7 +16,7 @@ from . import _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
 _strptime = _datetime.strptime
 _jstrptime = _jdatetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-# keep in sync with package_data in setup.cfg
+# keep in sync with MANIFEST.in
 _DB_PATH = f'{__file__}/../database/ids.json'
 
 # This regex is generated using dev/page_vars_regex_generator.py.
