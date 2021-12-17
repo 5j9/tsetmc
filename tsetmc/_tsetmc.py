@@ -9,6 +9,7 @@ from typing import Union, TypedDict
 
 
 from jdatetime import datetime as jdatetime
+from numpy import nan
 from pandas import read_csv, to_numeric, DataFrame, read_html, to_datetime
 from requests import get
 
@@ -71,7 +72,8 @@ with open(DB_PATH, encoding='utf8') as f:
 INS_CODE_TO_L18 = None
 
 
-read_csv = partial(read_csv, low_memory=False, engine='c')
+csv2df = partial(read_csv, low_memory=False, engine='c', lineterminator=';')
+DF = partial(DataFrame, copy=False)
 
 
 def _l18_l30(ins_code: int) -> tuple:
@@ -122,49 +124,6 @@ class IntraDay(TypedDict, total=False):
     yesterday_holders: DataFrame
     client_types: dict[str, int]
     best_limits: DataFrame
-
-
-PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
-
-
-PRICE_DTYPES = {
-    'l18': 'string',
-    'l30': 'string',
-    'isin': 'string',
-    'heven': 'uint32',
-    'pl': 'uint32',
-    'pc': 'uint32',
-    'py': 'uint32',
-    'pf': 'uint32',
-    'tno': 'uint32',
-    'tvol': 'uint64',
-    'tval': 'uint64',
-    'pmin': 'uint32',
-    'pmax': 'uint32',
-    'tmin': 'float32',
-    'tmax': 'float32',
-    'bvol': 'uint32',
-    'visitcount': 'uint32',
-    # 0-7 /dev/docs/Instrument_service.html
-    'flow': 'uint8',
-    # 1-98 /dev/docs/cs_table.html
-    'cs': 'uint8',
-    'z': 'uint64',
-    # 67-701 /dev/docs/Instrument_service.html
-    'yval': 'uint16',
-    'ins_code': 'uint64',
-}
-
-BEST_LIMITS_DTYPES = {
-    'ins_code': 'uint64',
-    'row': 'uint8',
-    'zo': 'uint32',
-    'zd': 'uint32',
-    'pd': 'uint32',
-    'po': 'uint32',
-    'qd': 'uint32',
-    'qo': 'uint32',
-}
 
 
 class Instrument:
@@ -277,7 +236,7 @@ class Instrument:
         if trade_history:
             m = TRADE_HISTORY(text, m.end())
             th = literal_eval(STR_TO_NUM(m[1]))
-            th = DataFrame(th, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
+            th = DF(th, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
             th['date'] = to_datetime(th['date'], format='%Y%m%d')
             th.set_index('date', inplace=True)
             result['trade_history'] = th
@@ -337,10 +296,9 @@ class Instrument:
     def trade_history(self, top: int) -> DataFrame:
         content = get_content(
             f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.code}&Top={top}')
-        df = read_csv(
+        df = csv2df(
             BytesIO(content)
             , sep='@'
-            , lineterminator=';'
             , names=('date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno')
             , index_col='date'
             , parse_dates=True)
@@ -349,9 +307,8 @@ class Instrument:
     def price_history(self, adjusted: bool = True) -> DataFrame:
         content = get_content(
             f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
-        df = read_csv(
+        df = csv2df(
             BytesIO(content)
-            , lineterminator=';'
             , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
             , index_col='date', parse_dates=True)
         return df
@@ -361,15 +318,14 @@ class Instrument:
 
         In column names `n_` prefix stands for natural and `l_` for legal.
         """
-        return read_csv(
+        return csv2df(
             BytesIO(get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.code}'))
-            , lineterminator=b';'
             , names=(
                 'date'
                 , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
                 , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
-            , index_col='date', parse_dates=True , dtype='int64')
+            , index_col='date', parse_dates=True , dtype='uint64')
 
     def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.
@@ -415,18 +371,16 @@ class Instrument:
         hist, _, oth = text.partition('#')
 
         def history_df() -> DataFrame:
-            return read_csv(
+            return csv2df(
                 StringIO(hist),
-                lineterminator=';',
                 names=('date', 'shares'),
-                dtype='int64',
+                dtype='uint64',
                 index_col='date',
                 parse_dates=True)
 
         def other_holdings_df() -> DataFrame:
-            return read_csv(
+            return csv2df(
                 StringIO(oth),
-                lineterminator=';',
                 names=('ins_code', 'name', 'shares', 'percent'),
                 index_col='ins_code')
 
@@ -469,13 +423,13 @@ class Instrument:
         if thresholds:
             find_start = find('StaticTreshholdData=') + 20
             end = find('];', find_start)
-            result['thresholds'] = DataFrame(literal_eval(text[find_start: end + 1]), columns=('time', 'tmax', 'tmin'))
+            result['thresholds'] = DF(literal_eval(text[find_start: end + 1]), columns=('time', 'tmax', 'tmin'))
             find_start = end
         if closings:
             find_start = find('ClosingPriceData=', find_start) + 17
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
-            closings = DataFrame(evaluated, columns=(
+            closings = DF(evaluated, columns=(
                 'date', '?1', 'pl', 'pc', 'pf', 'py', 'pmin', 'pmax', 'tno',
                 'tvol', 'tval', '?2', 'heven'))
             if len(closings['?1'].unique()) != 1 or closings['?2'].unique() != 1:
@@ -487,21 +441,21 @@ class Instrument:
             find_start = find('IntraDayPriceData=', find_start) + 18
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
-            result['candles'] = DataFrame(evaluated, columns=('time', 'high', 'low', 'open', 'close', 'tvol'))
+            result['candles'] = DF(evaluated, columns=('time', 'high', 'low', 'open', 'close', 'tvol'))
             find_start = end
         if states:
             find_start = find('InstrumentStateData=', find_start) + 20
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
-            result['states'] = DataFrame(evaluated, columns=('date', 'time', 'state'))
+            result['states'] = DF(evaluated, columns=('date', 'time', 'state'))
             find_start = end
         if trades:
             find_start = find('IntraTradeData=', find_start) + 15
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
             find_start = end
-            trades = DataFrame(evaluated, columns=('-', 'time', 'tvol', 'pl', 'annulled'))
-            trades['annulled'] = trades['annulled'].astype(bool)
+            trades = DF(evaluated, columns=('-', 'time', 'tvol', 'pl', 'annulled'))
+            trades['annulled'] = trades['annulled'].astype(bool, False)
             numeric_cols = ['-', 'tvol', 'pl']
             trades[numeric_cols] = trades[numeric_cols].apply(to_numeric)
             trades.set_index('-', inplace=True)
@@ -514,13 +468,13 @@ class Instrument:
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
             # noinspection PyUnboundLocalVariable
-            result['holders'] = DataFrame(evaluated, columns=holder_cols)
+            result['holders'] = DF(evaluated, columns=holder_cols)
             find_start = end
         if yesterday_holders:
             find_start = find('ShareHolderDataYesterday=', find_start) + 25
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
-            result['yesterday_holders'] = DataFrame(evaluated, columns=holder_cols)
+            result['yesterday_holders'] = DF(evaluated, columns=holder_cols)
             find_start = end
         if client_types:
             find_start = find('ClientTypeData=', find_start) + 15
@@ -543,7 +497,8 @@ class Instrument:
             find_start = find('var BestLimitData=', find_start) + 18
             end = find('];', find_start)
             evaluated = literal_eval(text[find_start: end + 1])
-            best_limits_df = DataFrame(evaluated, columns=('time', 'row', 'zd', 'qd', 'pd', 'po', 'qo', 'zo'))
+            best_limits_df = DF(evaluated, columns=('time', 'row', 'zd', 'qd', 'pd', 'po', 'qo', 'zo'))
+            # todo: use astype?
             best_limits_df : DataFrame = best_limits_df.apply(to_numeric)
             best_limits_df.set_index('time', inplace=True)
             result['best_limits'] = best_limits_df
@@ -555,6 +510,38 @@ class Instrument:
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(j_ymd_parse)
         return df
+
+
+PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
+BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
+PRICE_DTYPES = {
+    'ins_code': 'uint64',
+    'isin': 'string',
+    'l18': 'string',
+    'l30': 'string',
+    'heven': 'uint32',
+    'pf': 'uint64',
+    'pc': 'uint64',
+    'pl': 'uint64',
+    'tno': 'uint64',
+    'tvol': 'uint64',
+    'tval': 'uint64',
+    'pmin': 'uint64',
+    'pmax': 'uint64',
+    'py': 'uint64',
+    'eps': 'float64',
+    'bvol': 'uint64',
+    'visitcount': 'uint64',
+    # 0-7 /dev/docs/Instrument_service.html
+    'flow': 'uint8',
+    # 1-98 /dev/docs/cs_table.html
+    'cs': 'uint8',
+    'tmax': 'float64',
+    'tmin': 'float64',
+    'z': 'uint64',
+    # 67-701 /dev/docs/Instrument_service.html
+    'yval': 'uint16',
+}
 
 
 def market_watch_init(
@@ -579,19 +566,14 @@ def market_watch_init(
     _, market_state_str, states, price_rows, _ = text.split('@')
     result = {}
     if prices:
-        result['prices'] = price_df = read_csv(
+        result['prices'] = price_df = csv2df(
             StringIO(states),
-            lineterminator=';',
-            names=(
-                'ins_code', 'isin', 'l18', 'l30', 'heven', 'pf', 'pc', 'pl',
-                'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'eps', 'bvol',
-                'visitcount' , 'flow', 'cs', 'tmax', 'tmin', 'z', 'yval'),
+            names=PRICE_DTYPES.keys(),
             index_col=PRICE_INDEX_COLS, dtype=PRICE_DTYPES)
     if best_limits:
-        result['best_limits'] = best_limits_df = read_csv(
-            StringIO(price_rows), lineterminator=';', names=(
-                'ins_code', 'row', 'zo', 'zd', 'pd', 'po', 'qd', 'qo'),
-            dtype=BEST_LIMITS_DTYPES, index_col=('ins_code', 'row'))
+        result['best_limits'] = best_limits_df = csv2df(
+            StringIO(price_rows), names=BEST_LIMITS_NAMES,
+            dtype='uint64', index_col=('ins_code', 'number'))
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
@@ -604,6 +586,58 @@ def market_watch_init(
         result['prices'] = joined
     if market_state:
         result['market_state'] = _parse_market_state(market_state_str)
+    return result
+
+
+class MarketWatchPlus(TypedDict, total=False):
+    new_prices: DataFrame
+    price_updates: DataFrame
+    best_limits: DataFrame
+    messages: list[str]
+    market_state: MarketState
+    refid: int
+
+
+def market_watch_plus(
+    heven: int, refid: int,
+    *, messages=True, market_state=True,
+    new_prices=True, price_updates=True, best_limits=True,
+) -> MarketWatchPlus:
+    # See dev/tsetmc_source_files/market_watch.html
+    # for how the response is parsed in the browser.
+    handle_msg, update_fast_view, inst_price, best_limit, refid = fa_norm_text(
+        'http://www.tsetmc.com/tsev2/data/MarketWatchPlus.aspx?'
+        f'h={5 * (heven // 5)}&r={25 * (refid // 25)}').split('@')
+    result = {}
+    if messages:
+        # whenever a new id appears, users should try to fetch new messages
+        # using relevant functions
+        # todo: implement functions to fetch messages using message ids
+        # NewMsgNotification, NewInsStateNotification, NewCodalNotification
+        result['messages'] = handle_msg.split(',')
+    if market_state:
+        if update_fast_view != '':
+            result['market_state'] = _parse_market_state(update_fast_view)
+    if new_prices or price_updates:
+        inst_prices = [ip.split(',') for ip in inst_price.split(';')]
+        if new_prices:
+            lst = [ip for ip in inst_prices if len(ip) != 10]
+            df = DF(lst, columns=PRICE_DTYPES.keys())
+            df['eps'].replace('', nan, inplace=True)
+            df = df.astype(PRICE_DTYPES, False)
+            df.set_index(PRICE_INDEX_COLS, inplace=True)
+            result['new_prices'] = df
+        if price_updates:
+            lst = [ip for ip in inst_prices if len(ip) == 10]
+            df = DF(lst, columns=('ins_code', *(*PRICE_DTYPES.keys(),)[4:13]))
+            df = df.astype('uint64', False)
+            df.set_index('ins_code', inplace=True)
+            result['price_updates'] = df
+    if best_limits:
+        result['best_limits'] = csv2df(
+            StringIO(best_limit), index_col='ins_code',
+            names=BEST_LIMITS_NAMES, dtype='uint64')
+    result['refid'] = int(refid)
     return result
 
 
@@ -632,11 +666,11 @@ def closing_price_all() -> DataFrame:
     """
     content = get_content('http://www.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
-    df = DataFrame(data, columns=(
+    # dtype='uint64' param cannot be used due to
+    # https://github.com/pandas-dev/pandas/issues/44835
+    df = DF(data, columns=(
         'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
-        , 'pmin', 'pmax', 'py', 'pf'))
-    # noinspection PyTypeChecker
-    df = df.apply(to_numeric)
+        , 'pmin', 'pmax', 'py', 'pf')).astype('uint64', False)
     df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
@@ -647,11 +681,11 @@ def client_type_all() -> DataFrame:
     In column names `n_` prefix stands for natural and `l_` for legal.
     """
     content = get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
-    df = read_csv(
-        BytesIO(content), lineterminator=b';', names=(
+    df = csv2df(
+        BytesIO(content), names=(
             'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
             , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
-        , dtype='int64', index_col='ins_code')
+        , dtype='uint64', index_col='ins_code')
     return df
 
 
@@ -664,7 +698,7 @@ def key_stats() -> DataFrame:
     """
     content = get_content('http://www.tsetmc.com/tsev2/data/InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
-    df = DataFrame(data, columns=('ins_code', 'n', 'value'))
+    df = DF(data, columns=('ins_code', 'n', 'value'))
     # noinspection PyTypeChecker
     df = df.apply(to_numeric)
     df = df.pivot('ins_code', 'n', 'value')
@@ -685,7 +719,7 @@ def _parse_market_state(s: str) -> MarketState:
     timestamp_match = INDEX_TIMESTAMP_MATCH(market_last_transaction)
     result = {
         'market_last_transaction': jdatetime(
-            1300 + int(timestamp_match[1]), int(timestamp_match[2])
+            1400 + int(timestamp_match[1]), int(timestamp_match[2])
             , int(timestamp_match[3]), int(timestamp_match[4])
             , int(timestamp_match[5]), int(timestamp_match[6]))
         , 'tse_status': tse_status
@@ -724,11 +758,10 @@ def price_adjustments(flow: int) -> DataFrame:
 
 def search(skey: str, /) -> DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
-    return read_csv(
+    return csv2df(
         StringIO(fa_norm_text(
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + skey)),
         header=None,
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
-            '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'),
-        lineterminator=';')
+            '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'))

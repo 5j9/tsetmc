@@ -17,7 +17,7 @@ setup(
     package_data={'tsetmc': ['ids.json']},
     zip_safe=False,
     python_requires='>=3.9',
-    install_requires=['requests', 'jdatetime', 'pandas'],
+    install_requires=['requests', 'jdatetime', 'pandas>=1.3', 'numpy'],
     tests_require=['pytest'],
     classifiers=[
         'Intended Audience :: End Users/Desktop',
