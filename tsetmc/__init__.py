@@ -1,4 +1,4 @@
-__version__ = '0.32.4.dev0'
+__version__ = '0.32.4'
 
 from typing import TypedDict as _TypedDict
 from functools import partial as _partial
