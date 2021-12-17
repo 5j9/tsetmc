@@ -6,17 +6,16 @@ from numpy import dtype
 from pandas import DataFrame, DatetimeIndex, Index
 from pytest import raises
 
+from tsetmc.instruments import Instrument, price_adjustments, search
 # noinspection PyProtectedMember
-from tsetmc import Instrument, _tsetmc, market_watch_init, \
-    closing_price_all, client_type_all, key_stats, \
-    price_adjustments, search
-# noinspection PyProtectedMember
-from tsetmc._tsetmc import PRICE_DTYPES, _parse_market_state, market_watch_plus
+from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
+from tsetmc.market_watch import market_watch_init, market_watch_plus, \
+    key_stats, closing_price_all, client_type_all
 
 
-get_patcher = patch.object(
-    _tsetmc, 'get_content', side_effect=NotImplementedError(
-        'tests should not call get_content without patching'))
+get_patcher = patch(
+    'tsetmc._get', side_effect=NotImplementedError(
+        'offline tests should not call tsetmc._get'))
 
 
 def setup_module():
@@ -27,18 +26,23 @@ def teardown_module():
     get_patcher.stop()
 
 
+class FakeResponse:
+
+    def __init__(self, content: bytes):
+        self.content = content
+
+
 def patch_get_content(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
-        text = f.read()
-    return patch.object(_tsetmc, 'get_content', lambda _: text)
+        content = f.read()
+    return patch('tsetmc._get', lambda _: FakeResponse(content))
 
 
-@patch.object(_tsetmc, 'get_content')
-def test_info_url(mock):
-    with raises(ValueError):
+def test_info_url():
+    with raises(NotImplementedError):
         Instrument(1).info()
-    mock.assert_called_once_with(
-        'http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=1&c=&e=1')
+    with raises(NotImplementedError):
+        market_watch_init()
 
 
 @patch_get_content('fmelli.html')
@@ -302,7 +306,7 @@ def test_fmelli_instant():
         , 'tvol': 66266936}
 
 
-PRICE_DTYPES_ITEMS = [*PRICE_DTYPES.items()][4:]
+PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 
 
 @patch_get_content('MarketWatchInit.aspx')

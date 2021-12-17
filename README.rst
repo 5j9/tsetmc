@@ -17,7 +17,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
 
 .. code-block:: python
 
-    >>> from tsetmc import Instrument
+    >>> from tsetmc.instruments import Instrument
     >>> inst = Instrument.from_l18('فملی')
     >>> # getting the static data available in the main page of the symbol
     >>> inst.page_data(general=True, trade_history=True, related_companies=True)
@@ -250,7 +250,7 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     Instrument(11427939669935844, 'اطلس')
 
 
-The following functions can be used to fetch all the data available for creating `filters on tsetmc.com`_:
+The functions defined within the ``market_watch`` module can be used to fetch the data related to creating `filters on tsetmc.com`_:
 
 * ``market_watch_init``
 * ``closing_price_all``
@@ -258,7 +258,7 @@ The following functions can be used to fetch all the data available for creating
 * ``key_stats``
 
 
-The ``price_adjustments`` function gets all the price adjustments for a specified flow.
+The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
 
 If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them on github.

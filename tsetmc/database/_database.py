@@ -1,14 +1,14 @@
 from json import dump
 
-from tsetmc._tsetmc import DB_PATH, Instrument, market_watch_init, \
-    L18S
+from tsetmc._tsetmc import _DB_PATH, Instrument, market_watch_init, \
+    _L18S
 
 
 # todo: add tests for this module
 
 
 def dump_l18s():
-    with open(DB_PATH, 'w', encoding='utf8') as f:
+    with open(_DB_PATH, 'w', encoding='utf8') as f:
         dump(L18S, f, check_circular=False, ensure_ascii=False, indent='\t', sort_keys=True)
 
 
