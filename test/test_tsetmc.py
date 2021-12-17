@@ -379,7 +379,9 @@ def test_client_type_all():
 def test_key_stats():
     df = key_stats()
     assert all(df.columns.str.startswith('is'))
+    assert all(t == 'float64' for t in df.dtypes)
     assert df.index.name == 'ins_code'
+    assert df.index.dtype == 'int64'
 
 
 VSKHOOZ = {
