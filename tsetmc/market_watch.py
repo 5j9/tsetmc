@@ -25,14 +25,14 @@ _PRICE_DTYPES = {
     'eps': 'float64',
     'bvol': 'uint64',
     'visitcount': 'uint64',
-    # 0-7 /dev/docs/Instrument_service.html
+    # 0-7 /dev/docs/Instrument.html
     'flow': 'uint8',
     # 1-98 /dev/docs/cs_table.html
     'cs': 'uint8',
     'tmax': 'float64',
     'tmin': 'float64',
     'z': 'uint64',
-    # 67-701 /dev/docs/Instrument_service.html
+    # 67-701 /dev/docs/Instrument.html
     'yval': 'uint16',
 }
 _PRICE_COLUMNS = _PRICE_DTYPES.keys()
@@ -57,11 +57,9 @@ def market_watch_init(
         http://tsetmc.com/Loader.aspx?ParTree=15131F
     For the meaning of column names in the returned DataFrame see:
         https://cdn.tsetmc.com/Site.aspx?ParTree=151713
-        For `flow` and `yval` codes see:
-            http://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-        For `heven` see:
-            http://cdn.tsetmc.com/Site.aspx?ParTree=111411111S&LnkIdn=129
-            (it's the time of last transaction in HHMMSS format)
+        For `flow` and `yval` codes see: /dev/docs/Instrument.html
+        For `heven` see: /dev/docs/IndexB1LastDayOneInst.html
+            (it's the time of the last transaction in HHMMSS format)
     """
     text = _fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, market_state_str, states, price_rows, _ = text.split('@')
