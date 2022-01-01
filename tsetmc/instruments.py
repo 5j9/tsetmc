@@ -1,23 +1,19 @@
 from ast import literal_eval as _literal_eval
-from _datetime import datetime as _datetime
+from datetime import datetime as _datetime
 from functools import partial as _partial
 from json import load as _jload
 from logging import warning as _warning
-from re import findall as _findall
 from pathlib import Path
 
-from jdatetime import datetime as _jdatetime
-from pandas import read_html as _read_html, to_datetime as _to_datetime
+from pandas import to_datetime as _to_datetime
 
 from . import _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
     _fa_norm_text, _get_content, _StringIO, _BytesIO, _DF, _DataFrame, \
-    _to_numeric
+    _to_numeric, _read_html, _findall, _jstrptime
 
 
 _strptime = _datetime.strptime
-_jstrptime = _jdatetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-print(f'{__file__=}')
 _DB_PATH = Path(__file__).parent / 'database/ids.json'
 
 # This regex is generated using dev/page_vars_regex_generator.py.
@@ -236,7 +232,8 @@ class Instrument:
                 info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
             result = {
                 'timestamp': timestamp, 'status': status
-                , 'last_info_datetime': _strptime(info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
+                , 'last_info_datetime': _strptime(
+                    info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
                 , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
                 , 'pmin': int(pmin), 'pmax': int(pmax)
                 , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}

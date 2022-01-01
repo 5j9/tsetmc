@@ -3,14 +3,16 @@ from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
 from numpy import dtype
-from pandas import DataFrame, DatetimeIndex, Index
+from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
 from tsetmc.instruments import Instrument, price_adjustments, search
+# todo: move market watch to another module
 # noinspection PyProtectedMember
 from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
-    key_stats, closing_price_all, client_type_all
+    key_stats, closing_price_all, client_type_all, status_changes, \
+    ombud_messages
 
 
 get_patcher = patch(
@@ -313,6 +315,7 @@ PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 def test_market_watch_init():
     mwi = market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
+    # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
     assert 'market_state' not in mwi
@@ -342,6 +345,7 @@ def test_market_watch_init():
         ('zo3', dtype('uint64')),
         * PRICE_DTYPES_ITEMS]
 
+    # noinspection PyUnresolvedReferences
     assert [*prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', dtype('O')),
@@ -350,6 +354,7 @@ def test_market_watch_init():
 
     mwi = market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
+    # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
 
@@ -362,6 +367,7 @@ def test_closing_price_all():
     index = df.index
     assert index.names == ['ins_code', 'n']
     assert index.dtype == 'O'
+    # noinspection PyUnresolvedReferences
     assert all(t == 'uint64' for t in index.dtypes)
 
 
@@ -720,6 +726,7 @@ def test_market_watch_plus_new():
     mwp = market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
+    # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', dtype('O')),
@@ -785,6 +792,30 @@ def test_market_watch_plus_update():
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
+    # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', dtype('O')), ('l18', dtype('O')), ('l30', dtype('O'))]
+
+
+@patch_get_content('status_changes.html')
+def test_status_changes():
+    df = status_changes(3)
+    assert len(df) == 3
+    assert (*df.dtypes.items(),) == (
+        ('نماد', dtype('O')),
+        ('نام', dtype('O')),
+        ('وضعیت جدید', dtype('O')),
+        ('date', dtype('O')),)
+    assert df.iat[0, 3] == jdatetime(1400, 10, 7, 17, 56)
+
+
+@patch_get_content('ombud_messages.html')
+def test_ombud_messages():
+    df = ombud_messages(3)
+    assert len(df) == 3
+    assert (*df.dtypes.items(),) == (
+        ('header', dtype('O')),
+        ('date', dtype('O')),
+        ('description', dtype('O')))
+    assert df.iat[0, 1] == jdatetime(1400, 10, 8, 8, 25)

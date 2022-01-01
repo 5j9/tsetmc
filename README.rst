@@ -249,16 +249,18 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
     >>> Instrument.from_search('توسعه اندوخته آینده')
     Instrument(11427939669935844, 'اطلس')
 
+The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
-The functions defined within the ``market_watch`` module can be used to fetch the data related to creating `filters on tsetmc.com`_:
+
+`market_watch`_ module contains the following functions:
 
 * ``market_watch_init``
+* ``market_watch_plus``
 * ``closing_price_all``
 * ``client_type_all``
 * ``key_stats``
-
-
-The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
+* ``ombud_messages``
+* ``status_changes``
 
 
 If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them on github.
@@ -271,5 +273,5 @@ See also
 
 
 .. _pandas: https://pandas.pydata.org/
-.. _filters on tsetmc.com: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
+.. _market_watch: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues

@@ -4,12 +4,14 @@ from typing import TypedDict as _TypedDict
 from functools import partial as _partial
 from re import compile as _rc
 # noinspection PyUnresolvedReferences
+from re import findall as _findall
+# noinspection PyUnresolvedReferences
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 
 from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
-from pandas import to_numeric as _to_numeric
+from pandas import to_numeric as _to_numeric, read_html as _read_html
 from requests import get as _get
 
 
@@ -22,6 +24,9 @@ _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 
 _DF = _partial(_DataFrame, copy=False)
+
+
+_jstrptime = _jdatetime.strptime
 
 
 class _MarketState(_TypedDict, total=False):

@@ -2,7 +2,7 @@ from numpy import nan as _nan
 
 from . import _parse_market_state, _TypedDict, _MarketState, _csv2df, \
     _fa_norm_text, _StringIO, _get_content, _BytesIO, _DF, _DataFrame, \
-    _to_numeric
+    _to_numeric, _read_html, _findall, _jstrptime
 
 
 _PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
@@ -204,4 +204,30 @@ def key_stats() -> _DataFrame:
     df = df.apply(_to_numeric)
     df = df.pivot('ins_code', 'n', 'value')
     df.columns = [f'is{c}' for c in df.columns]
+    return df
+
+
+def ombud_messages(
+    top: int | str, flow: int | str = 0,
+):
+    text = _fa_norm_text(
+        'http://www.tsetmc.com/Loader.aspx?Partree=151313'
+        f'&Flow={flow}&top={top}')
+    headers = _findall(r'<th>(.+?)</th>', text)
+    dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
+    descriptions = _findall(r'<td colspan="2">(.+?)<hr /></td>', text)
+    df = _DF({'header': headers, 'date': dates, 'description': descriptions})
+    # _jdatetime.strptime does not support %y directive
+    # https://github.com/slashmili/python-jalali/issues/100
+    df['date'] = ('14' + df['date']).apply(_jstrptime, format='%Y/%m/%d %H:%M')
+    return df
+
+
+def status_changes(top: int | str) -> _DataFrame:
+    text = _fa_norm_text(
+        f'http://redirectcdn.tsetmc.com/Loader.aspx?Partree=15131L&top={top}')
+    df = _read_html(text)[0]
+    df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
+        _jstrptime, format='%Y/%m/%d %H:%M')
+    df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df
