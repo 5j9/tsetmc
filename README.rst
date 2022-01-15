@@ -61,10 +61,10 @@ Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?Pa
         Instrument(9211775239375291, 'ذوب'),
         ...]}
     >>> # getting the latest price information
-    >>> inst.info()
+    >>> inst.live_data()
     {'timestamp': '12:30:00',
      'status': 'A ',
-     'last_info_datetime': datetime.datetime(2021, 7, 5, 12, 30),
+     'datetime': datetime.datetime(2021, 7, 5, 12, 30),
      'pl': 12250,
      'pc': 12210,
      'pf': 12140,
