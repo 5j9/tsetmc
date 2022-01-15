@@ -42,7 +42,7 @@ def patch_get_content(name):
 
 def test_info_url():
     with raises(NotImplementedError):
-        Instrument(1).info()
+        Instrument(1).live_data()
     with raises(NotImplementedError):
         market_watch_init()
 
@@ -183,40 +183,27 @@ def test_page_info_negative_sector_pe():
 
 @patch_get_content('dara_yekom.txt')
 def test_dara1_instant():
-    assert Instrument(1).info(market_state=True, orders=True) == {
-        'derivatives_status': 'F',
-        'derivatives_tno': 7864,
-        'derivatives_tval': 150982456491.0,
-        'derivatives_tvol': 452251494.0,
+    live_data = Instrument(1).live_data(market_state=True, best_limits=True)
+    best_limits = live_data.pop('best_limits')
+    market_state = live_data.pop('market_state')
+    assert live_data == {
+        'pc': 151580,
         'last_info_datetime': datetime(2021, 1, 27, 12, 30),
-        'market_last_transaction': jdatetime(1499, 11, 8, 15, 21, 59),
         'nav': 190671,
         'nav_datetime': jdatetime(1399, 11, 8, 15, 40),
-        'fb_status': 'F',
-        'fb_tno': 494135,
-        'fb_tval': 122240030535934.0,
-        'fb_tvol': 2168547032.0,
-        'pc': 151580,
-        'pd1': 150120,
-        'pd2': 150000,
-        'pd3': 149990,
         'pf': 147550,
         'pl': 150120,
         'pmax': 141100,
         'pmin': 158000,
-        'po1': 150120,
-        'po2': 150130,
-        'po3': 150500,
         'py': 152030,
-        'qd1': 2000,
-        'qd2': 62729,
-        'qd3': 3185,
-        'qo1': 7275,
-        'qo2': 34582,
-        'qo3': 3862,
         'status': 'A ',
         'timestamp': '12:30:00',
         'tno': 84083,
+        'tval': 9972065145080,
+        'tvol': 65786166,
+        }
+    assert market_state == {
+        'market_last_transaction': jdatetime(1499, 11, 8, 15, 21, 59),
         'tse_index': 1207698.27,
         'tse_index_change': -7335.16,
         'tse_index_change_percent': -0.6,
@@ -225,56 +212,53 @@ def test_dara1_instant():
         'tse_tval': 113961561691999.0,
         'tse_tvol': 10062531582.0,
         'tse_value': 4.802681498014614e+16,
-        'tval': 9972065145080,
-        'tvol': 65786166,
-        'zd1': 1,
-        'zd2': 8,
-        'zd3': 12,
-        'zo1': 3,
-        'zo2': 1,
-        'zo3': 3}
+        'fb_status': 'F',
+        'fb_tno': 494135,
+        'fb_tval': 122240030535934.0,
+        'fb_tvol': 2168547032.0,
+        'derivatives_status': 'F',
+        'derivatives_tno': 7864,
+        'derivatives_tval': 150982456491.0,
+        'derivatives_tvol': 452251494.0,
+    }
+    assert best_limits.to_csv(line_terminator='\n') == (
+        ',zd,qd,pd,po,qo,zo'
+        '\n0,1,2000,150120,150120,7275,3'
+        '\n1,8,62729,150000,150130,34582,1'
+        '\n2,12,3185,149990,150500,3862,3'
+        '\n')
 
 
 @patch_get_content('asam.txt')
 def test_asam_instant():
-    assert Instrument(1).info(orders=True) == {
+    live_data = Instrument(1).live_data(best_limits=True)
+    best_limits = live_data.pop('best_limits')
+    assert live_data == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
         , 'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43)
         , 'pc': 94140
-        , 'pd1': 94000
-        , 'pd2': 92350
-        , 'pd3': 91140
         , 'pf': 94440
         , 'pl': 95890
         , 'pmax': 92001
         , 'pmin': 96000
-        , 'po1': 95900
-        , 'po2': 95990
-        , 'po3': 96000
         , 'py': 93414
-        , 'qd1': 5000
-        , 'qd2': 50
-        , 'qd3': 550
-        , 'qo1': 3000
-        , 'qo2': 250
-        , 'qo3': 560
         , 'timestamp': '12:28:17'
         , 'tno': 27
         , 'tval': 753116350
-        , 'tvol': 8000
-        , 'zd1': 1
-        , 'zd2': 1
-        , 'zd3': 1
-        , 'zo1': 1
-        , 'zo2': 2
-        , 'zo3': 2}
+        , 'tvol': 8000}
+    assert best_limits.to_csv(line_terminator='\n') == (
+        ',zd,qd,pd,po,qo,zo'
+        '\n0,1,5000,94000,95900,3000,1'
+        '\n1,1,50,92350,95990,250,2'
+        '\n2,1,550,91140,96000,560,2'
+        '\n')
 
 
 @patch_get_content('negin.txt')
 def test_negin_instant():
-    assert Instrument(1).info() == {
+    assert Instrument(1).live_data() == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
         , 'nav': 12190
@@ -293,7 +277,7 @@ def test_negin_instant():
 
 @patch_get_content('fmelli.txt')
 def test_fmelli_instant():
-    assert Instrument(1).info(orders=False) == {
+    assert Instrument(1).live_data(best_limits=False) == {
         'status': 'A '
         , 'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'pc': 19890
@@ -407,12 +391,12 @@ VSKHOOZ = {
 
 @patch_get_content('vskhooz_short_response.txt')
 def test_vskhooz_short():
-    assert Instrument(1).info() == VSKHOOZ
+    assert Instrument(1).live_data() == VSKHOOZ
 
 
 @patch_get_content('vskhooz_long_response.txt')
 def test_vskhooz_long():
-    assert Instrument(1).info() == VSKHOOZ
+    assert Instrument(1).live_data() == VSKHOOZ
 
 
 @patch_get_content('fmelli_trade_history_top2.txt')
@@ -427,7 +411,7 @@ def test_trade_history():
 
 @patch_get_content('vsadid.txt')
 def test_vsadid():
-    assert Instrument(1).info() == {
+    assert Instrument(1).live_data() == {
         'status': 'IS'
         , 'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
         , 'pc': 23810

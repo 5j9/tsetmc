@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pandas import to_datetime as _to_datetime
 
-from . import _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
+from . import _MarketState, _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
     _fa_norm_text, _get_content, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime
 
@@ -83,6 +83,23 @@ class _IntraDay(_TypedDict, total=False):
     yesterday_holders: _DataFrame
     client_types: dict[str, int]
     best_limits: _DataFrame
+
+
+class _LiveData(_TypedDict, total=False):
+    market_state: _MarketState
+    orders: dict[str, int]
+    timestamp: str
+    status: str
+    last_info_datetime: _datetime
+    pl: int
+    pc: int
+    pf: int
+    py: int
+    pmin: int
+    pmax: int
+    tno: int
+    tvol: int
+    tval: int
 
 
 class Instrument:
@@ -207,10 +224,12 @@ class Instrument:
         # todo: add 'codal_data'
         return result
 
-    def info(self, general=True, orders=False, market_state=False) -> dict:
-        """Get info using instinfodata.aspx module.
+    def live_data(
+        self, general=True, best_limits=False, market_state=False
+    ) -> _LiveData:
+        """Return live data price/order data using instinfodata.aspx module.
 
-        :keyword orders: parse orders and include related values.
+        :keyword best_limits: parse best_limits and include related values.
         :keyword market_state: parse values related to market state.
         """
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
@@ -243,14 +262,12 @@ class Instrument:
         else:
             result = {}
         if market_state:
-            result |= _parse_market_state(index_info)
-        if orders:
-            result |= {
-                f'{k}{i}': int(v)
-                for i, row in enumerate(orders_info.split(','), 1)
-                for (k, v) in zip(
-                    ('zd', 'qd', 'pd', 'po', 'qo', 'zo'), row.split('@'))
-                if row}  # the `if` is for the last row which is empty
+            result['market_state'] = _parse_market_state(index_info)
+        if best_limits:
+            result['best_limits'] = _csv2df(
+                _StringIO(orders_info), sep='@',
+                names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
+                lineterminator=',')
         return result
 
     def trade_history(self, top: int) -> _DataFrame:
