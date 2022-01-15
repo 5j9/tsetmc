@@ -90,7 +90,7 @@ class _LiveData(_TypedDict, total=False):
     orders: dict[str, int]
     timestamp: str
     status: str
-    last_info_datetime: _datetime
+    datetime: _datetime
     pl: int
     pc: int
     pf: int
@@ -251,7 +251,7 @@ class Instrument:
                 info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
             result = {
                 'timestamp': timestamp, 'status': status
-                , 'last_info_datetime': _strptime(
+                , 'datetime': _strptime(
                     info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
                 , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
                 , 'pmin': int(pmin), 'pmax': int(pmax)

@@ -188,7 +188,7 @@ def test_dara1_instant():
     market_state = live_data.pop('market_state')
     assert live_data == {
         'pc': 151580,
-        'last_info_datetime': datetime(2021, 1, 27, 12, 30),
+        'datetime': datetime(2021, 1, 27, 12, 30),
         'nav': 190671,
         'nav_datetime': jdatetime(1399, 11, 8, 15, 40),
         'pf': 147550,
@@ -203,7 +203,7 @@ def test_dara1_instant():
         'tvol': 65786166,
         }
     assert market_state == {
-        'market_last_transaction': jdatetime(1499, 11, 8, 15, 21, 59),
+        'datetime': jdatetime(1499, 11, 8, 15, 21, 59),
         'tse_index': 1207698.27,
         'tse_index_change': -7335.16,
         'tse_index_change_percent': -0.6,
@@ -235,7 +235,7 @@ def test_asam_instant():
     best_limits = live_data.pop('best_limits')
     assert live_data == {
         'status': 'A '
-        , 'last_info_datetime': datetime(2020, 11, 11, 12, 28, 17)
+        , 'datetime': datetime(2020, 11, 11, 12, 28, 17)
         , 'nav': 95630
         , 'nav_datetime': jdatetime(1399, 8, 21, 15, 13, 43)
         , 'pc': 94140
@@ -260,7 +260,7 @@ def test_asam_instant():
 def test_negin_instant():
     assert Instrument(1).live_data() == {
         'status': 'A '
-        , 'last_info_datetime': datetime(2020, 11, 11, 12, 29, 37)
+        , 'datetime': datetime(2020, 11, 11, 12, 29, 37)
         , 'nav': 12190
         , 'nav_datetime': jdatetime(1398, 12, 29, 16, 0)
         , 'pc': 50110
@@ -279,7 +279,7 @@ def test_negin_instant():
 def test_fmelli_instant():
     assert Instrument(1).live_data(best_limits=False) == {
         'status': 'A '
-        , 'last_info_datetime': datetime(2020, 11, 11, 17, 29, 53)
+        , 'datetime': datetime(2020, 11, 11, 17, 29, 53)
         , 'pc': 19890
         , 'pf': 19400
         , 'pl': 20320
@@ -376,7 +376,7 @@ def test_key_stats():
 
 VSKHOOZ = {
     'status': 'IS'
-    , 'last_info_datetime': datetime(2021, 1, 20, 6, 42, 18)
+    , 'datetime': datetime(2021, 1, 20, 6, 42, 18)
     , 'pc': 67818
     , 'pf': 0
     , 'pl': 67810
@@ -413,7 +413,7 @@ def test_trade_history():
 def test_vsadid():
     assert Instrument(1).live_data() == {
         'status': 'IS'
-        , 'last_info_datetime': datetime(2021, 1, 24, 6, 41, 10)
+        , 'datetime': datetime(2021, 1, 24, 6, 41, 10)
         , 'pc': 23810
         , 'pf': 0
         , 'pl': 23633
@@ -485,7 +485,7 @@ def test_parse_index():
         'derivatives_tno': 0,
         'derivatives_tval': 0.0,
         'derivatives_tvol': 0.0,
-        'market_last_transaction': jdatetime(1400, 1, 14, 6, 40, 12),
+        'datetime': jdatetime(1400, 1, 14, 6, 40, 12),
         'fb_status': 'C',
         'fb_tno': 0,
         'fb_tval': 0.0,
@@ -502,7 +502,7 @@ def test_parse_index():
         'derivatives_tno': 2621,
         'derivatives_tval': 31470939000.0,
         'derivatives_tvol': 101096.0,
-        'market_last_transaction': jdatetime(1400, 12, 16, 15, 45, 46),
+        'datetime': jdatetime(1400, 12, 16, 15, 45, 46),
         'fb_status': 'N',
         'fb_tno': 342228,
         'fb_tval': 163701347122693.0,
@@ -523,7 +523,7 @@ def test_parse_index():
         'derivatives_tno': 5796,
         'derivatives_tval': 57759844000.0,
         'derivatives_tvol': 225866.0,
-        'market_last_transaction': jdatetime(1400, 12, 24, 14, 39, 40),
+        'datetime': jdatetime(1400, 12, 24, 14, 39, 40),
         'fb_status': 'F',
         'fb_tno': 544617,
         'fb_tval': 128484547655014.0,
@@ -742,7 +742,7 @@ def test_market_watch_plus_update():
     assert price_updates.index.dtype == 'uint64'
 
     assert mwp['market_state'] == {
-        'market_last_transaction': jdatetime(1400, 9, 21, 6, 41, 30),
+        'datetime': jdatetime(1400, 9, 21, 6, 41, 30),
         'tse_status': 'F',
         'tse_index': 1344441.58,
         'tse_index_change': -4948.21,

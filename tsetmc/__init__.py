@@ -30,7 +30,7 @@ _jstrptime = _jdatetime.strptime
 
 
 class _MarketState(_TypedDict, total=False):
-    market_last_transaction: _jdatetime
+    datetime: _jdatetime
     tset_status: str
     tset_index: float
     tset_index_change: float
@@ -45,7 +45,7 @@ class _MarketState(_TypedDict, total=False):
 
 
 def _parse_market_state(s: str) -> _MarketState:
-    market_last_transaction, tse_status, tse_index, tse_index_change \
+    datetime, tse_status, tse_index, tse_index_change \
         , tse_value, tse_tvol, tse_tval, tse_tno \
         , fb_status, fb_tvol, fb_tval, fb_tno \
         , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
@@ -54,9 +54,9 @@ def _parse_market_state(s: str) -> _MarketState:
     tse_index_change = float(index_change_match[2])
     if index_change_match[1] is not None:  # negative value
         tse_index_change *= -1
-    timestamp_match = _INDEX_TIMESTAMP_MATCH(market_last_transaction)
+    timestamp_match = _INDEX_TIMESTAMP_MATCH(datetime)
     result = {
-        'market_last_transaction': _jdatetime(
+        'datetime': _jdatetime(
             1400 + int(timestamp_match[1]), int(timestamp_match[2])
             , int(timestamp_match[3]), int(timestamp_match[4])
             , int(timestamp_match[5]), int(timestamp_match[6]))
