@@ -16,8 +16,8 @@ from tsetmc.market_watch import market_watch_init, market_watch_plus, \
 
 
 get_patcher = patch(
-    'tsetmc._get', side_effect=NotImplementedError(
-        'offline tests should not call tsetmc._get'))
+    'tsetmc._requests_get', side_effect=NotImplementedError(
+        'offline tests should not call tsetmc._requests_get'))
 
 
 def setup_module():
@@ -34,10 +34,10 @@ class FakeResponse:
         self.content = content
 
 
-def patch_get_content(name):
+def patch_get(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         content = f.read()
-    return patch('tsetmc._get', lambda _: FakeResponse(content))
+    return patch('tsetmc._requests_get', lambda _: FakeResponse(content))
 
 
 def test_info_url():
@@ -47,7 +47,7 @@ def test_info_url():
         market_watch_init()
 
 
-@patch_get_content('fmelli.html')
+@patch_get('fmelli.html')
 def test_page_info():
     ins = Instrument(1)
     assert ins._l18 is ins._l30 is None
@@ -97,7 +97,7 @@ def test_page_info():
         '2021-06-20,11600.0,11880.0,11450.0,11960.0,14830,73966678,858202905300.0\n')
 
 
-@patch_get_content('dey.html')
+@patch_get('dey.html')
 def test_page_info_no_free_float():
     d = Instrument(1).page_data()
     assert d == {
@@ -125,7 +125,7 @@ def test_page_info_no_free_float():
         'z': 135000000000}
 
 
-@patch_get_content('kala.html')
+@patch_get('kala.html')
 def test_page_info_no_eps():
     d = Instrument(1).page_data()
     assert d == {
@@ -153,7 +153,7 @@ def test_page_info_no_eps():
         'z': 2500000000}
 
 
-@patch_get_content('khgostar.html')
+@patch_get('khgostar.html')
 def test_page_info_negative_sector_pe():
     d = Instrument(1).page_data()
     assert d == {
@@ -181,7 +181,7 @@ def test_page_info_negative_sector_pe():
         'z': 39605137000}
 
 
-@patch_get_content('dara_yekom.txt')
+@patch_get('dara_yekom.txt')
 def test_dara1_instant():
     live_data = Instrument(1).live_data(market_state=True, best_limits=True)
     best_limits = live_data.pop('best_limits')
@@ -229,7 +229,7 @@ def test_dara1_instant():
         '\n')
 
 
-@patch_get_content('asam.txt')
+@patch_get('asam.txt')
 def test_asam_instant():
     live_data = Instrument(1).live_data(best_limits=True)
     best_limits = live_data.pop('best_limits')
@@ -256,7 +256,7 @@ def test_asam_instant():
         '\n')
 
 
-@patch_get_content('negin.txt')
+@patch_get('negin.txt')
 def test_negin_instant():
     assert Instrument(1).live_data() == {
         'status': 'A '
@@ -275,7 +275,7 @@ def test_negin_instant():
         , 'tvol': 28109}
 
 
-@patch_get_content('fmelli.txt')
+@patch_get('fmelli.txt')
 def test_fmelli_instant():
     assert Instrument(1).live_data(best_limits=False) == {
         'status': 'A '
@@ -295,7 +295,7 @@ def test_fmelli_instant():
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 
 
-@patch_get_content('MarketWatchInit.aspx')
+@patch_get('MarketWatchInit.aspx')
 def test_market_watch_init():
     mwi = market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
@@ -343,7 +343,7 @@ def test_market_watch_init():
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
 
 
-@patch_get_content('ClosingPriceAll.aspx')
+@patch_get('ClosingPriceAll.aspx')
 def test_closing_price_all():
     df = closing_price_all()
     assert all(t == 'uint64' for t in df.dtypes)
@@ -355,7 +355,7 @@ def test_closing_price_all():
     assert all(t == 'uint64' for t in index.dtypes)
 
 
-@patch_get_content('ClientTypeAll.aspx')
+@patch_get('ClientTypeAll.aspx')
 def test_client_type_all():
     df = client_type_all()
     assert all(df.columns == [
@@ -365,7 +365,7 @@ def test_client_type_all():
     assert df.index.name == 'ins_code'
 
 
-@patch_get_content('InstValue.aspx')
+@patch_get('InstValue.aspx')
 def test_key_stats():
     df = key_stats()
     assert all(df.columns.str.startswith('is'))
@@ -389,17 +389,17 @@ VSKHOOZ = {
     , 'tvol': 0}
 
 
-@patch_get_content('vskhooz_short_response.txt')
+@patch_get('vskhooz_short_response.txt')
 def test_vskhooz_short():
     assert Instrument(1).live_data() == VSKHOOZ
 
 
-@patch_get_content('vskhooz_long_response.txt')
+@patch_get('vskhooz_long_response.txt')
 def test_vskhooz_long():
     assert Instrument(1).live_data() == VSKHOOZ
 
 
-@patch_get_content('fmelli_trade_history_top2.txt')
+@patch_get('fmelli_trade_history_top2.txt')
 def test_trade_history():
     df = Instrument(1).trade_history(2)
     assert df.to_csv(line_terminator='\n') == (
@@ -409,7 +409,7 @@ def test_trade_history():
     assert isinstance(df.index, DatetimeIndex)
 
 
-@patch_get_content('vsadid.txt')
+@patch_get('vsadid.txt')
 def test_vsadid():
     assert Instrument(1).live_data() == {
         'status': 'IS'
@@ -426,7 +426,7 @@ def test_vsadid():
         , 'tvol': 0}
 
 
-@patch_get_content('search_firuze.txt')
+@patch_get('search_firuze.txt')
 def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
     i = Instrument.from_search('فیروزه')
@@ -446,7 +446,7 @@ def test_equal():
     assert Instrument.from_l18('فملی') == Instrument(35425587644337450)
 
 
-@patch_get_content('vsadid_identification.html')
+@patch_get('vsadid_identification.html')
 def test_identification():
     assert Instrument(1).identification() == {
         'بازار': 'بازار پایه نارنجی فرابورس',
@@ -465,7 +465,7 @@ def test_identification():
         'گروه صنعت': 'فلزات اساسی'}
 
 
-@patch_get_content('opal_client_types.txt')
+@patch_get('opal_client_types.txt')
 def test_client_type():
     assert Instrument(1).client_type().to_csv(line_terminator='\n') == (
         'date,n_buy_count,l_buy_count,n_sell_count,l_sell_count,n_buy_volume,l_buy_volume,n_sell_volume,l_sell_volume,n_buy_value,l_buy_value,n_sell_value,l_sell_value'
@@ -539,7 +539,7 @@ def test_parse_index():
         "00/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
 
 
-@patch_get_content('MarketWatchInit2.aspx')
+@patch_get('MarketWatchInit2.aspx')
 def test_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
     # used to raise
@@ -547,7 +547,7 @@ def test_market_watch_init_non_int_tmin_tmax():
     market_watch_init()
 
 
-@patch_get_content('ava_holders.txt')
+@patch_get('ava_holders.txt')
 def test_holders_with_cisin():
     holders = Instrument(1).holders(cisin=1)
     assert holders.to_csv(line_terminator='\n') == (
@@ -561,7 +561,7 @@ def test_holders_with_cisin():
        '6,شرکت آرمان اندیشان رستاک-سهامی خاص-,5 M,1.0,0,"21346,IRT3AVAF0003"\n')
 
 
-@patch_get_content('ava_holder.txt')
+@patch_get('ava_holder.txt')
 def test_holder():
     inst = Instrument(1)
     # has no other holdings
@@ -576,7 +576,7 @@ def test_holder():
     assert oth.equals(result)
 
 
-@patch_get_content('vsadid_identification.html')
+@patch_get('vsadid_identification.html')
 def test_holders_without_cisin():
     inst = Instrument(1)
     assert inst.identification()['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
@@ -586,7 +586,7 @@ def test_holders_without_cisin():
     page_data.assert_called_once()
 
 
-@patch_get_content('fmelli_20210602_intraday.html')
+@patch_get('fmelli_20210602_intraday.html')
 def test_intraday_general():
     result = Instrument(1).intraday(
         20210602, general=True, thresholds=True, closings=True, candles=True,
@@ -652,7 +652,7 @@ def test_intraday_general():
         'qo': 111906, 'zo': 15}
 
 
-@patch_get_content('fmelli_price_adjustment.html')
+@patch_get('fmelli_price_adjustment.html')
 def test_adjustments():
     adj_df = Instrument(1).adjustments()
     assert adj_df.columns.tolist() == ['date', 'adj_pc', 'pc']
@@ -660,7 +660,7 @@ def test_adjustments():
     assert adj_df.loc[0].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
 
 
-@patch_get_content('adjustments_flow_7.html')
+@patch_get('adjustments_flow_7.html')
 def test_price_adjustments():
     df = price_adjustments(7)
     assert [*df.dtypes.items()] == [
@@ -673,7 +673,7 @@ def test_price_adjustments():
     assert df.iat[-1, -1] == 1000
 
 
-@patch_get_content('latif_financial_aph.aspx')
+@patch_get('latif_financial_aph.aspx')
 def test_adjusted_price_history():
     adj_df = Instrument(1).price_history()
     assert adj_df.columns.tolist() == ['pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc']
@@ -682,7 +682,7 @@ def test_adjusted_price_history():
     assert adj_df.iloc[-1].values.tolist() == [68410, 62366, 63500, 67508, 14222269, 65636]
 
 
-@patch_get_content('search_mellat.txt')
+@patch_get('search_mellat.txt')
 def test_search():
     df = search('ملت')
     assert type(df) is DataFrame
@@ -705,7 +705,7 @@ def test_l18_without_web_request():
     assert Instrument(46348559193224090).l18 == 'فولاد'
 
 
-@patch_get_content('MarketWatchPlus00.txt')
+@patch_get('MarketWatchPlus00.txt')
 def test_market_watch_plus_new():
     mwp = market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
@@ -724,7 +724,7 @@ def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
-@patch_get_content('MarketWatchPlus_h64130_r9540883525.txt')
+@patch_get('MarketWatchPlus_h64130_r9540883525.txt')
 def test_market_watch_plus_update():
     mwp = market_watch_plus(64130, 9540883525)
 
@@ -782,7 +782,7 @@ def test_market_watch_plus_update():
         ('isin', dtype('O')), ('l18', dtype('O')), ('l30', dtype('O'))]
 
 
-@patch_get_content('status_changes.html')
+@patch_get('status_changes.html')
 def test_status_changes():
     df = status_changes(3)
     assert len(df) == 3
@@ -794,7 +794,7 @@ def test_status_changes():
     assert df.iat[0, 3] == jdatetime(1400, 10, 7, 17, 56)
 
 
-@patch_get_content('ombud_messages.html')
+@patch_get('ombud_messages.html')
 def test_ombud_messages():
     df = ombud_messages(3)
     assert len(df) == 3

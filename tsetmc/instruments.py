@@ -7,9 +7,10 @@ from pathlib import Path
 
 from pandas import to_datetime as _to_datetime
 
-from . import _MarketState, _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
-    _get_fa_text, _get_content, _StringIO, _BytesIO, _DF, _DataFrame, \
-    _to_numeric, _read_html, _findall, _jstrptime
+from . import _MarketState, _csv2df, _F, _TypedDict, _get_data, \
+    _parse_market_state, _rc, \
+    _get, _StringIO, _BytesIO, _DF, _DataFrame, \
+    _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree
 
 
 _strptime = _datetime.strptime
@@ -172,7 +173,7 @@ class Instrument:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = _get_fa_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.code}')
+        text = _get_par_tree(f'151311&i={self.code}')
         if general:
             m = _PAGE_VARS(text)
             title_match = _TITLE_FULLMATCH(m['Title'])
@@ -235,10 +236,10 @@ class Instrument:
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
-        text = _get_content(
-            f'http://www.tsetmc.com/tsev2/data/instinfodata.aspx'
+        text = _get_data(
+            f'instinfodata.aspx'
             # &e=1 parameter is required to get NAV
-            f'?i={self.code}&c=&e=1').decode()
+            f'?i={self.code}&c=&e=1', fa=True)
         # the _s are unknown
         try:
             price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
@@ -271,8 +272,7 @@ class Instrument:
         return result
 
     def trade_history(self, top: int) -> _DataFrame:
-        content = _get_content(
-            f'http://www.tsetmc.com/tsev2/data/InstTradeHistory.aspx?i={self.code}&Top={top}')
+        content = _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}')
         df = _csv2df(
             _BytesIO(content)
             , sep='@'
@@ -282,7 +282,7 @@ class Instrument:
         return df
 
     def price_history(self, adjusted: bool = True) -> _DataFrame:
-        content = _get_content(
+        content = _get(
             f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = _csv2df(
             _BytesIO(content)
@@ -296,7 +296,7 @@ class Instrument:
         In column names `n_` prefix stands for natural and `l_` for legal.
         """
         return _csv2df(
-            _BytesIO(_get_content(f'http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={self.code}'))
+            _BytesIO(_get_data(f'clienttype.aspx?i={self.code}'))
             , names=(
                 'date'
                 , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
@@ -311,7 +311,7 @@ class Instrument:
             https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
         """
-        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.code}')
+        text = _get_par_tree(f'15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
 
@@ -328,7 +328,7 @@ class Instrument:
         """
         if cisin is None:
             cisin = self.cisin
-        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
+        text = _get_par_tree(f'15131T&c={cisin}')
         df = _read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
         # todo: use separate columns
@@ -346,7 +346,7 @@ class Instrument:
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
         """
-        text = _get_fa_text(f'http://www.tsetmc.com/tsev2/data/ShareHolder.aspx?i={id_cisin}')
+        text = _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
         def history_df() -> _DataFrame:
@@ -388,7 +388,7 @@ class Instrument:
         For the meaning of instrument state codes refer to
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
         """
-        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.code}&d={date}')
+        text = _get_par_tree(f'15131P&i={self.code}&d={date}')
         find = text.find
         find_start = 0
         result = {}
@@ -484,8 +484,7 @@ class Instrument:
         return result
 
     def adjustments(self) -> _DataFrame:
-        # todo: get_content?
-        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}')
+        text = _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
@@ -498,7 +497,7 @@ def price_adjustments(flow: int) -> _DataFrame:
     Related APIs:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
-    text = _get_fa_text(f'http://tsetmc.com/Loader.aspx?Partree=151319&Flow={flow}')
+    text = _get_par_tree(f'151319&Flow={flow}')
     df = _read_html(text)[0]
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
     df['date'] = df['date'].apply(_j_ymd_parse)
@@ -508,8 +507,7 @@ def price_adjustments(flow: int) -> _DataFrame:
 def search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
     return _csv2df(
-        _StringIO(_get_fa_text(
-            'http://tsetmc.com/tsev2/data/search.aspx?skey=' + skey)),
+        _StringIO(_get_data('search.aspx?skey=' + skey, fa=True)),
         header=None,
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',

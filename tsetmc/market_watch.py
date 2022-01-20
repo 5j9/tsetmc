@@ -1,7 +1,7 @@
 from numpy import nan as _nan
 
-from . import _parse_market_state, _TypedDict, _MarketState, _csv2df, \
-    _get_fa_text, _StringIO, _get_content, _BytesIO, _DF, _DataFrame, \
+from . import _get_data, _get_par_tree, _parse_market_state, _TypedDict, \
+    _MarketState, _csv2df, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime
 
 
@@ -62,7 +62,7 @@ def market_watch_init(
             (it's the time of the last transaction in HHMMSS format)
     """
     # todo: use content?
-    text = _get_fa_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
+    text = _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
     _, market_state_str, states, price_rows, _ = text.split('@')
     result = {}
     if prices:
@@ -105,9 +105,10 @@ def market_watch_plus(
 ) -> _MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
-    handle_msg, update_fast_view, inst_price, best_limit, refid = _get_fa_text(
-        'http://www.tsetmc.com/tsev2/data/MarketWatchPlus.aspx?'
-        f'h={5 * (heven // 5)}&r={25 * (refid // 25)}').split('@')
+    handle_msg, update_fast_view, inst_price, best_limit, refid = _get_data(
+        f'MarketWatchPlus.aspx?h={5 * (heven // 5)}&r={25 * (refid // 25)}',
+        fa=True
+    ).split('@')
     result = {}
     if messages:
         # whenever a new id appears, users should try to fetch new messages
@@ -164,7 +165,7 @@ def closing_price_all() -> _DataFrame:
         tsetmc filters. See:
             http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
     """
-    content = _get_content('http://www.tsetmc.com/tsev2/data/ClosingPriceAll.aspx')
+    content = _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     # dtype='uint64' param cannot be used due to
     # https://github.com/pandas-dev/pandas/issues/44835
@@ -180,7 +181,7 @@ def client_type_all() -> _DataFrame:
 
     In column names `n_` prefix stands for natural and `l_` for legal.
     """
-    content = _get_content('http://www.tsetmc.com/tsev2/data/ClientTypeAll.aspx')
+    content = _get_data('ClientTypeAll.aspx')
     df = _csv2df(
         _BytesIO(content), names=(
             'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
@@ -196,7 +197,7 @@ def key_stats() -> _DataFrame:
         http://www.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
         http://cdn.tsetmc.com/Site.aspx?ParTree=151713
     """
-    content = _get_content('http://www.tsetmc.com/tsev2/data/InstValue.aspx?t=a')
+    content = _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
     df = _DF(data, columns=('ins_code', 'n', 'value'))
     # noinspection PyTypeChecker
@@ -209,9 +210,7 @@ def key_stats() -> _DataFrame:
 def ombud_messages(
     top: int | str, flow: int | str = 0,
 ):
-    text = _get_fa_text(
-        'http://www.tsetmc.com/Loader.aspx?Partree=151313'
-        f'&Flow={flow}&top={top}')
+    text = _get_par_tree(f'151313&Flow={flow}&top={top}')
     headers = _findall(r'<th>(.+?)</th>', text)
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr /></td>', text)
@@ -223,8 +222,7 @@ def ombud_messages(
 
 
 def status_changes(top: int | str) -> _DataFrame:
-    text = _get_fa_text(
-        f'http://www.tsetmc.com/Loader.aspx?Partree=15131L&top={top}')
+    text = _get_par_tree(f'15131L&top={top}')
     df = _read_html(text)[0]
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
         _jstrptime, format='%Y/%m/%d %H:%M')

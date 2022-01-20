@@ -12,7 +12,7 @@ from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
 from pandas import to_numeric as _to_numeric, read_html as _read_html
-from requests import get as _get
+from requests import get as _requests_get
 
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -81,13 +81,22 @@ def _parse_market_state(s: str) -> _MarketState:
     return result
 
 
-def _get_content(url: str) -> bytes:
-    return _get(url).content
-
-
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
-def _get_fa_text(url: str) -> str:
-    # replace Arabic [ي ك] with Persian [ی ک]
-    return _get_content(url).decode().translate(_FARSI_NORM)
+def _get(url: str, *, fa=False) -> str | bytes:
+    result = _requests_get(url).content
+    if fa is True:
+        return result.decode().translate(_FARSI_NORM)
+    return result
+
+
+_DOMAIN = 'http://tsetmc.com/'
+
+
+def _get_data(path: str, *, fa=False) -> str | bytes:
+    return _get(f'{_DOMAIN}tsev2/data/' + path, fa=fa)
+
+
+def _get_par_tree(path: str, *, fa=True) -> str | bytes:
+    return _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
