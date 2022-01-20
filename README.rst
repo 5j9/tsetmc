@@ -1,6 +1,6 @@
 A Python library to fetch data from http://tsetmc.com.
 
-Note: The API is provisional and may change without deprecation.
+Note: The API is provisional and may change rapidly.
 
 Installation
 ------------
