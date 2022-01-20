@@ -1,7 +1,7 @@
 from numpy import nan as _nan
 
 from . import _parse_market_state, _TypedDict, _MarketState, _csv2df, \
-    _fa_norm_text, _StringIO, _get_content, _BytesIO, _DF, _DataFrame, \
+    _get_fa_text, _StringIO, _get_content, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime
 
 
@@ -61,7 +61,8 @@ def market_watch_init(
         For `heven` see: /dev/docs/IndexB1LastDayOneInst.html
             (it's the time of the last transaction in HHMMSS format)
     """
-    text = _fa_norm_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
+    # todo: use content?
+    text = _get_fa_text('http://tsetmc.com/tsev2/data/MarketWatchInit.aspx?h=0&r=0')
     _, market_state_str, states, price_rows, _ = text.split('@')
     result = {}
     if prices:
@@ -104,7 +105,7 @@ def market_watch_plus(
 ) -> _MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
-    handle_msg, update_fast_view, inst_price, best_limit, refid = _fa_norm_text(
+    handle_msg, update_fast_view, inst_price, best_limit, refid = _get_fa_text(
         'http://www.tsetmc.com/tsev2/data/MarketWatchPlus.aspx?'
         f'h={5 * (heven // 5)}&r={25 * (refid // 25)}').split('@')
     result = {}
@@ -208,7 +209,7 @@ def key_stats() -> _DataFrame:
 def ombud_messages(
     top: int | str, flow: int | str = 0,
 ):
-    text = _fa_norm_text(
+    text = _get_fa_text(
         'http://www.tsetmc.com/Loader.aspx?Partree=151313'
         f'&Flow={flow}&top={top}')
     headers = _findall(r'<th>(.+?)</th>', text)
@@ -222,8 +223,8 @@ def ombud_messages(
 
 
 def status_changes(top: int | str) -> _DataFrame:
-    text = _fa_norm_text(
-        f'http://redirectcdn.tsetmc.com/Loader.aspx?Partree=15131L&top={top}')
+    text = _get_fa_text(
+        f'http://www.tsetmc.com/Loader.aspx?Partree=15131L&top={top}')
     df = _read_html(text)[0]
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
         _jstrptime, format='%Y/%m/%d %H:%M')

@@ -88,6 +88,6 @@ def _get_content(url: str) -> bytes:
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
-def _fa_norm_text(url: str) -> str:
+def _get_fa_text(url: str) -> str:
     # replace Arabic [ي ك] with Persian [ی ک]
     return _get_content(url).decode().translate(_FARSI_NORM)

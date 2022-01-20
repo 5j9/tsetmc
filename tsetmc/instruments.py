@@ -8,7 +8,7 @@ from pathlib import Path
 from pandas import to_datetime as _to_datetime
 
 from . import _MarketState, _csv2df, _F, _TypedDict, _parse_market_state, _rc, \
-    _fa_norm_text, _get_content, _StringIO, _BytesIO, _DF, _DataFrame, \
+    _get_fa_text, _get_content, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime
 
 
@@ -172,7 +172,7 @@ class Instrument:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = _fa_norm_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.code}')
+        text = _get_fa_text(f'http://tsetmc.com/Loader.aspx?ParTree=151311&i={self.code}')
         if general:
             m = _PAGE_VARS(text)
             title_match = _TITLE_FULLMATCH(m['Title'])
@@ -311,7 +311,7 @@ class Instrument:
             https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
         """
-        text = _fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.code}')
+        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
 
@@ -328,7 +328,7 @@ class Instrument:
         """
         if cisin is None:
             cisin = self.cisin
-        text = _fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
+        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131T&c={cisin}')
         df = _read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
         # todo: use separate columns
@@ -346,7 +346,7 @@ class Instrument:
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
         """
-        text = _fa_norm_text(f'http://www.tsetmc.com/tsev2/data/ShareHolder.aspx?i={id_cisin}')
+        text = _get_fa_text(f'http://www.tsetmc.com/tsev2/data/ShareHolder.aspx?i={id_cisin}')
         hist, _, oth = text.partition('#')
 
         def history_df() -> _DataFrame:
@@ -388,7 +388,7 @@ class Instrument:
         For the meaning of instrument state codes refer to
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
         """
-        text = _fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.code}&d={date}')
+        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?ParTree=15131P&i={self.code}&d={date}')
         find = text.find
         find_start = 0
         result = {}
@@ -484,7 +484,8 @@ class Instrument:
         return result
 
     def adjustments(self) -> _DataFrame:
-        text = _fa_norm_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}')
+        # todo: get_content?
+        text = _get_fa_text(f'http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}')
         df = _read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
@@ -497,7 +498,7 @@ def price_adjustments(flow: int) -> _DataFrame:
     Related APIs:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
-    text = _fa_norm_text(f'http://tsetmc.com/Loader.aspx?Partree=151319&Flow={flow}')
+    text = _get_fa_text(f'http://tsetmc.com/Loader.aspx?Partree=151319&Flow={flow}')
     df = _read_html(text)[0]
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
     df['date'] = df['date'].apply(_j_ymd_parse)
@@ -507,7 +508,7 @@ def price_adjustments(flow: int) -> _DataFrame:
 def search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
     return _csv2df(
-        _StringIO(_fa_norm_text(
+        _StringIO(_get_fa_text(
             'http://tsetmc.com/tsev2/data/search.aspx?skey=' + skey)),
         header=None,
         names=(
