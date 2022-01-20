@@ -15,17 +15,21 @@ def _dump_l18s():
 def add_instrument_to_db(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
-    d = inst.identification()
+    d = inst.page_data()
+    if d['cs'] == 69 or d['flow'] == 3:
+        return
     # isin = df.at['کد 12 رقمی نماد', 1]
-    l18 = d['نماد فارسی'].partition(' ')[0]
-    l30 = d['نماد 30 رقمی فارسی']
-    _L18S[l18] = ins_code, l18, l30
+    l18 = d['l18']
+    _L18S[l18] = ins_code, l18, d['l30']
     _dump_l18s()
 
 
 def update_db_using_market_watch() -> None:
     global _L18S
     df = _market_watch_init(market_state=False, best_limits=False)['prices']
+    # flow == 3: futures market
+    # cs == 69: اوراق تامين مالي
+    df = df.query('flow != 3 and cs != 69')
     glv = df.index.get_level_values
     ins_codes = glv('ins_code')
     l18s = glv('l18')
