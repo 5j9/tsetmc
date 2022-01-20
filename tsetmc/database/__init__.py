@@ -15,10 +15,10 @@ def _dump_l18s():
 def add_instrument_to_db(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
-    df = inst.identification()
+    d = inst.identification()
     # isin = df.at['کد 12 رقمی نماد', 1]
-    l18 = df.at['نماد فارسی', 1].partition(' ')[0]
-    l30 = df.at['نماد 30 رقمی فارسی', 1]
+    l18 = d['نماد فارسی'].partition(' ')[0]
+    l30 = d['نماد 30 رقمی فارسی']
     _L18S[l18] = ins_code, l18, l30
     _dump_l18s()
 
