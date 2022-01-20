@@ -27,7 +27,7 @@ _PRICE_DTYPES = {
     'visitcount': 'uint64',
     # 0-7 /dev/docs/Instrument.html
     'flow': 'uint8',
-    # 1-98 /dev/docs/cs_table.html
+    # 1-98, see database.cs_codes()
     'cs': 'uint8',
     'tmax': 'float64',
     'tmin': 'float64',
