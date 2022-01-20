@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pandas import to_datetime as _to_datetime
 
-from . import _MarketState, _csv2df, _F, _TypedDict, _get_data, \
+from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
     _parse_market_state, _rc, \
     _get, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree
@@ -16,6 +16,10 @@ from . import _MarketState, _csv2df, _F, _TypedDict, _get_data, \
 _strptime = _datetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
 _DB_PATH = Path(__file__).parent / 'database/ids.json'
+
+
+_FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}
+
 
 # This regex is generated using dev/page_vars_regex_generator.py.
 # Fix and update that script before making changes.
@@ -314,6 +318,15 @@ class Instrument:
         text = _get_par_tree(f'15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
+
+    def introduction(self) -> dict[str, str]:
+        """Return the information available in introduction (معرفی) tab."""
+        text = _get_par_tree(
+            f'15131V&s={self.l18.translate(_FARSI_NORM_REVERSED)}')
+        df = _read_html(text)[0]
+        # todo: use df.str.removeprefix which will be added to pandas 1.4.0
+        # https://github.com/pandas-dev/pandas/blob/main/doc/source/whatsnew/v1.4.0.rst
+        return {k: v for k,v in zip(df[0].str.rstrip(' :'), df[1])}
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':
