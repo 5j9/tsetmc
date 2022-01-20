@@ -8,7 +8,7 @@ from pathlib import Path
 from pandas import to_datetime as _to_datetime
 
 from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
-    _parse_market_state, _rc, \
+    _parse_market_state, _parse_ombud_messages, _rc, \
     _get, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree
 
@@ -502,6 +502,9 @@ class Instrument:
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
         return df
+
+    def ombud_messages(self) -> _DataFrame:
+        return _parse_ombud_messages(_get_par_tree(f'15131W&i={self.code}'))
 
 
 def price_adjustments(flow: int) -> _DataFrame:

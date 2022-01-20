@@ -2,7 +2,7 @@ from numpy import nan as _nan
 
 from . import _get_data, _get_par_tree, _parse_market_state, _TypedDict, \
     _MarketState, _csv2df, _StringIO, _BytesIO, _DF, _DataFrame, \
-    _to_numeric, _read_html, _findall, _jstrptime
+    _parse_ombud_messages, _to_numeric, _read_html, _findall, _jstrptime
 
 
 _PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
@@ -210,15 +210,8 @@ def key_stats() -> _DataFrame:
 def ombud_messages(
     top: int | str, flow: int | str = 0,
 ):
-    text = _get_par_tree(f'151313&Flow={flow}&top={top}')
-    headers = _findall(r'<th>(.+?)</th>', text)
-    dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
-    descriptions = _findall(r'<td colspan="2">(.+?)<hr /></td>', text)
-    df = _DF({'header': headers, 'date': dates, 'description': descriptions})
-    # _jdatetime.strptime does not support %y directive
-    # https://github.com/slashmili/python-jalali/issues/100
-    df['date'] = ('14' + df['date']).apply(_jstrptime, format='%Y/%m/%d %H:%M')
-    return df
+    return _parse_ombud_messages(
+        _get_par_tree(f'151313&Flow={flow}&top={top}'))
 
 
 def status_changes(top: int | str) -> _DataFrame:

@@ -81,6 +81,17 @@ def _parse_market_state(s: str) -> _MarketState:
     return result
 
 
+def _parse_ombud_messages(text) -> _DataFrame:
+    headers = _findall(r'<th>(.+?)</th>', text)
+    dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
+    descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
+    df = _DF({'header': headers, 'date': dates, 'description': descriptions})
+    # _jdatetime.strptime does not support %y directive
+    # https://github.com/slashmili/python-jalali/issues/100
+    df['date'] = ('14' + df['date']).apply(_jstrptime, format='%Y/%m/%d %H:%M')
+    return df
+
+
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
