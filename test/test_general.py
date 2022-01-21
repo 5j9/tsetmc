@@ -1,5 +1,5 @@
 from test import disable_get, patch_get
-from tsetmc.database import boards, cs_codes
+from tsetmc.general import boards, cs_codes
 
 
 def setup_module():
