@@ -1,5 +1,7 @@
+from numpy import dtype
+
 from test import disable_get, patch_get
-from tsetmc.general import boards, cs_codes
+from tsetmc.general import boards, cs_codes, industrial_groups_overview
 
 
 def setup_module():
@@ -93,3 +95,15 @@ def test_cs_codes():
         '93': 'فعالیتهای فرهنگی و ورزشی',
         '98': 'گروه اوراق غیرفعال',
         'X1': 'شاخص'}
+
+
+@patch_get('industrial_groups_overview.html')
+def test_industrial_groups_overview():
+    df = industrial_groups_overview()
+    assert [*df.dtypes.items()] == [
+        ('group', dtype('O')),
+        (':-2', dtype('int64')),
+        ('-2:0', dtype('int64')),
+        ('0:2', dtype('int64')),
+        ('2:', dtype('int64'))]
+    assert len(df) == 48
