@@ -1,10 +1,11 @@
 Unreleased
 ----------
-* feat!: cs 69 and flow 3 were removed from offline database.
+* feat!: cs 69 and flow 3 were removed from offline database
 * feat: ``Instrument.introduction``
 * feat: ``Instrument.ombud_messages``
 * feat: ``general.boards``
 * feat: ``general.cs_codes``
 * feat: ``general.industrial_groups``
+* feat: ``general.market_map_data``
 * fixed: ``database.add_instrument_to_db``
-* fixed!: ``beautifulsoup4`` and ``lxml`` are now required as dependencies.
+* fixed!: ``beautifulsoup4`` and ``lxml`` are now required as dependencies

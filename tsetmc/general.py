@@ -1,6 +1,6 @@
-from pandas import concat as _concat
+from pandas import concat as _concat, read_json as _read_json
 
-from tsetmc import _get_par_tree, _read_html, _DataFrame
+from tsetmc import _get, _get_par_tree, _read_html, _DataFrame, _StringIO
 
 
 def boards() -> dict[int, str]:
@@ -28,4 +28,15 @@ def industrial_groups_overview() -> _DataFrame:
     ).astype('int64')
     df = _concat((df, percents), copy=False, axis=1)
     df.columns = ('group', ':-2', '-2:0', '0:2', '2:')
+    return df
+
+
+def market_map_data() -> _DataFrame:
+    text = _get('http://new.tsetmc.com/weatherforecast', fa=True)
+    df: _DataFrame = _read_json(_StringIO(text), convert_dates=False)
+    comma_nums = ('QTotCap', 'QTotTran5J', 'ZTotTran')
+    for c in comma_nums:
+        df[c] = df[c].str.replace(
+            ',', '', regex=False
+        ).astype('int64', copy=False)
     return df

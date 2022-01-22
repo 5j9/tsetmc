@@ -1,7 +1,8 @@
 from numpy import dtype
 
 from test import disable_get, patch_get
-from tsetmc.general import boards, cs_codes, industrial_groups_overview
+from tsetmc.general import boards, cs_codes, industrial_groups_overview, \
+    market_map_data
 
 
 def setup_module():
@@ -107,3 +108,26 @@ def test_industrial_groups_overview():
         ('0:2', dtype('int64')),
         ('2:', dtype('int64'))]
     assert len(df) == 48
+
+
+@patch_get('weatherforecast.json')
+def test_market_map_data():
+    df = market_map_data()
+    assert len(df) == 301
+    assert [*df.dtypes.items()] == [
+        ('IsGreen', dtype('O')),
+        ('InsCode', dtype('int64')),
+        ('Weight', dtype('int64')),
+        ('LVal18AFC', dtype('O')),
+        ('LVal30', dtype('O')),
+        ('Percent', dtype('float64')),
+        ('LSecVal', dtype('O')),
+        ('CSecVal', dtype('int64')),
+        ('FontSize', dtype('int64')),
+        ('PClosing', dtype('int64')),
+        ('PClosingChange', dtype('float64')),
+        ('PDrCotVal', dtype('int64')),
+        ('ZTotTran', dtype('int64')),
+        ('QTotTran5J', dtype('int64')),
+        ('QTotCap', dtype('int64')),
+        ('Heven', dtype('O'))]
