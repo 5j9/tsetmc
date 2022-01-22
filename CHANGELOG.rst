@@ -1,8 +1,8 @@
 Unreleased
 ----------
 * feat!: cs 69 and flow 3 were removed from offline database.
-* feat: ``Introduction.introduction``
-* feat: ``Introduction.ombud_messages``
+* feat: ``Instrument.introduction``
+* feat: ``Instrument.ombud_messages``
 * feat: ``general.boards``
 * feat: ``general.cs_codes``
 * feat: ``general.industrial_groups``
