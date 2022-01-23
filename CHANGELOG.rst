@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.36.0
+-------
 * feat(setup.cfg)!: require pandas 1.4.0+
 * feat(market_watch.ombud_messages)!: make all params keyword-only
 * feat(market_watch.ombud_messages): new params: ``containing`` and ``sh_date``
