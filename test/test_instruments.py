@@ -335,6 +335,8 @@ def test_repr():
         Instrument.from_l18('فملی')) == "Instrument(35425587644337450, 'فملی')"
     # unknown l18
     assert repr(Instrument(1)) == "Instrument(1)"
+    assert repr(Instrument(1, l30='مجتمع جهان فولاد سيرجان')) == \
+        "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
 
 
 def test_equal():

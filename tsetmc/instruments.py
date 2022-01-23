@@ -119,9 +119,11 @@ class Instrument:
     def __repr__(self):
         # not using self.l18 because it can cause a while when viewing a list
         # of Instruments.
-        if self._l18 is None:
-            return f'Instrument({self.code})'
-        return f"Instrument({self.code}, {self._l18!r})"
+        if self._l18 is not None:
+            return f"Instrument({self.code}, {self._l18!r})"
+        if self._l30 is not None:
+            return f"Instrument({self.code}, l30={self._l30!r})"
+        return f'Instrument({self.code})'
 
     def __eq__(self, other):
         return self.code == other.code
