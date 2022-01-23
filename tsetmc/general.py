@@ -48,7 +48,7 @@ def market_map_data() -> _DataFrame:
 
 
 def major_holders_activity() -> _DataFrame:
-    text = _get_par_tree(f'15131I')
+    text = _get_par_tree('15131I')
     soup = _make_soup(text)
     trs = soup.select('tr')
 
