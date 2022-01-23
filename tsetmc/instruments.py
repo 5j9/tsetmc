@@ -324,9 +324,7 @@ class Instrument:
         text = _get_par_tree(
             f'15131V&s={self.l18.translate(_FARSI_NORM_REVERSED)}')
         df = _read_html(text)[0]
-        # todo: use df.str.removeprefix which will be added to pandas 1.4.0
-        # https://github.com/pandas-dev/pandas/blob/main/doc/source/whatsnew/v1.4.0.rst
-        return dict(zip(df[0].str.rstrip(' :'), df[1]))
+        return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
     @staticmethod
     def from_search(s: str) -> 'Instrument':
