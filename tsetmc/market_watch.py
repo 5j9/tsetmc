@@ -2,7 +2,7 @@ from numpy import nan as _nan
 
 from . import _get_data, _get_par_tree, _parse_market_state, _TypedDict, \
     _MarketState, _csv2df, _StringIO, _BytesIO, _DF, _DataFrame, \
-    _parse_ombud_messages, _to_numeric, _read_html, _findall, _jstrptime
+    _parse_ombud_messages, _to_numeric, _read_html, _jstrptime
 
 
 _PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
@@ -208,10 +208,28 @@ def key_stats() -> _DataFrame:
 
 
 def ombud_messages(
-    top: int | str, flow: int | str = 0,
-):
-    return _parse_ombud_messages(
-        _get_par_tree(f'151313&Flow={flow}&top={top}'))
+    *, top: int | str = None, flow: int | str = None,
+    containing: str = None, sh_date: str = None,
+) -> _DataFrame:
+    """Return ombud messages as a dataframe.
+
+    :param top: How many messages to return.
+    :param flow: Only return messages in the given market flow.
+    :param containing: Only return messages containing this term.
+    :param sh_date: Solar Hijri date string in 'YYYY-mm-dd' format.
+
+    Note: the server ignores the `top` when `deven_persian` is given.
+    """
+    path = '151313'
+    if flow is not None:
+        path += f'&Flow={flow}'
+    if top is not None:
+        path += f'&top={top}'
+    if sh_date is not None:
+        path += f'&DevenPersian={sh_date}'
+    if containing is not None:
+        path += f'&Lval18AFC={containing}'
+    return _parse_ombud_messages(_get_par_tree(path))
 
 
 def status_changes(top: int | str) -> _DataFrame:

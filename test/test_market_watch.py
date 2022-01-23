@@ -63,9 +63,9 @@ def test_market_watch_init():
     # noinspection PyUnresolvedReferences
     assert [*prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
-        ('isin', dtype('O')),
-        ('l18', dtype('O')),
-        ('l30', dtype('O'))]
+        ('isin', 'string[python]'),
+        ('l18', 'string[python]'),
+        ('l30', 'string[python]')]
 
     mwi = market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
@@ -182,9 +182,9 @@ def test_market_watch_plus_new():
     # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
-        ('isin', dtype('O')),
-        ('l18', dtype('O')),
-        ('l30', dtype('O'))]
+        ('isin', 'string[python]'),
+        ('l18', 'string[python]'),
+        ('l30', 'string[python]')]
     best_limits = mwp['best_limits']
     assert all(t == 'uint64' for t in best_limits.dtypes)
     assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
@@ -248,7 +248,9 @@ def test_market_watch_plus_update():
     # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
-        ('isin', dtype('O')), ('l18', dtype('O')), ('l30', dtype('O'))]
+        ('isin', 'string[python]'),
+        ('l18', 'string[python]'),
+        ('l30', 'string[python]')]
 
 
 @patch_get('status_changes.html')
@@ -265,10 +267,21 @@ def test_status_changes():
 
 @patch_get('ombud_messages.html')
 def test_ombud_messages():
-    df = ombud_messages(3)
+    df = ombud_messages(top=3)
     assert len(df) == 3
     assert (*df.dtypes.items(),) == (
-        ('header', dtype('O')),
+        ('header', 'string[python]'),
         ('date', dtype('O')),
-        ('description', dtype('O')))
+        ('description', 'string[python]'))
     assert df.iat[0, 1] == jdatetime(1400, 10, 8, 8, 25)
+
+
+@patch_get('empty_ombud_messages.html')
+def test_ombud_messages_empty():
+    # `sh_date` cannot be used without `containing`
+    df = ombud_messages(top=1, sh_date='1400-11-02', flow=0)
+    assert df.empty
+    assert (*df.dtypes.items(),) == (
+        ('header', 'string[python]'),
+        ('date', dtype('O')),
+        ('description', 'string[python]'))

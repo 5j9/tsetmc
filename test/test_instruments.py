@@ -558,7 +558,7 @@ def test_ombud_messages():
     df = Instrument(1).ombud_messages()
     assert len(df) == 12
     assert [*df.dtypes.items()] == [
-        ('header', dtype('O')),
+        ('header', 'string[python]'),
         ('date', dtype('O')),
-        ('description', dtype('O'))]
+        ('description', 'string[python]')]
     assert df.iat[0, 1] == jdatetime(1400, 10, 29, 10, 4)
