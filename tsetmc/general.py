@@ -1,6 +1,11 @@
 from pandas import concat as _concat, read_json as _read_json
+from bs4 import BeautifulSoup as _BeautifulSoup
 
-from tsetmc import _get, _get_par_tree, _read_html, _DataFrame, _StringIO
+from tsetmc import _get, _get_par_tree, _read_html, _DataFrame, _StringIO, \
+    _partial
+
+
+_make_soup = _partial(_BeautifulSoup, features='lxml')
 
 
 def boards() -> dict[int, str]:
@@ -40,3 +45,34 @@ def market_map_data() -> _DataFrame:
             ',', '', regex=False
         ).astype('int64', copy=False)
     return df
+
+
+def major_holders_activity() -> _DataFrame:
+    text = _get_par_tree(f'15131I')
+    soup = _make_soup(text)
+    trs = soup.select('tr')
+
+    rows = []
+    append_row = rows.append
+    for tr in trs[1:]:
+        tds = tr.select('td')
+        td0 = tds[0]
+
+        inst_div = td0.select_one('div')
+        if inst_div:
+            href = inst_div.select_one('a')['href']
+            ins_code = int(href[href.rfind('=') + 1:])
+            l30 = inst_div.text
+
+        holder = td0.select_one('li').text
+        # noinspection PyUnboundLocalVariable
+        append_row(
+            [ins_code, l30, holder, *(
+                float(td.find(text=True).replace(',', '')) for td in tds[1:])])
+
+    return _DataFrame(rows, copy=False, columns=(
+        'ins_code', 'l30', 'holder', *(
+            # the first header is 'شرکت - سهامدار'
+            th.text for th in trs[0].select('th')[1:]
+        )
+    ))

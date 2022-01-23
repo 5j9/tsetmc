@@ -2,7 +2,7 @@ from numpy import dtype
 
 from test import disable_get, patch_get
 from tsetmc.general import boards, cs_codes, industrial_groups_overview, \
-    market_map_data
+    major_holders_activity, market_map_data
 
 
 def setup_module():
@@ -131,3 +131,18 @@ def test_market_map_data():
         ('QTotTran5J', dtype('int64')),
         ('QTotCap', dtype('int64')),
         ('Heven', dtype('O'))]
+
+
+@patch_get('major_holders_activity.html')
+def test_major_holders_activity():
+    df = major_holders_activity()
+    assert len(df) == 569
+    assert [*df.dtypes.items()] == [
+        ('ins_code', dtype('int64')),
+        ('l30', dtype('O')),
+        ('holder', dtype('O')),
+        ('1400/11/3', dtype('float64')),
+        ('1400/10/30', dtype('float64')),
+        ('1400/10/29', dtype('float64')),
+        ('1400/10/28', dtype('float64')),
+        ('1400/10/27', dtype('float64'))]

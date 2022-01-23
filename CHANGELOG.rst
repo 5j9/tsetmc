@@ -11,5 +11,6 @@ Unreleased
 ** ``cs_codes``
 ** ``industrial_groups``
 ** ``market_map_data``
+** ``major_holders_activity``
 * fix(setup.cfg)!: ``beautifulsoup4`` and ``lxml`` are now required as dependencies
 * fix(ombud_messages)!: return empty DataFrame for empty result set
