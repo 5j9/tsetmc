@@ -13,7 +13,7 @@ Overview
 
 The ``Instrument`` class provides methods for getting information about an instrument. The following code block tries to demonstrate its capabilities.
 
-Please review the abbreviations described at https://cdn.tsetmc.com/Site.aspx?ParTree=151713 . Many of the parameters/keys/column-names/etc are chosen from those abbreviations. If you can't figure out the meaning of any of them, please open an issue.
+Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 . Many of the parameters/keys/column-names/etc are chosen from those abbreviations. If you can't figure out the meaning of any of them, please open an issue.
 
 .. code-block:: python
 
