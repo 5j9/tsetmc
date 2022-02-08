@@ -6,6 +6,10 @@ from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 # todo: add tests for this module
 
+# cs == 69: اوراق تامين مالي
+# cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
+_CS_EXCLUSIONS = {59, 69}
+
 
 def _dump_l18s():
     with open(_DB_PATH, 'w', encoding='utf8') as f:
@@ -16,7 +20,7 @@ def add_instrument_to_db(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
     d = inst.page_data()
-    if d['cs'] == 69 or d['flow'] == 3:
+    if d['flow'] == 3 or d['cs'] in _CS_EXCLUSIONS:
         return
     # isin = df.at['کد 12 رقمی نماد', 1]
     l18 = d['l18']
@@ -28,8 +32,7 @@ def update_db_using_market_watch() -> None:
     global _L18S
     df = _market_watch_init(market_state=False, best_limits=False)['prices']
     # flow == 3: futures market
-    # cs == 69: اوراق تامين مالي
-    df = df.query('flow != 3 and cs != 69')
+    df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS')
     glv = df.index.get_level_values
     ins_codes = glv('ins_code')
     l18s = glv('l18')
