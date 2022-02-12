@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.37.0
+-------
 * Fixed ``market_watch.status_changes``.
 
 v0.36.0
