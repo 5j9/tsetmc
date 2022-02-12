@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Fixed ``market_watch.status_changes``.
+
 v0.36.0
 -------
 * feat(setup.cfg)!: require pandas 1.4.0+

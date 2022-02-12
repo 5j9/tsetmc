@@ -236,6 +236,6 @@ def status_changes(top: int | str) -> _DataFrame:
     text = _get_par_tree(f'15131L&top={top}')
     df = _read_html(text)[0]
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
-        _jstrptime, format='%Y/%m/%d %H:%M')
+        _jstrptime, format='%Y/%m/%d %H:%M:%S')
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df

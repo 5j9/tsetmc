@@ -262,7 +262,7 @@ def test_status_changes():
         ('نام', dtype('O')),
         ('وضعیت جدید', dtype('O')),
         ('date', dtype('O')),)
-    assert df.iat[0, 3] == jdatetime(1400, 10, 7, 17, 56)
+    assert df.iat[0, 3] == jdatetime(1400, 10, 7, 17, 56, 12)
 
 
 @patch_get('ombud_messages.html')
