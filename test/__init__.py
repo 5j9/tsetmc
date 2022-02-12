@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 
 disable_get = patch(
-    'tsetmc._requests_get', side_effect=NotImplementedError(
+    'tsetmc._session_get', side_effect=NotImplementedError(
         'offline tests should not call tsetmc._requests_get'))
 
 
@@ -15,4 +15,4 @@ class FakeResponse:
 def patch_get(name):
     with open(f'{__file__}/../testdata/{name}', 'rb') as f:
         content = f.read()
-    return patch('tsetmc._requests_get', lambda _: FakeResponse(content))
+    return patch('tsetmc._session_get', lambda _: FakeResponse(content))

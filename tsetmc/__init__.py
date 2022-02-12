@@ -12,7 +12,7 @@ from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
 from pandas import to_numeric as _to_numeric, read_html as _read_html
-from requests import get as _requests_get
+from requests import Session as _Session
 
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -99,8 +99,13 @@ def _parse_ombud_messages(text) -> _DataFrame:
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
+_session = _Session()
+_session.headers = {'Connection': 'close'}
+_session_get = _partial(_session.get, timeout=5)
+
+
 def _get(url: str, *, fa=False) -> str | bytes:
-    result = _requests_get(url).content
+    result = _session_get(url).content
     if fa is True:
         return result.decode().translate(_FARSI_NORM)
     return result
