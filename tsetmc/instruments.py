@@ -269,7 +269,8 @@ class Instrument:
         else:
             result = {}
         if market_state:
-            result['market_state'] = _parse_market_state(index_info)
+            if index_info:  # sometimes index_info is an empty string
+                result['market_state'] = _parse_market_state(index_info)
         if best_limits:
             result['best_limits'] = _csv2df(
                 _StringIO(orders_info), sep='@',
