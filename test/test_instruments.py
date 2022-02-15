@@ -9,7 +9,7 @@ from pytest import raises
 
 from tsetmc.instruments import Instrument, price_adjustments, search
 
-from test import disable_get, patch_get
+from test import disable_get, patch_get, OFFLINE_MODE
 
 
 def setup_module():
@@ -20,9 +20,10 @@ def teardown_module():
     disable_get.stop()
 
 
-def test_info_url():
-    with raises(NotImplementedError):
-        Instrument(35425587644337450).live_data()
+if OFFLINE_MODE is True:
+    def test_info_url():
+        with raises(NotImplementedError):
+            Instrument(35425587644337450).live_data()
 
 
 def assert_page_data(d, general=True, trade_history=False, related_companies=False):

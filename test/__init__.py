@@ -3,8 +3,8 @@ from unittest.mock import patch
 import tsetmc
 
 
-OFFLINE_MODE = True
 RECORD_MODE = False
+OFFLINE_MODE = True and not RECORD_MODE
 
 
 def identity_fn(f):
