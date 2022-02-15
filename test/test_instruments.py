@@ -309,13 +309,17 @@ def test_intraday_general():
         'pmin': '12590', 'pmax': '12190', 'tno': '10219', 'tvol': '60394598',
         'tval': '752545395210', '?2': '0', 'heven': '130841'}
     assert result['candles'].iloc[-1].to_dict() == {
-        'time': '12:15', 'high': 12580, 'low': 12400, 'open': 12440,
-        'close': 12460, 'tvol': 7036930}
+        'close': 12474,
+        'high': 12590,
+        'low': 12430,
+        'open': 12440,
+        'time': '12:15',
+        'tvol': 3270419}
     assert result['states'].iloc[-1].to_dict() == {
         'date': 20210214, 'time': 1, 'state': 'A '}
     assert result['trades'].iloc[-1].to_dict() == {
         'time': '12:30:00', 'tvol': 750, 'pl': 12480, 'annulled': False}
-    assert len(result['holders']) == 0
+    assert len(result['holders']) == 21
     yesterday_holders = result['yesterday_holders']
     assert len(yesterday_holders) == 21
     assert yesterday_holders.iloc[-1].to_dict() == {
@@ -339,7 +343,7 @@ def test_intraday_general():
         'n_buy_volume': 52558668,
         'n_mean_buy_price': 12461.359739748352,
         'n_mean_sell_price': 12460.378896109265,
-        'n_sell_count': 0,
+        'n_sell_count': 3349,
         'n_sell_percent': 81,
         'n_sell_value': 611819107680,
         'n_sell_volume': 49101164}
