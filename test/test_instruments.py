@@ -308,13 +308,13 @@ def test_intraday_general():
         '?1': '-', 'pl': '12480', 'pc': '12460', 'pf': '12190', 'py': '12390',
         'pmin': '12590', 'pmax': '12190', 'tno': '10219', 'tvol': '60394598',
         'tval': '752545395210', '?2': '0', 'heven': '130841'}
-    assert result['candles'].iloc[-1].to_dict() == {
-        'close': 12474,
-        'high': 12590,
-        'low': 12430,
-        'open': 12440,
-        'time': '12:15',
-        'tvol': 3270419}
+    assert [*result['candles'].dtypes.items()] == [
+        ('time', dtype('O')),
+        ('high', dtype('int64')),
+        ('low', dtype('int64')),
+        ('open', dtype('int64')),
+        ('close', dtype('int64')),
+        ('tvol', dtype('int64'))]
     assert result['states'].iloc[-1].to_dict() == {
         'date': 20210214, 'time': 1, 'state': 'A '}
     assert result['trades'].iloc[-1].to_dict() == {
