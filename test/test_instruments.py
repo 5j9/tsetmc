@@ -9,7 +9,7 @@ from pytest import raises
 
 from tsetmc.instruments import Instrument, price_adjustments, search
 
-from test import disable_get, patch_get, OFFLINE_MODE
+from test import assert_market_state, disable_get, patch_get, OFFLINE_MODE
 
 
 def setup_module():
@@ -95,17 +95,7 @@ def assert_live_data(d, best_limits=False, market_state=False, nav=False):
             ('zo', dtype('int64'))]
 
     if market_state:
-        market_state = d.pop('market_state')
-        assert type(market_state.pop('datetime')) is jdatetime
-        for k in ('tse_status', 'fb_status', 'derivatives_status'):
-            assert type(market_state.pop(k)) is str
-        for k in ('fb_tno', 'derivatives_tno'):
-            assert type(market_state.pop(k)) is int
-        assert [*market_state.keys()] == [
-            'tse_index', 'tse_index_change', 'tse_tvol', 'tse_tval', 'tse_tno',
-            'fb_tvol', 'fb_tval', 'derivatives_tvol', 'derivatives_tval',
-            'tse_value', 'tse_index_change_percent']
-        assert all(type(v) is float for v in market_state.values())
+        assert_market_state(d.pop('market_state'))
 
     if nav:
         assert type(d.pop('nav_datetime')) is jdatetime

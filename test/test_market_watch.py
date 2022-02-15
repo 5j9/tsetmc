@@ -7,7 +7,7 @@ from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
     key_stats, closing_price_all, client_type_all, status_changes, \
     ombud_messages
-from test import disable_get, patch_get, OFFLINE_MODE
+from test import assert_market_state, disable_get, patch_get, OFFLINE_MODE
 
 
 def setup_module():
@@ -224,23 +224,7 @@ def test_market_watch_plus_update():
     assert price_updates.index.dtype == 'uint64'
 
     if 'market_state' in mwp:
-        assert mwp['market_state'] == {
-            'datetime': jdatetime(1400, 9, 21, 6, 41, 30),
-            'tse_status': 'F',
-            'tse_index': 1344441.58,
-            'tse_index_change': -4948.21,
-            'tse_tvol': 0.0,
-            'tse_tval': 0.0,
-            'tse_tno': 0.0,
-            'fb_status': 'F',
-            'fb_tvol': 0.0,
-            'fb_tval': 0.0,
-            'fb_tno': 0,
-            'derivatives_status': 'F',
-            'derivatives_tvol': 0.0,
-            'derivatives_tval': 0.0,
-            'derivatives_tno': 0,
-            'tse_index_change_percent': -0.37}
+        assert_market_state(mwp['market_state'])
 
     for m in mwp['messages']:
         assert type(m) is str
