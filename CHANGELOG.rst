@@ -1,7 +1,8 @@
 Unreleased
 ----------
+* feat(Instrument.holders)!: use english column names and numerize the `change` column
 * fix(major_holders_activity): handle empty-valued cells
-
+* feat!: migrate from requests to urllib3
 
 v0.37.0
 -------
