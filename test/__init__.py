@@ -40,9 +40,6 @@ _original_http_get = tsetmc._http_get
 
 
 def patch_get(filename):
-    if OFFLINE_MODE is False:
-        return identity_fn
-
     if RECORD_MODE is True:
         def _http_get_recorder(*args, **kwargs):
             resp = _original_http_get(*args, **kwargs)
@@ -51,6 +48,9 @@ def patch_get(filename):
                 f.write(data)
             return resp
         return patch('tsetmc._http_get', _http_get_recorder)
+
+    if OFFLINE_MODE is False:
+        return identity_fn
 
     with open(f'{__file__}/../testdata/{filename}', 'rb') as f:
         content = f.read()

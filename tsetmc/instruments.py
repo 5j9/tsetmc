@@ -335,7 +335,7 @@ class Instrument:
         return Instrument(ins_code, l18, l30)
 
     def holders(self, cisin=None) -> _DataFrame:
-        """Get list of major unit/share holders.
+        """Get list of major unit/shareholders.
 
         If `cisin` is not provided, it will be fetched using a web request.
         """
@@ -345,7 +345,12 @@ class Instrument:
         df = _read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
         # todo: use separate columns
+        df.columns = ['holder', 'shares/units', '%', 'change']
         df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
+        if df['change'].dtype == 'O':
+            repl_d = {'K': '000', 'M': '000' * 2, 'B': '000' * 3, 'T': '000' * 4}
+            df['change'] = df['change'].str.replace(
+                ' ([KMT])', lambda m: repl_d[m[1]] if m[1] else m[0]).astype('int64')
         return df
 
     @staticmethod
