@@ -7,7 +7,7 @@ from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
     key_stats, closing_price_all, client_type_all, status_changes, \
     ombud_messages
-from test import disable_get, patch_get
+from test import disable_get, patch_get, OFFLINE_MODE
 
 
 def setup_module():
@@ -18,9 +18,10 @@ def teardown_module():
     disable_get.stop()
 
 
-def test_info_url():
-    with raises(NotImplementedError):
-        market_watch_init()
+if OFFLINE_MODE is True:
+    def test_info_url():
+        with raises(NotImplementedError):
+            market_watch_init()
 
 
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
@@ -58,6 +59,18 @@ def test_market_watch_init():
         ('qo3', dtype('uint64')),
         ('zd3', dtype('uint64')),
         ('zo3', dtype('uint64')),
+        ('pd4', dtype('uint64')),
+        ('po4', dtype('uint64')),
+        ('qd4', dtype('uint64')),
+        ('qo4', dtype('uint64')),
+        ('zd4', dtype('uint64')),
+        ('zo4', dtype('uint64')),
+        ('pd5', dtype('uint64')),
+        ('po5', dtype('uint64')),
+        ('qd5', dtype('uint64')),
+        ('qo5', dtype('uint64')),
+        ('zd5', dtype('uint64')),
+        ('zo5', dtype('uint64')),
         * PRICE_DTYPES_ITEMS]
 
     # noinspection PyUnresolvedReferences
@@ -210,25 +223,28 @@ def test_market_watch_plus_update():
         ('pmax', dtype('uint64'))]
     assert price_updates.index.dtype == 'uint64'
 
-    assert mwp['market_state'] == {
-        'datetime': jdatetime(1400, 9, 21, 6, 41, 30),
-        'tse_status': 'F',
-        'tse_index': 1344441.58,
-        'tse_index_change': -4948.21,
-        'tse_tvol': 0.0,
-        'tse_tval': 0.0,
-        'tse_tno': 0.0,
-        'fb_status': 'F',
-        'fb_tvol': 0.0,
-        'fb_tval': 0.0,
-        'fb_tno': 0,
-        'derivatives_status': 'F',
-        'derivatives_tvol': 0.0,
-        'derivatives_tval': 0.0,
-        'derivatives_tno': 0,
-        'tse_index_change_percent': -0.37}
+    if 'market_state' in mwp:
+        assert mwp['market_state'] == {
+            'datetime': jdatetime(1400, 9, 21, 6, 41, 30),
+            'tse_status': 'F',
+            'tse_index': 1344441.58,
+            'tse_index_change': -4948.21,
+            'tse_tvol': 0.0,
+            'tse_tval': 0.0,
+            'tse_tno': 0.0,
+            'fb_status': 'F',
+            'fb_tvol': 0.0,
+            'fb_tval': 0.0,
+            'fb_tno': 0,
+            'derivatives_status': 'F',
+            'derivatives_tvol': 0.0,
+            'derivatives_tval': 0.0,
+            'derivatives_tno': 0,
+            'tse_index_change_percent': -0.37}
 
-    assert mwp['messages'] == ['115048', '770345', '427827']
+    for m in mwp['messages']:
+        assert type(m) is str
+        assert m.isnumeric()
 
     best_limits = mwp['best_limits']
     assert [*best_limits.dtypes.items()] == [
@@ -241,7 +257,7 @@ def test_market_watch_plus_update():
         ('qo', dtype('uint64'))]
     assert best_limits.index.dtype == 'uint64'
 
-    assert mwp['refid'] == 9540883545
+    assert type(mwp['refid']) is int
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
@@ -262,7 +278,7 @@ def test_status_changes():
         ('نام', dtype('O')),
         ('وضعیت جدید', dtype('O')),
         ('date', dtype('O')),)
-    assert df.iat[0, 3] == jdatetime(1400, 10, 7, 17, 56, 12)
+    assert type(df.iat[0, 3]) is jdatetime
 
 
 @patch_get('ombud_messages.html')
@@ -273,7 +289,7 @@ def test_ombud_messages():
         ('header', 'string[python]'),
         ('date', dtype('O')),
         ('description', 'string[python]'))
-    assert df.iat[0, 1] == jdatetime(1400, 10, 8, 8, 25)
+    assert type(df.iat[0, 1]) is jdatetime
 
 
 @patch_get('empty_ombud_messages.html')
