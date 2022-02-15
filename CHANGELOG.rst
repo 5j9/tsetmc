@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.38.0
+-------
 * feat(Instrument.holders)!: use english column names and numerize the `change` column
 * feat!: migrate from requests to urllib3
 * fix(live_data)!: handle empty string in market state
