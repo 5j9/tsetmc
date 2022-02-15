@@ -1,4 +1,4 @@
-from pandas import concat as _concat, read_json as _read_json
+from pandas import concat as _concat, read_json as _read_json, NA as _NA
 from bs4 import BeautifulSoup as _BeautifulSoup
 
 from tsetmc import _get, _get_par_tree, _read_html, _DataFrame, _StringIO, \
@@ -66,13 +66,20 @@ def major_holders_activity() -> _DataFrame:
 
         holder = td0.select_one('li').text
         # noinspection PyUnboundLocalVariable
-        append_row(
-            [ins_code, l30, holder, *(
-                float(td.find(text=True).replace(',', '')) for td in tds[1:])])
-
+        append_row([ins_code, l30, holder, *_parse_tds(tds)])
     return _DataFrame(rows, copy=False, columns=(
         'ins_code', 'l30', 'holder', *(
             # the first header is 'شرکت - سهامدار'
             th.text for th in trs[0].select('th')[1:]
         )
     ))
+
+
+def _parse_tds(tds):
+    for td in tds[1:]:
+        text = td.find(text=True)
+        try:
+            yield float(text.replace(',', ''))
+        except ValueError:
+            if td == '\xa0':
+                yield _NA

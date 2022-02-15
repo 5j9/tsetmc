@@ -1,3 +1,8 @@
+Unreleased
+----------
+* fix(major_holders_activity): handle empty-valued cells
+
+
 v0.37.0
 -------
 * Fixed ``market_watch.status_changes``.

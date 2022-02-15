@@ -136,13 +136,10 @@ def test_market_map_data():
 @patch_get('major_holders_activity.html')
 def test_major_holders_activity():
     df = major_holders_activity()
-    assert len(df) == 569
-    assert [*df.dtypes.items()] == [
+    dtypes = [*df.dtypes.items()]
+    assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
         ('l30', dtype('O')),
-        ('holder', dtype('O')),
-        ('1400/11/3', dtype('float64')),
-        ('1400/10/30', dtype('float64')),
-        ('1400/10/29', dtype('float64')),
-        ('1400/10/28', dtype('float64')),
-        ('1400/10/27', dtype('float64'))]
+        ('holder', dtype('O'))]
+    for _, t in dtypes[3:]:
+        assert dtype(t) == dtype('float64')
