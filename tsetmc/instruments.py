@@ -186,7 +186,7 @@ class Instrument:
             title_match = _TITLE_FULLMATCH(m['Title'])
             free_float = m['KAjCapValCpsIdx']
             eps = m['EstimatedEPS']
-            sps = m['PSR']
+            sps = m['PSR']  # PSR = P/S = P / (sps: sales per share)
             sector_pe = m['SectorPE']
             l30 = self._l30 = title_match[1]
             l18 = self._l18 = m['LVal18AFC']
