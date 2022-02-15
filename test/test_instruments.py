@@ -356,7 +356,7 @@ def test_adjustments():
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64'))]
-    assert df.loc[-1].values.tolist() == [jdatetime(1399, 5, 1, 0, 0), 35720, 35970]
+    assert type(df.iat[0, 0]) is jdatetime
 
 
 @patch_get('adjustments_flow_7.html')
