@@ -1,21 +1,13 @@
 from numpy import dtype
 
-from test import disable_get, patch_get
+from test import patch_session
 from tsetmc.general import boards, cs_codes, industrial_groups_overview, \
     major_holders_activity, market_map_data
 
 
-def setup_module():
-    disable_get.start()
-
-
-def teardown_module():
-    disable_get.stop()
-
-
-@patch_get('boards.html')
-def test_boards():
-    assert boards() == {
+@patch_session('boards.html')
+async def test_boards():
+    assert await boards() == {
         1: 'تابلو اصلی',
         3: 'تابلو فرعی',
         4: 'تابلو غیر رسمی',
@@ -26,9 +18,9 @@ def test_boards():
         9: 'بازار اوراق بدهی'}
 
 
-@patch_get('cs_codes.html')
-def test_cs_codes():
-    assert cs_codes() == {
+@patch_session('cs_codes.html')
+async def test_cs_codes():
+    assert await cs_codes() == {
         '01': 'زراعت و خدمات وابسته',
         '02': 'جنگلداری و ماهیگیری',
         '10': 'استخراج زغال سنگ',
@@ -98,9 +90,9 @@ def test_cs_codes():
         'X1': 'شاخص'}
 
 
-@patch_get('industrial_groups_overview.html')
-def test_industrial_groups_overview():
-    df = industrial_groups_overview()
+@patch_session('industrial_groups_overview.html')
+async def test_industrial_groups_overview():
+    df = await industrial_groups_overview()
     assert [*df.dtypes.items()] == [
         ('group', dtype('O')),
         (':-2', dtype('int64')),
@@ -110,9 +102,9 @@ def test_industrial_groups_overview():
     assert len(df) == 48
 
 
-@patch_get('weatherforecast.json')
-def test_market_map_data():
-    df = market_map_data()
+@patch_session('weatherforecast.json')
+async def test_market_map_data():
+    df = await market_map_data()
     assert len(df) == 301
     assert [*df.dtypes.items()] == [
         ('IsGreen', dtype('O')),
@@ -133,9 +125,9 @@ def test_market_map_data():
         ('Heven', dtype('O'))]
 
 
-@patch_get('major_holders_activity.html')
-def test_major_holders_activity():
-    df = major_holders_activity()
+@patch_session('major_holders_activity.html')
+async def test_major_holders_activity():
+    df = await major_holders_activity()
     dtypes = [*df.dtypes.items()]
     assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
