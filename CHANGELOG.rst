@@ -1,3 +1,7 @@
+Unreleased
+----------
+* feat!: migrate from urllib3 to httpx
+
 v0.38.0
 -------
 * feat(Instrument.holders)!: use english column names and numerize the `change` column
