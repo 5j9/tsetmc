@@ -12,7 +12,7 @@ from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
 from pandas import to_numeric as _to_numeric, read_html as _read_html
-from urllib3 import PoolManager as _PoolManager, Timeout as _Timeout
+from httpx import Client as _Client
 
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -99,15 +99,15 @@ def _parse_ombud_messages(text) -> _DataFrame:
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
-_http = _PoolManager(timeout=_Timeout(total=15., connect=5., read=5.))
-_http_get = _partial(_http.request, 'GET')
+_client = _Client()
+_client_get = _client.get
 
 
 def _get(url: str, *, fa=False) -> str | bytes:
-    result = _http_get(url).data
+    content = _client_get(url).content
     if fa is True:
-        return result.decode().translate(_FARSI_NORM)
-    return result
+        return content.decode().translate(_FARSI_NORM)
+    return content
 
 
 _DOMAIN = 'http://tsetmc.com/'

@@ -24,9 +24,9 @@ class NoOPPatch:
 
 if OFFLINE_MODE is True:
     disable_get = patch(
-        'tsetmc._http_get',
+        'tsetmc._client_get',
         side_effect=NotImplementedError(
-            '_http_get should not be called in OFFLINE_MODE'))
+            '_client_get should not be called in OFFLINE_MODE'))
 else:
     disable_get = NoOPPatch()
 
@@ -34,22 +34,22 @@ else:
 class FakeResponse:
 
     def __init__(self, content: bytes):
-        self.data = content
+        self.content = content
 
 
 # noinspection PyProtectedMember
-_original_http_get = tsetmc._http_get
+_original_client_get = tsetmc._client_get
 
 
 def patch_get(filename):
     if RECORD_MODE is True:
-        def _http_get_recorder(*args, **kwargs):
-            resp = _original_http_get(*args, **kwargs)
+        def _get_recorder(*args, **kwargs):
+            resp = _original_client_get(*args, **kwargs)
             data = resp.data
             with open(f'{__file__}/../testdata/{filename}', 'wb') as f:
                 f.write(data)
             return resp
-        return patch('tsetmc._http_get', _http_get_recorder)
+        return patch('tsetmc._client_get', _get_recorder)
 
     if OFFLINE_MODE is False:
         return identity_fn
@@ -60,7 +60,7 @@ def patch_get(filename):
     def fake_get(*_, **__):
         return FakeResponse(content)
 
-    return patch('tsetmc._http_get', fake_get)
+    return patch('tsetmc._client_get', fake_get)
 
 
 def assert_market_state(market_state: dict):
