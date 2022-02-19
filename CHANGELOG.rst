@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* feat(Instrument.dps_history): new method
 * feat!: migrate from urllib3 to httpx
 
 v0.38.0

@@ -47,9 +47,9 @@ def patch_get(filename):
     if RECORD_MODE is True:
         def _get_recorder(*args, **kwargs):
             resp = _original_client_get(*args, **kwargs)
-            data = resp.data
+            content = resp.content
             with open(f'{__file__}/../testdata/{filename}', 'wb') as f:
-                f.write(data)
+                f.write(content)
             return resp
         return patch('tsetmc._client_get', _get_recorder)
 

@@ -142,6 +142,10 @@ class Instrument:
         return self._l18
 
     @property
+    def _arabic_l18(self) -> str:
+        return self.l18.translate(_FARSI_NORM_REVERSED)
+
+    @property
     def l30(self) -> str:
         if (l30 := self._l30) is not None:
             return l30
@@ -325,7 +329,7 @@ class Instrument:
     def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
         text = _get_par_tree(
-            f'15131V&s={self.l18.translate(_FARSI_NORM_REVERSED)}')
+            f'15131V&s={self._arabic_l18}')
         df = _read_html(text)[0]
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
@@ -511,6 +515,25 @@ class Instrument:
 
     def ombud_messages(self) -> _DataFrame:
         return _parse_ombud_messages(_get_par_tree(f'15131W&i={self.code}'))
+
+    def dps_history(self):
+        content = _get_data(f'DPSData.aspx?s={self._arabic_l18}')
+        df = _csv2df(
+            _BytesIO(content),
+            header=None,
+            sep='@',
+        )
+        df.columns = [
+            'publish_date',
+            'meeting_date',
+            'fiscal_year',
+            'profit_or_loss_after_tax',
+            'distributable_profit',
+            'accumulated_profit_at_the_end_of_the_period',
+            'cash_earnings_per_share']
+        df.iloc[:, :3] = df.iloc[:, :3].apply(
+            lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col])
+        return df
 
 
 def price_adjustments(flow: int) -> _DataFrame:

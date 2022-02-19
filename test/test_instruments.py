@@ -436,3 +436,19 @@ def test_ombud_messages():
         ('date', dtype('O')),
         ('description', 'string[python]')]
     assert type(df.iat[0, 1]) is jdatetime
+
+
+@patch_get('fmelli_dps.txt')
+def test_ombud_messages():
+    df = Instrument(35425587644337450).dps_history()
+    assert [*df.dtypes.items()] == [
+        ('publish_date', dtype('O')),
+        ('meeting_date', dtype('O')),
+        ('fiscal_year', dtype('O')),
+        ('profit_or_loss_after_tax', dtype('float64')),
+        ('distributable_profit', dtype('float64')),
+        ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
+        ('cash_earnings_per_share', dtype('float64'))]
+    assert type(df.iat[0, 0]) is jdatetime
+    assert type(df.iat[0, 1]) is jdatetime
+    assert type(df.iat[0, 2]) is jdatetime
