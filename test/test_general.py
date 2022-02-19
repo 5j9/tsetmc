@@ -107,7 +107,7 @@ def test_industrial_groups_overview():
         ('-2:0', dtype('int64')),
         ('0:2', dtype('int64')),
         ('2:', dtype('int64'))]
-    assert len(df) == 48
+    assert len(df) > 40
 
 
 @patch_get('weatherforecast.json')

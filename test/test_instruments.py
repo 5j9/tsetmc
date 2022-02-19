@@ -7,7 +7,7 @@ from numpy import dtype
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
-from tsetmc.instruments import Instrument, price_adjustments, search
+from tsetmc.instruments import Instrument, _LiveData, price_adjustments, search
 
 from test import assert_market_state, disable_get, patch_get, OFFLINE_MODE
 
@@ -83,7 +83,7 @@ def test_page_data_negative_sector_pe():
     assert_page_data(d)
 
 
-def assert_live_data(d, best_limits=False, market_state=False, nav=False):
+def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=False):
     if best_limits:
         best_limits = d.pop('best_limits')
         assert [*best_limits.dtypes.items()] == [
@@ -95,7 +95,9 @@ def assert_live_data(d, best_limits=False, market_state=False, nav=False):
             ('zo', dtype('int64'))]
 
     if market_state:
-        assert_market_state(d.pop('market_state'))
+        market_state = d.pop('market_state', None)
+        if market_state is not None:
+            assert_market_state(market_state)
 
     if nav:
         assert type(d.pop('nav_datetime')) is jdatetime
