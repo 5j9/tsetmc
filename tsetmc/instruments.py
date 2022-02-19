@@ -516,7 +516,11 @@ class Instrument:
     def ombud_messages(self) -> _DataFrame:
         return _parse_ombud_messages(_get_par_tree(f'15131W&i={self.code}'))
 
-    def dps_history(self):
+    def dps_history(self) -> _DataFrame:
+        """Get DPS history.
+
+        :raises pandas.errors.EmptyDataError: No columns to parse from file
+        """
         content = _get_data(f'DPSData.aspx?s={self._arabic_l18}')
         df = _csv2df(
             _BytesIO(content),
