@@ -7,6 +7,7 @@ from numpy import dtype
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
+# noinspection PyProtectedMember
 from tsetmc.instruments import Instrument, _LiveData, price_adjustments, search
 
 from test import assert_market_state, disable_get, patch_get, OFFLINE_MODE
@@ -101,7 +102,7 @@ def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=Fa
 
     if nav:
         assert type(d.pop('nav_datetime')) is jdatetime
-        assert type(d.pop('nav')) is (int)
+        assert type(d.pop('nav')) is int
 
     assert type(d.pop('datetime')) is datetime
     for k in ('timestamp', 'status'):
