@@ -8,7 +8,7 @@ from tsetmc import _MarketState
 
 
 RECORD_MODE = False
-OFFLINE_MODE = True and not RECORD_MODE
+OFFLINE_MODE = False and not RECORD_MODE
 
 
 class FakeClientSession:
@@ -31,7 +31,7 @@ class FakeClientSession:
                 return resp
 
         async with tsetmc.Session():
-            return tsetmc.SESSION.get(*args, **kwargs)
+            return await tsetmc.SESSION.get(*args, **kwargs)
 
 
 class FakeResponse:
