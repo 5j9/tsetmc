@@ -1,9 +1,10 @@
-from tqdm import tqdm
+from asyncio import run, as_completed
 
+# noinspection PyProtectedMember
 from tsetmc.instruments import _L18S, Instrument
 from tsetmc.database import update_db_using_market_watch
+# noinspection PyProtectedMember
 from tsetmc import Session, _DF
-from asyncio import run, as_completed
 
 
 l18_df = _DF(_L18S).T
