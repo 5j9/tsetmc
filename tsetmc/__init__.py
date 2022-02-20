@@ -104,8 +104,7 @@ class Session:
 
     def __init__(self, **kwargs):
         if 'timeout' not in kwargs:
-            kwargs['timeout'] = _ClientTimeout(
-                total=10, sock_connect=5, sock_read=5)
+            kwargs['timeout'] = _ClientTimeout(sock_connect=5, sock_read=5)
         self._kwargs = kwargs
 
     async def __aenter__(self):
