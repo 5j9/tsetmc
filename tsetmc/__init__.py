@@ -121,8 +121,13 @@ class Session:
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
+# this function should only be called from _get below
+async def _session_get(url: str) -> bytes:
+    return await (await SESSION.get(url)).read()
+
+
 async def _get(url: str, *, fa=False) -> str | bytes:
-    content = await (await SESSION.get(url)).read()
+    content = await _session_get(url)
     if fa is True:
         return content.decode().translate(_FARSI_NORM)
     return content

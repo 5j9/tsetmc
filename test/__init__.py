@@ -8,43 +8,27 @@ from tsetmc import _MarketState
 
 
 RECORD_MODE = False
-OFFLINE_MODE = False and not RECORD_MODE
-
-
-class FakeClientSession:
-
-    def __init__(self, filename: str):
-        self.filename = f'{__file__}/../testdata/{filename}'
-
-    async def get(self, *args, **kwargs):
-        if OFFLINE_MODE:
-            with open(self.filename, 'rb') as f:
-                content = f.read()
-            return FakeResponse(content)
-
-        if RECORD_MODE:
-            async with tsetmc.Session():
-                resp = await tsetmc.SESSION.get(*args, **kwargs)
-                content = await resp.read()
-                with open(self.filename, 'wb') as f:
-                    f.write(content)
-                return resp
-
-        async with tsetmc.Session():
-            return await tsetmc.SESSION.get(*args, **kwargs)
-
-
-class FakeResponse:
-
-    def __init__(self, content: bytes):
-        self.content = content
-
-    async def read(self):
-        return self.content
+OFFLINE_MODE = True and not RECORD_MODE
 
 
 def patch_session(filename):
-    return patch('tsetmc.SESSION', FakeClientSession(filename))
+
+    async def _fake_session_get(url: str) -> str | bytes:
+        file = f'{__file__}/../testdata/{filename}'
+
+        if OFFLINE_MODE:
+            with open(file, 'rb') as f:
+                content = f.read()
+        else:
+            async with tsetmc.Session() as s:
+                content = await (await s.get(url)).read()
+            if RECORD_MODE:
+                with open(file, 'wb') as f:
+                    f.write(content)
+
+        return content
+
+    return patch('tsetmc._session_get', _fake_session_get)
 
 
 def assert_market_state(market_state: _MarketState):
