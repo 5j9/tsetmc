@@ -11,26 +11,20 @@ RECORD_MODE = False
 OFFLINE_MODE = True and not RECORD_MODE
 
 
-def identity_fn(f):
-    return f
+def add_session_context(test_fn):
+    async def wrapper():
+        async with tsetmc.Session():
+            return await test_fn()
+    return wrapper
 
 
-class NoOPPatch:
+class FakeClientSession:
 
-    def start(self):
-        return
+    def __init__(self, content: bytes):
+        self.content = content
 
-    def stop(self):
-        return
-
-
-if OFFLINE_MODE is True:
-    disable_get = patch(
-        'tsetmc._client_get',
-        side_effect=NotImplementedError(
-            '_client_get should not be called in OFFLINE_MODE'))
-else:
-    disable_get = NoOPPatch()
+    async def get(self, _):
+        return FakeResponse(self.content)
 
 
 class FakeResponse:
@@ -38,31 +32,27 @@ class FakeResponse:
     def __init__(self, content: bytes):
         self.content = content
 
+    async def read(self):
+        return self.content
 
-# noinspection PyProtectedMember
-_original_client_get = tsetmc._client_get
 
-
-def patch_get(filename):
-    if RECORD_MODE is True:
-        def _get_recorder(*args, **kwargs):
-            resp = _original_client_get(*args, **kwargs)
-            content = resp.content
+def patch_session(filename):
+    if RECORD_MODE:
+        async def _get_recorder(*args, **kwargs):
+            resp = await tsetmc.SESSION.get(*args, **kwargs)
+            content = await resp.read()
             with open(f'{__file__}/../testdata/{filename}', 'wb') as f:
                 f.write(content)
             return resp
-        return patch('tsetmc._client_get', _get_recorder)
+        return patch('tsetmc._get', _get_recorder)
 
-    if OFFLINE_MODE is False:
-        return identity_fn
+    if not OFFLINE_MODE:
+        return add_session_context
 
     with open(f'{__file__}/../testdata/{filename}', 'rb') as f:
         content = f.read()
 
-    def fake_get(*_, **__):
-        return FakeResponse(content)
-
-    return patch('tsetmc._client_get', fake_get)
+    return patch('tsetmc.SESSION', FakeClientSession(content))
 
 
 def assert_market_state(market_state: _MarketState):

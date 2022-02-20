@@ -45,7 +45,7 @@ class _MarketWatchInit(_TypedDict, total=False):
     market_state: _MarketState
 
 
-def market_watch_init(
+async def market_watch_init(
     *, market_state=True, prices=True, best_limits=True, join=True
 ) -> _MarketWatchInit:
     """Return the market status which are the info used in creating filters.
@@ -62,7 +62,7 @@ def market_watch_init(
             (it's the time of the last transaction in HHMMSS format)
     """
     # todo: use content?
-    text = _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
+    text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
     _, market_state_str, states, price_rows, _ = text.split('@')
     result = {}
     if prices:
@@ -98,17 +98,18 @@ class _MarketWatchPlus(_TypedDict, total=False):
     refid: int
 
 
-def market_watch_plus(
+async def market_watch_plus(
     heven: int, refid: int,
     *, messages=True, market_state=True,
     new_prices=True, price_updates=True, best_limits=True,
 ) -> _MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
-    handle_msg, update_fast_view, inst_price, best_limit, refid = _get_data(
+    text = await _get_data(
         f'MarketWatchPlus.aspx?h={5 * (heven // 5)}&r={25 * (refid // 25)}',
         fa=True
-    ).split('@')
+    )
+    handle_msg, update_fast_view, inst_price, best_limit, refid = text.split('@')
     result = {}
     if messages:
         # whenever a new id appears, users should try to fetch new messages
@@ -156,7 +157,7 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list:
     return data
 
 
-def closing_price_all() -> _DataFrame:
+async def closing_price_all() -> _DataFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
@@ -165,7 +166,7 @@ def closing_price_all() -> _DataFrame:
         tsetmc filters. See:
             http://tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
     """
-    content = _get_data('ClosingPriceAll.aspx')
+    content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     # dtype='uint64' param cannot be used due to
     # https://github.com/pandas-dev/pandas/issues/44835
@@ -176,12 +177,12 @@ def closing_price_all() -> _DataFrame:
     return df
 
 
-def client_type_all() -> _DataFrame:
+async def client_type_all() -> _DataFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
     """
-    content = _get_data('ClientTypeAll.aspx')
+    content = await _get_data('ClientTypeAll.aspx')
     df = _csv2df(
         _BytesIO(content), names=(
             'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
@@ -190,14 +191,14 @@ def client_type_all() -> _DataFrame:
     return df
 
 
-def key_stats() -> _DataFrame:
+async def key_stats() -> _DataFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
         http://www.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
         http://cdn.tsetmc.com/Site.aspx?ParTree=151713
     """
-    content = _get_data('InstValue.aspx?t=a')
+    content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
     df = _DF(data, columns=('ins_code', 'n', 'value'))
     # noinspection PyTypeChecker
@@ -207,7 +208,7 @@ def key_stats() -> _DataFrame:
     return df
 
 
-def ombud_messages(
+async def ombud_messages(
     *, top: int | str = None, flow: int | str = None,
     containing: str = None, sh_date: str = None,
 ) -> _DataFrame:
@@ -229,11 +230,11 @@ def ombud_messages(
         path += f'&DevenPersian={sh_date}'
     if containing is not None:
         path += f'&Lval18AFC={containing}'
-    return _parse_ombud_messages(_get_par_tree(path))
+    return _parse_ombud_messages(await _get_par_tree(path))
 
 
-def status_changes(top: int | str) -> _DataFrame:
-    text = _get_par_tree(f'15131L&top={top}')
+async def status_changes(top: int | str) -> _DataFrame:
+    text = await _get_par_tree(f'15131L&top={top}')
     df = _read_html(text)[0]
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
         _jstrptime, format='%Y/%m/%d %H:%M:%S')

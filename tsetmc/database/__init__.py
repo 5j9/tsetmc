@@ -16,10 +16,10 @@ def _dump_l18s():
         _dump(_L18S, f, check_circular=False, ensure_ascii=False, indent='\t', sort_keys=True)
 
 
-def add_instrument_to_db(inst: _Instrument) -> None:
+async def add_instrument_to_db(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
-    d = inst.page_data()
+    d = await inst.page_data()
     if d['flow'] == 3 or d['cs'] in _CS_EXCLUSIONS:
         return
     # isin = df.at['کد 12 رقمی نماد', 1]
@@ -28,9 +28,10 @@ def add_instrument_to_db(inst: _Instrument) -> None:
     _dump_l18s()
 
 
-def update_db_using_market_watch() -> None:
+async def update_db_using_market_watch() -> None:
     global _L18S
-    df = _market_watch_init(market_state=False, best_limits=False)['prices']
+    mwi = await _market_watch_init(market_state=False, best_limits=False)
+    df = mwi['prices']
     # flow == 3: futures market
     df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS')
     glv = df.index.get_level_values

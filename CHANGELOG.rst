@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* BREAKING CHANGE: Make the framework async.
 * fixed: type annotation of ``Instrument.live_data``
 
 v0.39.0

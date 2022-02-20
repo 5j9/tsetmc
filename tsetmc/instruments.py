@@ -119,8 +119,7 @@ class Instrument:
         self._l30 = l30
 
     def __repr__(self):
-        # not using self.l18 because it can cause a while when viewing a list
-        # of Instruments.
+        # not using self.l18 because it may require a web request
         if self._l18 is not None:
             return f"Instrument({self.code}, {self._l18!r})"
         if self._l30 is not None:
@@ -134,49 +133,51 @@ class Instrument:
         return self.code
     
     @property
-    def l18(self) -> str:
+    async def l18(self) -> str:
         if (l18 := self._l18) is not None:
             return l18
         try:
             self._l18, self._l30 = _l18_l30(self.code)
         except KeyError:
-            self.page_data()
+            await self.page_data()
         return self._l18
 
     @property
-    def _arabic_l18(self) -> str:
-        return self.l18.translate(_FARSI_NORM_REVERSED)
+    async def _arabic_l18(self) -> str:
+        return (await self.l18).translate(_FARSI_NORM_REVERSED)
 
     @property
-    def l30(self) -> str:
+    async def l30(self) -> str:
         if (l30 := self._l30) is not None:
             return l30
         try:
             self._l18, self._l30 = _l18_l30(self.code)
         except KeyError:
-            self.page_data()
+            await self.page_data()
         return self._l30
 
     @property
-    def cisin(self) -> str:
+    async def cisin(self) -> str:
         try:
             return self._cisin
         except AttributeError:
             # can also be fetched using self.identification()
             # but that won't load self._l18 since 'نماد فارسی'
             # sometimes contains descriptions like "وسديد - لغو پذیرش شده".
-            self.page_data()
+            await self.page_data()
         return self._cisin
 
     @staticmethod
-    def from_l18(l18: str, /) -> 'Instrument':
+    async def from_l18(l18: str, /) -> 'Instrument':
         try:
             ins_code, _, l30 = _L18S[l18]
         except KeyError:
-            return Instrument.from_search(l18)
+            return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
-    def page_data(self, general=True, trade_history=False, related_companies=False) -> dict:
+    async def page_data(
+        self, general=True, trade_history=False, related_companies=False
+    ) -> dict:
         """Return the static info found on instrument's page.
 
         :param general: parse general data including bvol, cisin, etc.
@@ -185,13 +186,13 @@ class Instrument:
         For the meaning of keys see:
             https://cdn.tsetmc.com/Site.aspx?ParTree=151713
         """
-        text = _get_par_tree(f'151311&i={self.code}')
+        text = await _get_par_tree(f'151311&i={self.code}')
         if general:
             m = _PAGE_VARS(text)
             title_match = _TITLE_FULLMATCH(m['Title'])
             free_float = m['KAjCapValCpsIdx']
             eps = m['EstimatedEPS']
-            sps = m['PSR']
+            sps = m['PSR']  # PSR = P/S = P / (sps: sales per share)
             sector_pe = m['SectorPE']
             l30 = self._l30 = title_match[1]
             l18 = self._l18 = m['LVal18AFC']
@@ -237,7 +238,7 @@ class Instrument:
         # todo: add 'codal_data'
         return result
 
-    def live_data(
+    async def live_data(
         self, general=True, best_limits=False, market_state=False
     ) -> _LiveData:
         """Return live data price/order data using instinfodata.aspx module.
@@ -248,8 +249,8 @@ class Instrument:
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
-        text = _get_data(
-            f'instinfodata.aspx'
+        text = await _get_data(
+            'instinfodata.aspx'
             # &e=1 parameter is required to get NAV
             f'?i={self.code}&c=&e=1', fa=True)
         # the _s are unknown
@@ -284,8 +285,8 @@ class Instrument:
                 lineterminator=',')
         return result
 
-    def trade_history(self, top: int) -> _DataFrame:
-        content = _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}')
+    async def trade_history(self, top: int) -> _DataFrame:
+        content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}')
         df = _csv2df(
             _BytesIO(content)
             , sep='@'
@@ -294,8 +295,8 @@ class Instrument:
             , parse_dates=True)
         return df
 
-    def price_history(self, adjusted: bool = True) -> _DataFrame:
-        content = _get(
+    async def price_history(self, adjusted: bool = True) -> _DataFrame:
+        content = await _get(
             f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = _csv2df(
             _BytesIO(content)
@@ -303,13 +304,13 @@ class Instrument:
             , index_col='date', parse_dates=True)
         return df
 
-    def client_type(self) -> _DataFrame:
+    async def client_type(self) -> _DataFrame:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
         """
         return _csv2df(
-            _BytesIO(_get_data(f'clienttype.aspx?i={self.code}'))
+            _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}'))
             , names=(
                 'date'
                 , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
@@ -317,38 +318,38 @@ class Instrument:
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
             , index_col='date', parse_dates=True , dtype='uint64')
 
-    def identification(self) -> dict:
+    async def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.
 
         Related API descriptions:
             https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
         """
-        text = _get_par_tree(f'15131M&i={self.code}')
+        text = await _get_par_tree(f'15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
 
-    def introduction(self) -> dict[str, str]:
+    async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
-        text = _get_par_tree(
-            f'15131V&s={self._arabic_l18}')
+        text = await _get_par_tree(
+            f'15131V&s={await self._arabic_l18}')
         df = _read_html(text)[0]
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
     @staticmethod
-    def from_search(s: str) -> 'Instrument':
+    async def from_search(s: str) -> 'Instrument':
         """`search(s)` and return the first result as Instrument."""
-        l18, l30, ins_code = search(s).iloc[0][:3]
+        l18, l30, ins_code = (await search(s)).iloc[0][:3]
         return Instrument(ins_code, l18, l30)
 
-    def holders(self, cisin=None) -> _DataFrame:
-        """Get list of major unit/shareholders.
+    async def holders(self, cisin=None) -> _DataFrame:
+        """Get list of major unit/share holders.
 
         If `cisin` is not provided, it will be fetched using a web request.
         """
         if cisin is None:
-            cisin = self.cisin
-        text = _get_par_tree(f'15131T&c={cisin}')
+            cisin = await self.cisin
+        text = await _get_par_tree(f'15131T&c={cisin}')
         df = _read_html(text)[0]
         df.drop(columns='Unnamed: 4', inplace=True)
         # todo: use separate columns
@@ -361,7 +362,7 @@ class Instrument:
         return df
 
     @staticmethod
-    def holder(
+    async def holder(
         id_cisin=None, history=True, other_holdings=False
     ) -> _DataFrame | tuple[_DataFrame, _DataFrame]:
         """Return history/other holdings for the given holder id_cisin.
@@ -371,7 +372,7 @@ class Instrument:
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
         """
-        text = _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
+        text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
         def history_df() -> _DataFrame:
@@ -395,7 +396,7 @@ class Instrument:
         else:
             return other_holdings_df()
 
-    def intraday(
+    async def intraday(
         self, date: int | str, *,
         general=False,
         thresholds=False,
@@ -413,7 +414,7 @@ class Instrument:
         For the meaning of instrument state codes refer to
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
         """
-        text = _get_par_tree(f'15131P&i={self.code}&d={date}')
+        text = await _get_par_tree(f'15131P&i={self.code}&d={date}')
         find = text.find
         find_start = 0
         result = {}
@@ -508,22 +509,22 @@ class Instrument:
             result['best_limits'] = best_limits_df
         return result
 
-    def adjustments(self) -> _DataFrame:
-        text = _get_par_tree(f'15131G&i={self.code}', fa=False)
+    async def adjustments(self) -> _DataFrame:
+        text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
         return df
 
-    def ombud_messages(self) -> _DataFrame:
-        return _parse_ombud_messages(_get_par_tree(f'15131W&i={self.code}'))
+    async def ombud_messages(self) -> _DataFrame:
+        return _parse_ombud_messages(await _get_par_tree(f'15131W&i={self.code}'))
 
-    def dps_history(self) -> _DataFrame:
+    async def dps_history(self) -> _DataFrame:
         """Get DPS history.
 
         :raises pandas.errors.EmptyDataError: No columns to parse from file
         """
-        content = _get_data(f'DPSData.aspx?s={self._arabic_l18}')
+        content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
         df = _csv2df(
             _BytesIO(content),
             header=None,
@@ -542,23 +543,23 @@ class Instrument:
         return df
 
 
-def price_adjustments(flow: int) -> _DataFrame:
+async def price_adjustments(flow: int) -> _DataFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
-    text = _get_par_tree(f'151319&Flow={flow}')
+    text = await _get_par_tree(f'151319&Flow={flow}')
     df = _read_html(text)[0]
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
     df['date'] = df['date'].apply(_j_ymd_parse)
     return df
 
 
-def search(skey: str, /) -> _DataFrame:
+async def search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
     return _csv2df(
-        _StringIO(_get_data('search.aspx?skey=' + skey, fa=True)),
+        _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
         header=None,
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',

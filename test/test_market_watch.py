@@ -7,36 +7,28 @@ from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
     key_stats, closing_price_all, client_type_all, status_changes, \
     ombud_messages
-from test import assert_market_state, disable_get, patch_get, OFFLINE_MODE
+from test import assert_market_state, patch_session, OFFLINE_MODE
 
 
-def setup_module():
-    disable_get.start()
-
-
-def teardown_module():
-    disable_get.stop()
-
-
-if OFFLINE_MODE is True:
-    def test_info_url():
-        with raises(NotImplementedError):
-            market_watch_init()
+if OFFLINE_MODE:
+    async def test_info_url():
+        with raises(AttributeError):
+            await market_watch_init()
 
 
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 
 
-@patch_get('MarketWatchInit.aspx')
-def test_market_watch_init():
-    mwi = market_watch_init(join=False, market_state=False)
+@patch_session('MarketWatchInit.aspx')
+async def test_market_watch_init():
+    mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
     # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
     assert 'market_state' not in mwi
 
-    mwi = market_watch_init(market_state=True)
+    mwi = await market_watch_init(market_state=True)
     prices = mwi['prices']
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
@@ -80,16 +72,16 @@ def test_market_watch_init():
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
 
-    mwi = market_watch_init(prices=False, market_state=False)
+    mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
 
 
-@patch_get('ClosingPriceAll.aspx')
-def test_closing_price_all():
-    df = closing_price_all()
+@patch_session('ClosingPriceAll.aspx')
+async def test_closing_price_all():
+    df = await closing_price_all()
     assert all(t == 'uint64' for t in df.dtypes)
     assert df.columns.to_list() == ['pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'pf']
     index = df.index
@@ -99,9 +91,9 @@ def test_closing_price_all():
     assert all(t == 'uint64' for t in index.dtypes)
 
 
-@patch_get('ClientTypeAll.aspx')
-def test_client_type_all():
-    df = client_type_all()
+@patch_session('ClientTypeAll.aspx')
+async def test_client_type_all():
+    df = await client_type_all()
     assert all(df.columns == [
         'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
         , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
@@ -109,9 +101,9 @@ def test_client_type_all():
     assert df.index.name == 'ins_code'
 
 
-@patch_get('InstValue.aspx')
-def test_key_stats():
-    df = key_stats()
+@patch_session('InstValue.aspx')
+async def test_key_stats():
+    df = await key_stats()
     assert all(df.columns.str.startswith('is'))
     assert all(t == 'float64' for t in df.dtypes)
     assert df.index.name == 'ins_code'
@@ -179,17 +171,17 @@ def test_parse_index():
         "00/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
 
 
-@patch_get('MarketWatchInit2.aspx')
-def test_market_watch_init_non_int_tmin_tmax():
+@patch_session('MarketWatchInit2.aspx')
+async def test_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
     # used to raise
     # TypeError: cannot safely cast non-equivalent float64 to int64
-    market_watch_init()
+    await market_watch_init()
 
 
-@patch_get('MarketWatchPlus00.txt')
-def test_market_watch_plus_new():
-    mwp = market_watch_plus(0, 0, messages=False, market_state=False)
+@patch_session('MarketWatchPlus00.txt')
+async def test_market_watch_plus_new():
+    mwp = await market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     # noinspection PyUnresolvedReferences
@@ -206,9 +198,9 @@ def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
-@patch_get('MarketWatchPlus_h64130_r9540883525.txt')
-def test_market_watch_plus_update():
-    mwp = market_watch_plus(64130, 9540883525)
+@patch_session('MarketWatchPlus_h64130_r9540883525.txt')
+async def test_market_watch_plus_update():
+    mwp = await market_watch_plus(64130, 9540883525)
 
     price_updates = mwp['price_updates']
     assert [*price_updates.dtypes.items()] == [
@@ -223,8 +215,9 @@ def test_market_watch_plus_update():
         ('pmax', dtype('uint64'))]
     assert price_updates.index.dtype == 'uint64'
 
-    if 'market_state' in mwp:
-        assert_market_state(mwp['market_state'])
+    market_state = mwp.pop('market_state', None)
+    if market_state is not None:
+        assert_market_state(market_state)
 
     for m in mwp['messages']:
         assert type(m) is str
@@ -241,7 +234,7 @@ def test_market_watch_plus_update():
         ('qo', dtype('uint64'))]
     assert best_limits.index.dtype == 'uint64'
 
-    assert type(mwp['refid']) is int
+    assert type(mwp['refid']) == int
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
@@ -253,9 +246,9 @@ def test_market_watch_plus_update():
         ('l30', 'string[python]')]
 
 
-@patch_get('status_changes.html')
-def test_status_changes():
-    df = status_changes(3)
+@patch_session('status_changes.html')
+async def test_status_changes():
+    df = await status_changes(3)
     assert len(df) == 3
     assert (*df.dtypes.items(),) == (
         ('نماد', dtype('O')),
@@ -265,9 +258,9 @@ def test_status_changes():
     assert type(df.iat[0, 3]) is jdatetime
 
 
-@patch_get('ombud_messages.html')
-def test_ombud_messages():
-    df = ombud_messages(top=3)
+@patch_session('ombud_messages.html')
+async def test_ombud_messages():
+    df = await ombud_messages(top=3)
     assert len(df) == 3
     assert (*df.dtypes.items(),) == (
         ('header', 'string[python]'),
@@ -276,10 +269,10 @@ def test_ombud_messages():
     assert type(df.iat[0, 1]) is jdatetime
 
 
-@patch_get('empty_ombud_messages.html')
-def test_ombud_messages_empty():
+@patch_session('empty_ombud_messages.html')
+async def test_ombud_messages_empty():
     # `sh_date` cannot be used without `containing`
-    df = ombud_messages(top=1, sh_date='1400-11-02', flow=0)
+    df = await ombud_messages(top=1, sh_date='1400-11-02', flow=0)
     assert df.empty
     assert (*df.dtypes.items(),) == (
         ('header', 'string[python]'),

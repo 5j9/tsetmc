@@ -12,7 +12,8 @@ from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
 from pandas import to_numeric as _to_numeric, read_html as _read_html
-from httpx import Client as _Client
+from aiohttp import ClientSession as _ClientSession, \
+    ClientTimeout as _ClientTimeout
 
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -96,15 +97,32 @@ def _parse_ombud_messages(text) -> _DataFrame:
     return df
 
 
+SESSION : _ClientSession | None = None
+
+
+class Session:
+
+    def __init__(self, **kwargs):
+        if 'timeout' not in kwargs:
+            kwargs['timeout'] = _ClientTimeout(
+                total=10, sock_connect=5, sock_read=5)
+        self._kwargs = kwargs
+
+    async def __aenter__(self):
+        global SESSION
+        SESSION = _ClientSession(**self._kwargs)
+        return SESSION
+
+    async def __aexit__(self, *err):
+        global SESSION
+        await SESSION.close()
+
+
 _FARSI_NORM = ''.maketrans('يك', 'یک')
 
 
-_client = _Client()
-_client_get = _client.get
-
-
-def _get(url: str, *, fa=False) -> str | bytes:
-    content = _client_get(url).content
+async def _get(url: str, *, fa=False) -> str | bytes:
+    content = await (await SESSION.get(url)).read()
     if fa is True:
         return content.decode().translate(_FARSI_NORM)
     return content
@@ -113,9 +131,9 @@ def _get(url: str, *, fa=False) -> str | bytes:
 _DOMAIN = 'http://tsetmc.com/'
 
 
-def _get_data(path: str, *, fa=False) -> str | bytes:
-    return _get(f'{_DOMAIN}tsev2/data/' + path, fa=fa)
+async def _get_data(path: str, *, fa=False) -> str | bytes:
+    return await _get(f'{_DOMAIN}tsev2/data/' + path, fa=fa)
 
 
-def _get_par_tree(path: str, *, fa=True) -> str | bytes:
-    return _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
+async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
+    return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
