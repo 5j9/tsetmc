@@ -8,7 +8,7 @@ from pathlib import Path
 from pandas import to_datetime as _to_datetime
 
 from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
-    _parse_market_state, _parse_ombud_messages, _rc, \
+    _numerize, _parse_market_state, _parse_ombud_messages, _rc, \
     _get, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree, _jdatetime
 
@@ -356,9 +356,7 @@ class Instrument:
         df.columns = ['holder', 'shares/units', '%', 'change']
         df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
         if df['change'].dtype == 'O':
-            repl_d = {'K': '000', 'M': '000' * 2, 'B': '000' * 3, 'T': '000' * 4}
-            df['change'] = df['change'].str.replace(
-                ' ([KMT])', lambda m: repl_d[m[1]] if m[1] else m[0]).astype('int64')
+            _numerize(df, ('change',), int)
         return df
 
     @staticmethod

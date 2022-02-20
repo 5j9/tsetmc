@@ -136,3 +136,16 @@ async def _get_data(path: str, *, fa=False) -> str | bytes:
 
 async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
+
+
+def _numerize(df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False):
+    for col in cols:
+        c = df[col]
+        if comma is True:
+            c = c.str.replace(',', '')
+        # https://stackoverflow.com/a/39684629/2705757
+        df[col] = (
+            c.replace(r' [KMB]$', '', regex=True).astype(astype)
+        ) * c.str.extract(r'[\d\.]+([KMBT]+)', expand=False).fillna(1).replace(
+            ['K', 'M', 'B', 'T'], [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12]
+        )

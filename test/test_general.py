@@ -2,7 +2,7 @@ from numpy import dtype
 
 from test import patch_session
 from tsetmc.general import boards, cs_codes, industrial_groups_overview, \
-    major_holders_activity, market_map_data
+    major_holders_activity, market_map_data, top_industry_groups
 
 
 @patch_session('boards.html')
@@ -135,3 +135,14 @@ async def test_major_holders_activity():
         ('holder', dtype('O'))]
     for _, t in dtypes[3:]:
         assert dtype(t) == dtype('float64')
+
+
+@patch_session('top_industry_groups.html')
+async def test_top_industry_groups():
+    df = await top_industry_groups()
+    assert [*df.dtypes.items()] == [
+        ('group', dtype('O')),
+        ('mv', dtype('float64')),
+        ('tno', dtype('int64')),
+        ('tvol', dtype('float64')),
+        ('tval', dtype('float64'))]

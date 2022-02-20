@@ -1,7 +1,8 @@
 from pandas import concat as _concat, read_json as _read_json, NA as _NA
 from bs4 import BeautifulSoup as _BeautifulSoup
 
-from tsetmc import _get, _get_par_tree, _read_html, _DataFrame, _StringIO, \
+from tsetmc import _get, _get_par_tree, _numerize, _read_html, _DataFrame, \
+    _StringIO, \
     _partial
 
 
@@ -76,6 +77,14 @@ async def major_holders_activity() -> _DataFrame:
             th.text for th in trs[0].select('th')[1:]
         )
     ))
+
+
+async def top_industry_groups() -> _DataFrame:
+    text = await _get_par_tree('15131O')
+    df = _read_html(text)[0]
+    df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
+    _numerize(df, ('mv', 'tvol', 'tval'), float, comma=True)
+    return df
 
 
 def _parse_tds(tds):

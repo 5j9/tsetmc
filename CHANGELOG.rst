@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * BREAKING CHANGE: Make the framework async.
+* feat(general.top_industry_groups): new method
 * fixed: type annotation of ``Instrument.live_data``
 
 v0.39.0

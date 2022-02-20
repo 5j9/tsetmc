@@ -11,20 +11,27 @@ RECORD_MODE = False
 OFFLINE_MODE = True and not RECORD_MODE
 
 
-def add_session_context(test_fn):
-    async def wrapper():
-        async with tsetmc.Session():
-            return await test_fn()
-    return wrapper
-
-
 class FakeClientSession:
 
-    def __init__(self, content: bytes):
-        self.content = content
+    def __init__(self, filename: str):
+        self.filename = f'{__file__}/../testdata/{filename}'
 
-    async def get(self, _):
-        return FakeResponse(self.content)
+    async def get(self, *args, **kwargs):
+        if OFFLINE_MODE:
+            with open(self.filename, 'rb') as f:
+                content = f.read()
+            return FakeResponse(content)
+
+        if RECORD_MODE:
+            async with tsetmc.Session():
+                resp = await tsetmc.SESSION.get(*args, **kwargs)
+                content = await resp.read()
+                with open(self.filename, 'wb') as f:
+                    f.write(content)
+                return resp
+
+        async with tsetmc.Session():
+            return tsetmc.SESSION.get(*args, **kwargs)
 
 
 class FakeResponse:
@@ -37,22 +44,7 @@ class FakeResponse:
 
 
 def patch_session(filename):
-    if RECORD_MODE:
-        async def _get_recorder(*args, **kwargs):
-            resp = await tsetmc.SESSION.get(*args, **kwargs)
-            content = await resp.read()
-            with open(f'{__file__}/../testdata/{filename}', 'wb') as f:
-                f.write(content)
-            return resp
-        return patch('tsetmc._get', _get_recorder)
-
-    if not OFFLINE_MODE:
-        return add_session_context
-
-    with open(f'{__file__}/../testdata/{filename}', 'rb') as f:
-        content = f.read()
-
-    return patch('tsetmc.SESSION', FakeClientSession(content))
+    return patch('tsetmc.SESSION', FakeClientSession(filename))
 
 
 def assert_market_state(market_state: _MarketState):
