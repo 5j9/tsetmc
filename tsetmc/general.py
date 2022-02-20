@@ -10,13 +10,14 @@ _make_soup = _partial(_BeautifulSoup, features='lxml')
 
 
 async def boards() -> dict[int, str]:
-    """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913."""
+    """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913"""
     content = await _get_par_tree('111C1913')
     iloc = _read_html(content, header=0)[0].iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
 async def cs_codes() -> dict[str, str]:
+    """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _get_par_tree('111C1213')
     iloc = _read_html(content, header=0)[0].iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
@@ -41,6 +42,7 @@ async def industrial_groups_overview() -> _DataFrame:
 
 
 async def market_map_data() -> _DataFrame:
+    """http://new.tsetmc.com/treemap"""
     text = await _get('http://new.tsetmc.com/weatherforecast', fa=True)
     df: _DataFrame = _read_json(_StringIO(text), convert_dates=False)
     comma_nums = ('QTotCap', 'QTotTran5J', 'ZTotTran')
@@ -52,6 +54,7 @@ async def market_map_data() -> _DataFrame:
 
 
 async def major_holders_activity() -> _DataFrame:
+    """http://www.tsetmc.com/Loader.aspx?ParTree=15131I"""
     text = await _get_par_tree('15131I')
     soup = _make_soup(text)
     trs = soup.select('tr')
