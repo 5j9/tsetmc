@@ -2,29 +2,42 @@ from tqdm import tqdm
 
 from tsetmc.instruments import _L18S, Instrument
 from tsetmc.database import update_db_using_market_watch
-from tsetmc import _DF
+from tsetmc import Session, _DF
+from asyncio import run, as_completed
 
 
 l18_df = _DF(_L18S).T
 
-removables = []
-a = removables.append
-checked = {*()}
-for i in tqdm(l18_df[1]):
-    if i in checked:
-        continue
-    d = Instrument.from_l18(i).page_data()
-    if d['cs'] == 69 or d['flow'] == 3:
-        a(i)
-        print(f'marked {i} for removal')
-        _L18S.pop(i)
-    checked.add(i)
+REMOVABLES = []
+RA = REMOVABLES.append
+CHECKED = {*()}
 
 
-for i in removables:
-    try:
-        del _L18S[i]
-    except KeyError:
-        pass
+async def check(l18: str):
+    if l18 in CHECKED:
+        return
+    page_data = await (await Instrument.from_l18(l18)).page_data()
+    if page_data['cs'] == 69 or page_data['flow'] == 3 or page_data['flow_name'] == 'بازار اوراق بدهی':
+        RA(l18)
+        print(f'marked {l18} for removal')
+        _L18S.pop(l18)
+    CHECKED.add(l18)
 
-update_db_using_market_watch()
+
+async def main():
+    async with Session():
+        for coro in as_completed([check(l18) for l18 in l18_df[1]]):
+            await coro
+
+        print(f'{len(REMOVABLES)=}')
+        for i in REMOVABLES:
+            try:
+                del _L18S[i]
+            except KeyError:
+                pass
+
+        # uses the modified _L18S
+        await update_db_using_market_watch()
+
+
+run(main())
