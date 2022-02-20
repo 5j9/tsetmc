@@ -1,4 +1,4 @@
-A Python library to fetch data from http://tsetmc.com.
+An ``async`` Python library to fetch data from http://tsetmc.com.
 
 Note: The API is provisional and may change rapidly without deprecation.
 
@@ -11,16 +11,49 @@ Requires Python 3.10+.
 Overview
 --------
 
-The ``Instrument`` class provides methods for getting information about an instrument. The following code block tries to demonstrate its capabilities.
-
-Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 . Many of the parameters/keys/column-names/etc are chosen from those abbreviations. If you can't figure out the meaning of any of them, please open an issue.
+First things first. ``tsetmc`` relies on `aiohttp`_ .
+If you are not familiar with aiohttp all you need to know is that any ``async`` operation needs to be within an async session context.
+You may create the session using ``tsetmc.Session`` class:
 
 .. code-block:: python
 
-    >>> from tsetmc.instruments import Instrument
-    >>> inst = Instrument.from_l18('فملی')
-    >>> # getting the static data available in the main page of the symbol
-    >>> inst.page_data(general=True, trade_history=True, related_companies=True)
+    import tsetmc
+
+    async def main():
+        async with tsetmc.Session():
+            ...
+
+or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use an already existing session and share it with other parts of your code)
+
+.. code-block:: python
+
+    import tsetmc
+    import aiohttp
+
+    async def main():
+        async with aiohttp.ClientSession() as tsetmc.Session:
+            ...
+
+
+The ``Instrument`` class provides many methods for getting information about an instrument.
+The following code blocks try to demonstrate its capabilities:
+
+
+Getting the static data available in the main page of an instrument:
+
+.. code-block:: python
+
+    from tsetmc.instruments import Instrument
+    async with tsetmc.Session():
+        inst = await Instrument.from_l18('فملی')
+        data = await inst.page_data(general=True, trade_history=True, related_companies=True)
+
+    print(data)
+
+will print:
+
+.. code-block:: python
+
     {'bvol': 9803922,
      'cisin': 'IRO1MSMI0000',
      'cs': 27,
@@ -60,8 +93,20 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
         Instrument(45507655586782998, 'فجهان'),
         Instrument(9211775239375291, 'ذوب'),
         ...]}
-    >>> # getting the latest price information
-    >>> inst.live_data()
+
+
+Getting the latest price information:
+
+.. code-block:: python
+
+    ...
+    print(await inst.live_data())
+
+
+will print:
+
+.. code-block:: python
+
     {'timestamp': '12:30:00',
      'status': 'A ',
      'datetime': datetime.datetime(2021, 7, 5, 12, 30),
@@ -74,15 +119,26 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
      'tno': 10904,
      'tvol': 57477120,
      'tval': 701852286450}
-    >>> # getting the daily trade history for the last n days (as a DataFrame)
-    >>> inst.trade_history(top=2)
+
+Getting the daily trade history for the last n days: (as a DataFrame)
+
+.. code-block:: python
+
+    await inst.trade_history(top=2)
+
                    pmax     pmin       pc  ...          tval      tvol    tno
     date                                   ...
     2021-07-18  12880.0  12530.0  12650.0  ...  1.114773e+12  88106162  14485
     2021-07-17  12960.0  12550.0  12750.0  ...  8.740106e+11  68542961  14327
     [2 rows x 9 columns]
-    >>> # getting adjusted daily prices
-    >>> inst.price_history(adjusted=True)
+
+
+Getting adjusted daily prices:
+
+.. code-block:: python
+
+    await inst.price_history(adjusted=True)
+
                  pmax   pmin     pf     pl       tvol     pc
     date
     2007-02-04     45     41     45     42  172898994     42
@@ -97,8 +153,13 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
     2021-07-17  12960  12550  12800  12640   68542961  12750
     2021-07-18  12880  12530  12600  12630   88106162  12650
     [3192 rows x 6 columns]
-    >>> # getting legal/natural client types (the result is a DataFrame)
-    >>> inst.client_type()
+
+
+Getting legal/natural client types: (the result is a DataFrame)
+
+.. code-block:: python
+
+    >>> await inst.client_type()
                 n_buy_count  l_buy_count  ...  n_sell_value  l_sell_value
     date                                  ...
     2021-07-04         4447           14  ...  586457311950  137504028420
@@ -113,8 +174,12 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
     2008-11-29            1            0  ...       4521000             0
     2008-11-26            1            1  ...       1487409         46600
     [2715 rows x 12 columns]
-    >>> # getting the data in identification (شناسه) tab of the symbol
-    >>> inst.identification()
+
+Getting the data in identification (شناسه) tab of the instrument:
+
+.. code-block:: python
+
+    >>> await inst.identification()
     {'بازار': 'بازار اول (تابلوی اصلی) بورس',
      'زیر گروه صنعت': 'تولید فلزات گرانبهای غیرآهن',
      'نام شرکت': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c\u200c',
@@ -129,33 +194,27 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
      'کد زیر گروه صنعت': '2720',
      'کد گروه صنعت': '27',
      'گروه صنعت': 'فلزات اساسی'}
-    >>> # getting the share/unit holders
-    >>> inst.holders()
+
+
+Getting the share/unit holders:
+
+.. code-block:: python
+
+    await inst.holders()
                                         سهامدار/دارنده  ...            id_cisin
     0    سازمان توسعه ونوسازی معادن وصنایع معدنی ایران  ...    104,IRO1MSMI0000
     1    موسسه صندوق بازنشستگی شرکت ملی صنایع مس ایران  ...    770,IRO1MSMI0000
     2           شرکت سرمایه گذاری صدرتاءمین-سهامی عام-  ...    492,IRO1MSMI0000
     3   شرکت سرمایه گذاری توسعه معادن وفلزات-سهامی عام  ...    460,IRO1MSMI0000
-    4                          شرکت صبامیهن-سهامی خاص-  ...  48312,IRO1MSMI0000
-    5                     شرکت س اتهران س.خ-م ک م ف ع-  ...   1064,IRO1MSMI0000
-    6               شرکت س اخراسان رضوی س.خ-م ک م ف ع-  ...   1065,IRO1MSMI0000
-    7         شرکت واسط مالی آذرچهارم-بامسئولیت محدود-  ...  60545,IRO1MSMI0000
-    8            شرکت سرمایه گذاری آتیه صبا-سهامی خاص-  ...    788,IRO1MSMI0000
-    9      موسسه صندوق بازنشستگی،وظیفه،ازکارافتادگی وپ  ...   7638,IRO1MSMI0000
-    10           شرکت سرمایه گذاری فرهنگیان-سهامی خاص-  ...    515,IRO1MSMI0000
-    11        شرکت توسعه ومدیریت سرمایه صبا-سهامی خاص-  ...  22650,IRO1MSMI0000
-    12    شرکت سرمایه گذاری آتیه اندیشان مس-سهامی عام-  ...    413,IRO1MSMI0000
-    13                     شرکت س افارس س.خ-م ک م ف ع-  ...   2674,IRO1MSMI0000
-    14                  شرکت س اخوزستان س.خ-م ک م ف ع-  ...   2662,IRO1MSMI0000
-    15                   شرکت س ااصفهان س.خ-م ک م ف ع-  ...   1063,IRO1MSMI0000
-    16           شرکت س اآذربایجان شرقی س.خ-م ک م ف ع-  ...   2663,IRO1MSMI0000
-    17                 شرکت س امازندران س.خ-م ک م ف ع-  ...   2675,IRO1MSMI0000
-    18                    شرکت س اکرمان س.خ-م ک م ف ع-  ...   2665,IRO1MSMI0000
-    19       موسسه صندوق بیمه اجتماعی روستائیان وعشایر  ...    771,IRO1MSMI0000
-    20      شرکت گروه توسعه مالی مهرآیندگان-سهامی عام-  ...  21630,IRO1MSMI0000
+    ...
     [21 rows x 5 columns]
-    >>> # getting information of a specific share/unit holder
-    >>> inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+
+
+Getting information of a specific share/unit holder:
+
+.. code-block:: python
+
+    >>> await inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
     (                shares
      date
      2021-02-17  2003857980
@@ -175,44 +234,13 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
      ins_code
      778253364357513                          بانک ملت  4161561525     2.00
      26014913469567886       سرمایه‌گذاری‌غدیر(هلدینگ‌  3356161798     4.66
-     70270965300262393                      بیمه البرز  2805270000    19.44
-     35700344742885862            معدنی و صنعتی گل گهر  2093472351     2.81
-     35425587644337450          ملی‌ صنایع‌ مس‌ ایران‌  2003857980     1.00
-     47302318535715632                بانک‌اقتصادنوین‌  1242200000     4.08
-     45050389997905274                       بانک سینا  1015663732     4.00
-     57309221039930244  سرمایه گذاری توسعه صنعت وتجارت   978026662    16.30
-     29860265627578401                        بیمه  ما   623740333    15.59
-     47996917271187218                 بانک‌ کارآفرین‌   500000000     1.86
-     15521712617204216            سیمان فارس و خوزستان   337500000     6.00
-     70289374539527245          قطعات‌ اتومبیل‌ ایران‌   259990000     4.19
-     43622578471330344               گروه دارویی سبحان   183381668     5.65
-     3863538898378476              سرمایه‌گذاری‌ مسکن‌   182160000     3.31
-     25514780181345713   سرمایه‌ گذاری‌ ساختمان‌ایران‌   157816359    14.47
-     15282093177363578      مهندسی و ساختمان صنایع نفت   129290612     5.13
-     35669480110084448                   سیمان‌سپاهان‌   126674401     5.17
-     12387472624849835                 داروسازی‌ اسوه‌   118276522    15.77
-     57944184894703821    سرمایه‌ گذاری‌ البرز(هلدینگ‌   114588426     2.38
-     7711282667602555                   پتروشیمی شازند   101805550     1.26
-     60095061789823130  نهادهای مالی بورس اوراق بهادار    87997324     5.60
-     6757220448540984                     سیمان‌ شمال‌    67919940     5.26
-     30829203706095076                   سیمان‌ تهران‌    53400000     3.05
-     59607545337891226                   به پرداخت ملت    36391574     1.21
-     52220424531578944                      سیمان‌غرب‌    32151333     6.43
-     33931218652865616        سرمایه‌گذاری‌ صنعت‌ نفت‌    30949707     1.87
-     39807886630843041          تولید برق عسلویه  مپنا    30270982     4.15
-     29747059672582491                  سیمان‌هرمزگان‌    29288000     2.70
-     26997316501080743                     سیمان‌ شرق‌    29000000     1.09
-     41974758296041288                   سیمان خوزستان    24338461     1.73
-     17939384202383793  شرکت سرمایه گذاری مسکن شمالغرب    18333333     1.52
-     10919655792568926   نهادهای مالی بورس کالای ایران    18324997     1.88
-     28253678449273505              کشتیرانی دریای خزر    15600000     1.44
-     11432067920374603                  داروسازی‌ سینا    13930853     1.74
-     11964419322927535                    سیمان‌شاهرود    12400000     1.53
-     59598536122397373        صندوق س.سپهرخبرگان نفت-د     8310000     1.66
-     8603978909726038        ص.س.جسورانه فناوری آرمانی       50000     8.33
-     57585821705408565              ص.ج.فیروزه10%تادیه       30000     6.00)
-    >>> # getting intraday data
-    >>> inst.intraday(
+     ...
+
+Getting intraday data:
+
+.. code-block:: python
+
+    >>> await inst.intraday(
         date=20210704,
         general=False,
         thresholds=False,
@@ -225,8 +253,12 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
         client_types=True,
         best_limits=True,
     )  # the result is too long and not shown here
-    >>> # getting the history of price adjustments
-    >>> inst.adjustments()  # the result is a DataFrame
+
+Getting the history of price adjustments:
+
+.. code-block:: python
+
+    >>> await inst.adjustments()
                        date  adj_pc     pc
     0   1399-05-01 00:00:00   35720  35970
     1   1398-04-26 00:00:00    4269   4419
@@ -246,7 +278,12 @@ Please review the variable names at http://tsetmc.com/Site.aspx?ParTree=151713 .
     15  1390-04-14 00:00:00   12991  15241
     16  1389-04-12 00:00:00    6494   7694
     17  1388-04-24 00:00:00    4827   5627
-    >>> Instrument.from_search('توسعه اندوخته آینده')
+
+Searching for an instrument:
+
+.. code-block:: python
+
+    >>> await Instrument.from_search('توسعه اندوخته آینده')
     Instrument(11427939669935844, 'اطلس')
 
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
@@ -262,8 +299,9 @@ The ``instruments.price_adjustments`` function gets all the price adjustments fo
 * ``ombud_messages``
 * ``status_changes``
 
+There are several other functions in ``general`` module.
 
-If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them on github.
+If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them.
 
 
 See also
@@ -271,7 +309,7 @@ See also
 
 * https://github.com/5j9/fipiran
 
-
+.. _aiohttp: https://github.com/aio-libs/aiohttp-sse
 .. _pandas: https://pandas.pydata.org/
 .. _market_watch: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues
