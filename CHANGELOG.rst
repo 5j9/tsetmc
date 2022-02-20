@@ -1,3 +1,7 @@
+Unreleased
+----------
+* fixed: type annotation of ``Instrument.live_data``
+
 v0.39.0
 -------
 * feat(Instrument.dps_history): new method

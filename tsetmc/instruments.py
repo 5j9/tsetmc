@@ -10,7 +10,7 @@ from pandas import to_datetime as _to_datetime
 from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
     _parse_market_state, _parse_ombud_messages, _rc, \
     _get, _StringIO, _BytesIO, _DF, _DataFrame, \
-    _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree
+    _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree, _jdatetime
 
 
 _strptime = _datetime.strptime
@@ -92,7 +92,7 @@ class _IntraDay(_TypedDict, total=False):
 
 class _LiveData(_TypedDict, total=False):
     market_state: _MarketState
-    orders: dict[str, int]
+    best_limits: _DataFrame
     timestamp: str
     status: str
     datetime: _datetime
@@ -105,6 +105,8 @@ class _LiveData(_TypedDict, total=False):
     tno: int
     tvol: int
     tval: int
+    nav: int
+    nav_datatime: _jdatetime
 
 
 class Instrument:
