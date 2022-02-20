@@ -80,6 +80,7 @@ async def major_holders_activity() -> _DataFrame:
 
 
 async def top_industry_groups() -> _DataFrame:
+    """http://www.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
     df = _read_html(text)[0]
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
