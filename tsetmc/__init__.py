@@ -100,22 +100,18 @@ def _parse_ombud_messages(text) -> _DataFrame:
 SESSION : _ClientSession | None = None
 
 
-class Session:
+class Session(_ClientSession):
 
     def __init__(self, **kwargs):
         if 'timeout' not in kwargs:
             kwargs['timeout'] = _ClientTimeout(
                 total=30, sock_connect=5, sock_read=5)
-        self._kwargs = kwargs
+        super().__init__(**kwargs)
 
     async def __aenter__(self):
         global SESSION
-        SESSION = _ClientSession(**self._kwargs)
+        SESSION = await super().__aenter__()
         return SESSION
-
-    async def __aexit__(self, *err):
-        global SESSION
-        await SESSION.close()
 
 
 _FARSI_NORM = ''.maketrans('يك', 'یک')
