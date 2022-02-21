@@ -34,6 +34,8 @@ or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use 
         async with aiohttp.ClientSession() as tsetmc.Session:
             ...
 
+Note that in this case you'll need to assign the created session to ``tsetmc.SESSION`` to make it known to ``tsetmc`` library functions.
+
 
 The ``Instrument`` class provides many methods for getting information about an instrument.
 The following code blocks try to demonstrate its capabilities:
