@@ -9,7 +9,7 @@ from pandas import to_datetime as _to_datetime
 
 from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
     _numerize, _parse_market_state, _parse_ombud_messages, _rc, \
-    _get, _StringIO, _BytesIO, _DF, _DataFrame, \
+    _get, _StringIO, _BytesIO, _DF, _DataFrame, _DOMAIN, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree, _jdatetime
 
 
@@ -297,7 +297,7 @@ class Instrument:
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
         content = await _get(
-            f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
+            f'{_DOMAIN}tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = _csv2df(
             _BytesIO(content)
             , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
