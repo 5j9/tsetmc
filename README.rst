@@ -31,7 +31,7 @@ or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use 
     import aiohttp
 
     async def main():
-        async with aiohttp.ClientSession() as tsetmc.Session:
+        async with aiohttp.ClientSession() as tsetmc.SESSION:
             ...
 
 
