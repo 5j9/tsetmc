@@ -12,38 +12,49 @@ Overview
 --------
 
 First things first. ``tsetmc`` relies on `aiohttp`_ .
-If you are not familiar with aiohttp all you need to know is that any ``async`` operation needs to be within an async session context.
-You may create the session using ``tsetmc.Session`` class:
+If you are not familiar with aiohttp, all you need to know is that any ``async`` network operation needs to be run inside an async session context.
+You may create the session using ``tsetmc.Session`` class. Here is a complete working script:
 
 .. code-block:: python
 
+    import asyncio
+
     import tsetmc
+    from tsetmc.instruments import Instrument
 
     async def main():
         async with tsetmc.Session():
-            ...
+            inst = await Instrument.from_l18('فملی')
+            live_data = await inst.live_data()
+        print(live_data)
+
+   asyncio.run(main())
 
 or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use an already existing session and share it with other parts of your code)
 
 .. code-block:: python
 
-    import tsetmc
+    import asyncio
     import aiohttp
+
+    import tsetmc
+    from tsetmc.instruments import Instrument
 
     async def main():
         async with aiohttp.ClientSession() as tsetmc.SESSION:
-            ...
+            inst = await Instrument.from_l18('فملی')
+            live_data = await inst.live_data()
+        print(live_data)
 
+    asyncio.run(main())
 
 The ``Instrument`` class provides many methods for getting information about an instrument.
-The following code blocks try to demonstrate its capabilities:
-
+The following code blocks try to demonstrate its capabilities.
 
 Getting the static data available in the main page of an instrument:
 
 .. code-block:: python
 
-    from tsetmc.instruments import Instrument
     async with tsetmc.Session():
         inst = await Instrument.from_l18('فملی')
         data = await inst.page_data(general=True, trade_history=True, related_companies=True)
@@ -99,13 +110,7 @@ Getting the latest price information:
 
 .. code-block:: python
 
-    ...
-    print(await inst.live_data())
-
-
-will print:
-
-.. code-block:: python
+    await inst.live_data()
 
     {'timestamp': '12:30:00',
      'status': 'A ',
