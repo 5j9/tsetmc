@@ -48,6 +48,8 @@ or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use 
 
     asyncio.run(main())
 
+Ideally, `the session object should only be instantiated once`_.
+
 The ``Instrument`` class provides many methods for getting information about an instrument.
 The following code blocks try to demonstrate its capabilities.
 
@@ -329,3 +331,4 @@ See also
 .. _pandas: https://pandas.pydata.org/
 .. _market_watch: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues
+.. _the session object should only be instantiated once: https://docs.aiohttp.org/en/latest/client_advanced.html#persistent-session
