@@ -55,16 +55,10 @@ Getting the static data available in the main page of an instrument:
 
 .. code-block:: python
 
-    async with tsetmc.Session():
-        inst = await Instrument.from_l18('فملی')
-        data = await inst.page_data(general=True, trade_history=True, related_companies=True)
-
-    print(data)
-
-will print:
-
-.. code-block:: python
-
+    >>> async with tsetmc.Session():
+    >>>     inst = await Instrument.from_l18('فملی')
+    >>>     data = await inst.page_data(general=True, trade_history=True, related_companies=True)
+    >>> data
     {'bvol': 9803922,
      'cisin': 'IRO1MSMI0000',
      'cs': 27,
@@ -110,8 +104,9 @@ Getting the latest price information:
 
 .. code-block:: python
 
-    await inst.live_data()
-
+    >>> async with tsetmc.Session():
+    >>>     live_data await inst.live_data()
+    >>> live_data
     {'timestamp': '12:30:00',
      'status': 'A ',
      'datetime': datetime.datetime(2021, 7, 5, 12, 30),
@@ -129,8 +124,9 @@ Getting the daily trade history for the last n days: (as a DataFrame)
 
 .. code-block:: python
 
-    await inst.trade_history(top=2)
-
+    >>> async with tsetmc.Session():
+    >>>     h = await inst.trade_history(top=2)
+    >>> h
                    pmax     pmin       pc  ...          tval      tvol    tno
     date                                   ...
     2021-07-18  12880.0  12530.0  12650.0  ...  1.114773e+12  88106162  14485
@@ -142,8 +138,9 @@ Getting adjusted daily prices:
 
 .. code-block:: python
 
-    await inst.price_history(adjusted=True)
-
+    >>> async with tsetmc.Session():
+    >>>     h = await inst.price_history(adjusted=True)
+    >>> h
                  pmax   pmin     pf     pl       tvol     pc
     date
     2007-02-04     45     41     45     42  172898994     42
@@ -164,7 +161,9 @@ Getting legal/natural client types: (the result is a DataFrame)
 
 .. code-block:: python
 
-    >>> await inst.client_type()
+    >>> async with tsetmc.Session():
+    >>>     ct = await inst.client_type()
+    >>> ct
                 n_buy_count  l_buy_count  ...  n_sell_value  l_sell_value
     date                                  ...
     2021-07-04         4447           14  ...  586457311950  137504028420
@@ -184,7 +183,9 @@ Getting the data in identification (شناسه) tab of the instrument:
 
 .. code-block:: python
 
-    >>> await inst.identification()
+    >>> async with tsetmc.Session():
+    >>>     i = await inst.identification()
+    >>> i
     {'بازار': 'بازار اول (تابلوی اصلی) بورس',
      'زیر گروه صنعت': 'تولید فلزات گرانبهای غیرآهن',
      'نام شرکت': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c\u200c',
@@ -205,7 +206,9 @@ Getting the share/unit holders:
 
 .. code-block:: python
 
-    await inst.holders()
+    >>> async with tsetmc.Session():
+    >>>     h = await inst.holders()
+    >>> h
                                         سهامدار/دارنده  ...            id_cisin
     0    سازمان توسعه ونوسازی معادن وصنایع معدنی ایران  ...    104,IRO1MSMI0000
     1    موسسه صندوق بازنشستگی شرکت ملی صنایع مس ایران  ...    770,IRO1MSMI0000
@@ -219,7 +222,9 @@ Getting information of a specific share/unit holder:
 
 .. code-block:: python
 
-    >>> await inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+    >>> async with tsetmc.Session():
+    >>>     h = await inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+    >>> h
     (                shares
      date
      2021-02-17  2003857980
@@ -245,7 +250,9 @@ Getting intraday data:
 
 .. code-block:: python
 
-    >>> await inst.intraday(
+    >>> async with tsetmc.Session():
+    >>>     i = await inst.intraday(
+    >>> i
         date=20210704,
         general=False,
         thresholds=False,
@@ -263,7 +270,9 @@ Getting the history of price adjustments:
 
 .. code-block:: python
 
-    >>> await inst.adjustments()
+    >>> async with tsetmc.Session():
+    >>>     a = await inst.adjustments()
+    >>> a
                        date  adj_pc     pc
     0   1399-05-01 00:00:00   35720  35970
     1   1398-04-26 00:00:00    4269   4419
@@ -288,7 +297,9 @@ Searching for an instrument:
 
 .. code-block:: python
 
-    >>> await Instrument.from_search('توسعه اندوخته آینده')
+    >>> async with tsetmc.Session():
+    >>>     i = await Instrument.from_search('توسعه اندوخته آینده')
+    >>> i
     Instrument(11427939669935844, 'اطلس')
 
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
