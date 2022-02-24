@@ -371,10 +371,23 @@ class Instrument:
         l18, l30, ins_code = (await search(s)).iloc[0][:3]
         return Instrument(ins_code, l18, l30)
 
+    async def holders_by_date(self, date: int | str) -> _DataFrame:
+        """Return share/unit holders for a specific date and a day before that.
+
+        :param date: Gregorian date in YYYYMMDD format
+
+        See also: ``Instrument.holders`` which return the list of current
+        holders.
+        """
+        j = await _api(f'Shareholder/{self.code}/{date}')
+        return _DataFrame(j['shareShareholder'], copy=False)
+
     async def holders(self, cisin=None) -> _DataFrame:
-        """Get list of major unit/share holders.
+        """Get list of current major unit/shareholders.
 
         If `cisin` is not provided, it will be fetched using a web request.
+
+        See also: ``Instrument.holders_by_date``.
         """
         if cisin is None:
             cisin = await self.cisin
@@ -551,14 +564,6 @@ class Instrument:
         """
         j = await _api(f'BestLimits/{self.code}/{date}')
         return _DataFrame(j['bestLimitsHistory'], copy=False)
-
-    async def intraday_holders(self, date: int | str) -> _DataFrame:
-        """Get intraday best share/unit holders.
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'Shareholder/{self.code}/{date}')
-        return _DataFrame(j['shareShareholder'], copy=False)
 
     async def intraday_states(self, date: int | str) -> _DataFrame:
         """Get intraday instrument states.

@@ -278,6 +278,20 @@ async def test_holders_change_column_type():
         ('id_cisin', dtype('O'))]
 
 
+@patch_session('faraz_Shareholder_20220222.json')
+async def test_intraday_holders():
+    df = await FARAZ.holders_by_date(20220222)
+    assert [*df.dtypes.items()] == [
+        ('shareHolderID', dtype('int64')),
+        ('shareHolderName', dtype('O')),
+        ('cIsin', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('numberOfShares', dtype('float64')),
+        ('perOfShares', dtype('float64')),
+        ('change', dtype('int64')),
+        ('changeAmount', dtype('float64'))]
+
+
 @patch_session('ava_holder.txt')
 async def test_holder():
     inst = Instrument(18007109712724189)
@@ -417,20 +431,6 @@ async def test_intraday_best_limits():
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
         ('insCode', dtype('O'))]
-
-
-@patch_session('faraz_Shareholder_20220222.json')
-async def test_intraday_holders():
-    df = await FARAZ.intraday_holders(20220222)
-    assert [*df.dtypes.items()] == [
-        ('shareHolderID', dtype('int64')),
-        ('shareHolderName', dtype('O')),
-        ('cIsin', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('numberOfShares', dtype('float64')),
-        ('perOfShares', dtype('float64')),
-        ('change', dtype('int64')),
-        ('changeAmount', dtype('float64'))]
 
 
 @patch_session('faraz_GetInstrumentState_20220222.json')

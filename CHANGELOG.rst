@@ -3,10 +3,10 @@ Unreleased
 * feat(Instrument.trade_history): add new param: ``all_=False``
 * feat(Instrument.intraday_closing_price): new method
 * feat(Instrument.intraday_best_limits): new method
-* feat(Instrument.intraday_holders): new method
 * feat(Instrument.intraday_states): new method
 * feat(Instrument.intraday_trades): new method
 * feat(Instrument.intraday_thresholds): new method
+* feat(Instrument.holders_by_date): new method
 * feat(Instrument.client_type_history): new method
 
 v0.40.0
