@@ -6,6 +6,7 @@ Unreleased
 * feat(Instrument.intraday_holders): new method
 * feat(Instrument.intraday_states): new method
 * feat(Instrument.intraday_trades): new method
+* feat(Instrument.intraday_thresholds): new method
 
 v0.40.0
 -------

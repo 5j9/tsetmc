@@ -538,7 +538,7 @@ class Instrument:
         return _DataFrame(j['shareShareholder'], copy=False)
 
     async def intraday_states(self, date: int | str) -> _DataFrame:
-        """Get intraday best share/unit holders.
+        """Get intraday instrument states.
 
         :param date: Gregorian date in YYYYMMDD format
         """
@@ -546,12 +546,21 @@ class Instrument:
         return _DataFrame(j['instrumentState'], copy=False)
 
     async def intraday_trades(self, date: int | str) -> _DataFrame:
-        """Get intraday best share/unit holders.
+        """Get intraday trades.
 
         :param date: Gregorian date in YYYYMMDD format
         """
+        # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{date}/true')
         return _DataFrame(j['tradeHistory'], copy=False)
+
+    async def intraday_thresholds(self, date: int | str) -> _DataFrame:
+        """Get intraday static thresholds.
+
+        :param date: Gregorian date in YYYYMMDD format
+        """
+        j = await _api(f'MarketData/GetStaticThreshold/{self.code}/{date}')
+        return _DataFrame(j['staticThreshold'], copy=False)
 
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)

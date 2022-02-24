@@ -340,10 +340,12 @@ async def test_intraday_general():
         'qo': 111906, 'zo': 15}
 
 
+FARAZ = Instrument(13666407494621646)
+
+
 @patch_session('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
-    i = Instrument(13666407494621646)
-    df = await i.intraday_closing_price(20220222)
+    df = await FARAZ.intraday_closing_price(20220222)
     assert [*df.dtypes.items()] == [
         ('id', dtype('int64')),
         ('insCode', dtype('O')),
@@ -358,10 +360,20 @@ async def test_intraday_closing_price():
         ('qTotCap', dtype('float64'))]
 
 
+@patch_session('faraz_GetStaticThreshold_20220222.json')
+async def test_intraday_thresholds():
+    df = await FARAZ.intraday_thresholds(20220222)
+    assert [*df.dtypes.items()] == [
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('psGelStaMax', dtype('float64')),
+        ('psGelStaMin', dtype('float64'))]
+
+
 @patch_session('faraz_BestLimits_20220222.json')
 async def test_intraday_best_limits():
-    i = Instrument(13666407494621646)
-    df = await i.intraday_best_limits(20220222)
+    df = await FARAZ.intraday_best_limits(20220222)
     assert [*df.dtypes.items()] == [
         ('idn', dtype('int64')),
         ('dEven', dtype('int64')),
@@ -379,8 +391,7 @@ async def test_intraday_best_limits():
 
 @patch_session('faraz_Shareholder_20220222.json')
 async def test_intraday_holders():
-    i = Instrument(13666407494621646)
-    df = await i.intraday_holders(20220222)
+    df = await FARAZ.intraday_holders(20220222)
     assert [*df.dtypes.items()] == [
         ('shareHolderID', dtype('int64')),
         ('shareHolderName', dtype('O')),
@@ -393,9 +404,8 @@ async def test_intraday_holders():
 
 
 @patch_session('faraz_GetInstrumentState_20220222.json')
-async def test_intraday_holders():
-    i = Instrument(13666407494621646)
-    df = await i.intraday_states(20220222)
+async def test_intraday_states():
+    df = await FARAZ.intraday_states(20220222)
     assert [*df.dtypes.items()] == [
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -407,8 +417,7 @@ async def test_intraday_holders():
 
 @patch_session('faraz_GetTradeHistory_20220222.json')
 async def test_intraday_trades():
-    i = Instrument(13666407494621646)
-    df = await i.intraday_trades(20220222)
+    df = await FARAZ.intraday_trades(20220222)
     assert [*df.dtypes.items()] == [
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
