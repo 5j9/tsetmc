@@ -7,6 +7,7 @@ Unreleased
 * feat(Instrument.intraday_states): new method
 * feat(Instrument.intraday_trades): new method
 * feat(Instrument.intraday_thresholds): new method
+* feat(Instrument.client_type_history): new method
 
 v0.40.0
 -------

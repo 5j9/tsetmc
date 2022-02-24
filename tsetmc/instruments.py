@@ -314,6 +314,11 @@ class Instrument:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
+
+        This method returns the information available at the "حقیقی-حقوقی" tab
+        of the instrument. It uses the `clienttype.aspx` module.
+
+        See also: ``Instrument.client_type_history``
         """
         return _csv2df(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}'))
@@ -323,6 +328,24 @@ class Instrument:
                 , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
             , index_col='date', parse_dates=True , dtype='uint64')
+
+    async def client_type_history(self, date: int | str = None) -> _DataFrame | dict:
+        """Return natural/legal client type history.
+
+        :param date: Gregorian date in YYYYMMDD format. If None, return the
+        full history as a DataFrame. Otherwise, return the data for that
+        specific date as a dict.
+
+        Uses the information from api/ClientType/GetClientTypeHistory.
+
+        See also: ``Instrument.client_type``
+        """
+        if date is None:
+            j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
+            return _DataFrame(j['clientType'], copy=False)
+
+        j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
+        return j['clientType']
 
     async def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.

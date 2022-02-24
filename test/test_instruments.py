@@ -223,6 +223,39 @@ async def test_client_type():
         ('l_sell_value', dtype('uint64'))]
 
 
+FARAZ = Instrument(13666407494621646)
+
+
+@patch_session('faraz_GetClientTypeHistory_20220222.json')
+async def test_client_type_history():
+    d = await FARAZ.client_type_history(20220222)
+    assert d.keys() == {
+        'recDate', 'insCode', 'buy_I_Volume', 'buy_N_Volume', 'buy_I_Value',
+        'buy_N_Value', 'buy_N_Count', 'sell_I_Volume', 'buy_I_Count',
+        'sell_N_Volume', 'sell_I_Value', 'sell_N_Value', 'sell_N_Count',
+        'sell_I_Count'}
+
+
+@patch_session('fzar_GetClientTypeHistory_all.json')
+async def test_client_type_history_no_date():
+    df = await Instrument(8175784894140974).client_type_history()
+    assert [*df.dtypes.items()] == [
+        ('recDate', dtype('int64')),
+        ('insCode', dtype('O')),
+        ('buy_I_Volume', dtype('float64')),
+        ('buy_N_Volume', dtype('float64')),
+        ('buy_I_Value', dtype('float64')),
+        ('buy_N_Value', dtype('float64')),
+        ('buy_N_Count', dtype('int64')),
+        ('sell_I_Volume', dtype('float64')),
+        ('buy_I_Count', dtype('float64')),
+        ('sell_N_Volume', dtype('float64')),
+        ('sell_I_Value', dtype('float64')),
+        ('sell_N_Value', dtype('float64')),
+        ('sell_N_Count', dtype('int64')),
+        ('sell_I_Count', dtype('int64'))]
+
+
 @patch_session('ava_holders.txt')
 async def test_holders_with_cisin():
     holders = await Instrument(18007109712724189).holders(cisin='IRT3AVAF0003')
@@ -338,9 +371,6 @@ async def test_intraday_general():
     assert result['best_limits'].loc[133707].to_dict() == {
         'row': 5, 'zd': 31, 'qd': 534434, 'pd': 12430, 'po': 12520,
         'qo': 111906, 'zo': 15}
-
-
-FARAZ = Instrument(13666407494621646)
 
 
 @patch_session('faraz_GetClosingPriceHistory_20220222.json')
