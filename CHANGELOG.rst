@@ -1,17 +1,18 @@
 Unreleased
 ----------
 * feat(Instrument.trade_history): add new param: ``all_=False``
-* feat(Instrument.intraday_closing_price): new method
-* feat(Instrument.intraday_best_limits): new method
-* feat(Instrument.intraday_states): new method
-* feat(Instrument.intraday_trades): new method
-* feat(Instrument.static_thresholds): new method
-* feat(Instrument.holders_by_date): new method
 * feat(Instrument.client_type_history): new method
-* feat(Instrument.historic_data): new method
 * feat(Instrument.on_date): new method returning an ``InstrumentOnDate`` object which has the following methods:
 
-  * ``price``
+  * ``closing_price``
+  * ``closing_price_history``
+  * ``states``
+  * ``client_types``
+  * ``holders``
+  * ``best_limits``
+  * ``trades``
+  * ``static_thresholds``
+  * ``data``
 
 v0.40.0
 -------

@@ -292,7 +292,7 @@ class Instrument:
         :param top: number of top rows (days) to return
         :param all_: include dates with no trade
 
-        Use ``intraday_trades`` for fetching intraday trade history.
+        Use ``Instrument.on_date(<date>).trades``.
         """
         content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
         df = _csv2df(
@@ -373,23 +373,12 @@ class Instrument:
         l18, l30, ins_code = (await search(s)).iloc[0][:3]
         return Instrument(ins_code, l18, l30)
 
-    async def holders_by_date(self, date: int | str) -> _DataFrame:
-        """Return share/unit holders for a specific date and a day before that.
-
-        :param date: Gregorian date in YYYYMMDD format
-
-        See also: ``Instrument.holders`` which return the list of current
-        holders.
-        """
-        j = await _api(f'Shareholder/{self.code}/{date}')
-        return _DataFrame(j['shareShareholder'], copy=False)
-
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.
 
         If `cisin` is not provided, it will be fetched using a web request.
 
-        See also: ``Instrument.holders_by_date``.
+        See also: ``Instrument.on_date(<date>).holders``
         """
         if cisin is None:
             cisin = await self.cisin
@@ -459,20 +448,7 @@ class Instrument:
         This method uses the old way of fetching intraday data from tsetmc.com
         which is not used on the live site anymore.
 
-        For fetching individual parameters, the following alternatives exist:
-
-            parameter name      new method
-            --------------     -----------
-            general             historic_data
-            thresholds          static_thresholds
-            closings            intraday_closing_price
-            candles
-            states              intraday_states
-            trades              intraday_trades
-            holders             holders_by_date
-            yesterday_holders   holders_by_date
-            client_types        client_type_history
-            best_limits         intraday_best_limits
+        For fetching individual parameters, use ``instrument.on_date(date)``.
         """
         text = await _get_par_tree(f'15131P&i={self.code}&d={date}')
         find = text.find
@@ -569,62 +545,6 @@ class Instrument:
             result['best_limits'] = best_limits_df
         return result
 
-    async def intraday_closing_price(self, date: int | str) -> _DataFrame:
-        """Get intraday closing price history.
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'ClosingPrice/GetClosingPriceHistory/{self.code}/{date}')
-        return _DataFrame(j['closingPriceHistory'], copy=False)
-
-    async def intraday_best_limits(self, date: int | str) -> _DataFrame:
-        """Get intraday best limits history.
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'BestLimits/{self.code}/{date}')
-        return _DataFrame(j['bestLimitsHistory'], copy=False)
-
-    async def intraday_states(self, date: int | str) -> _DataFrame:
-        """Get intraday instrument states.
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'MarketData/GetInstrumentState/{self.code}/{date}')
-        return _DataFrame(j['instrumentState'], copy=False)
-
-    async def intraday_trades(self, date: int | str) -> _DataFrame:
-        """Get intraday trades.
-
-        :param date: Gregorian date in YYYYMMDD format
-
-        See also: ``Instrument.trade_history``
-        """
-        # todo: true vs false
-        j = await _api(f'Trade/GetTradeHistory/{self.code}/{date}/true')
-        return _DataFrame(j['tradeHistory'], copy=False)
-
-    async def static_thresholds(self, date: int | str) -> _DataFrame:
-        """Get intraday static thresholds.
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'MarketData/GetStaticThreshold/{self.code}/{date}')
-        return _DataFrame(j['staticThreshold'], copy=False)
-
-    async def historic_data(self, date: int | str) -> dict:
-        """Get general info about an instrument in a specific date.
-
-        The returned dict contains the following keys: {
-        'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
-        'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
-        'flowTitle', 'cgrValCotTitle'}
-
-        :param date: Gregorian date in YYYYMMDD format
-        """
-        j = await _api(f'Instrument/GetInstrumentHistory/{self.code}/{date}')
-        return j['instrumentHistory']
-
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
@@ -663,35 +583,88 @@ class Instrument:
 
         :param date: Gregorian date in YYYYMMDD format.
         """
-        return InstrumentOnDate(self.code, date)
+        return InstrumentOnDate(self, date)
 
 
 class InstrumentOnDate:
 
-    __slots__ = 'date', 'code'
+    __slots__ = 'date', 'code', 'inst'
 
-    def __init__(self, _code: int | str, _date: int | str):
+    def __init__(self, _inst: Instrument, _date: int | str):
         """Return an object resembling Instrument on a specific date.
 
-        :param _code: Instrument.code
+        :param _inst: Instrument
         :param _date: Gregorian date in YYYYMMDD format.
 
         Users should not instantiate this class directly, but use
         ``Instrument.on_date()`` instead.
         """
         self.date = _date
-        self.code = _code
+        self.inst = _inst
+        self.code = _inst.code
 
-    async def price(self) -> dict:
-        """Get general price info.
+    async def closing_price(self) -> dict:
+        """Return general closing price info.
 
-        Return a dict with the following keys: {
+        Result dict has the following keys: {
         'priceChange', 'priceMin', 'priceMax', 'priceYesterday', 'priceFirst',
         'last', 'id', 'insCode', 'dEven', 'hEven', 'pClosing', 'iClose',
         'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}
         """
         j = await _api(f'ClosingPrice/GetClosingPriceDaily/{self.code}/{self.date}')
         return j['closingPriceDaily']
+
+    async def closing_price_history(self) -> _DataFrame:
+        """Get intraday closing price history."""
+        j = await _api(f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}')
+        return _DataFrame(j['closingPriceHistory'], copy=False)
+
+    async def states(self) -> _DataFrame:
+        """Get intraday instrument states."""
+        j = await _api(f'MarketData/GetInstrumentState/{self.code}/{self.date}')
+        return _DataFrame(j['instrumentState'], copy=False)
+
+    async def client_types(self) -> dict:
+        return await self.inst.client_type_history(self.date)
+
+    async def holders(self) -> _DataFrame:
+        """Return share/unit holders for a specific date and a day before that.
+
+        See also: ``Instrument.holders`` which returns the list of current
+        holders.
+        """
+        j = await _api(f'Shareholder/{self.code}/{self.date}')
+        return _DataFrame(j['shareShareholder'], copy=False)
+
+    async def best_limits(self) -> _DataFrame:
+        """Get intraday best limits history."""
+        j = await _api(f'BestLimits/{self.code}/{self.date}')
+        return _DataFrame(j['bestLimitsHistory'], copy=False)
+
+    async def trades(self) -> _DataFrame:
+        """Get intraday trades.
+
+        See also: ``Instrument.trade_history``
+        """
+        # todo: true vs false
+        j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
+        return _DataFrame(j['tradeHistory'], copy=False)
+
+    async def static_thresholds(self) -> _DataFrame:
+        """Get intraday static thresholds."""
+        j = await _api(f'MarketData/GetStaticThreshold/{self.code}/{self.date}')
+        return _DataFrame(j['staticThreshold'], copy=False)
+
+    async def data(self) -> dict:
+        """Get general info about the instrument on the specific date.
+
+        The returned dict contains the following keys: {
+        'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
+        'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
+        'flowTitle', 'cgrValCotTitle'}
+        """
+        j = await _api(f'Instrument/GetInstrumentHistory/{self.code}/{self.date}')
+        return j['instrumentHistory']
 
 
 async def price_adjustments(flow: int) -> _DataFrame:
