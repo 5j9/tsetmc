@@ -405,6 +405,26 @@ async def test_intraday_holders():
         ('cEtavalTitle', dtype('O'))]
 
 
+@patch_session('faraz_GetTradeHistory_20220222.json')
+async def test_intraday_trades():
+    i = Instrument(13666407494621646)
+    df = await i.intraday_trades(20220222)
+    assert [*df.dtypes.items()] == [
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('nTran', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('qTitTran', dtype('int64')),
+        ('pTran', dtype('float64')),
+        ('qTitNgJ', dtype('int64')),
+        ('iSensVarP', dtype('O')),
+        ('pPhSeaCotJ', dtype('float64')),
+        ('pPbSeaCotJ', dtype('float64')),
+        ('iAnuTran', dtype('int64')),
+        ('xqVarPJDrPRf', dtype('float64')),
+        ('canceled', dtype('int64'))]
+
+
 @patch_session('fmelli_price_adjustment.html')
 async def test_adjustments():
     df = await Instrument(35425587644337450).adjustments()

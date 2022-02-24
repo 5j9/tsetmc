@@ -5,6 +5,7 @@ Unreleased
 * feat(Instrument.intraday_best_limits): new method
 * feat(Instrument.intraday_holders): new method
 * feat(Instrument.intraday_states): new method
+* feat(Instrument.intraday_trades): new method
 
 v0.40.0
 -------
