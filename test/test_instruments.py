@@ -473,6 +473,15 @@ async def test_historic_data():
         'flowTitle', 'cgrValCotTitle'}
 
 
+@patch_session('faraz_GetClosingPriceDaily_20220222.json')
+async def test_historic_data():
+    d = await FARAZ.on_date(20220222).price()
+    assert d.keys() == {
+        'priceChange', 'priceMin', 'priceMax', 'priceYesterday', 'priceFirst',
+        'last', 'id', 'insCode', 'dEven', 'hEven', 'pClosing', 'iClose',
+        'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}
+
+
 @patch_session('fmelli_price_adjustment.html')
 async def test_adjustments():
     df = await Instrument(35425587644337450).adjustments()

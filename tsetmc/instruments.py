@@ -615,7 +615,7 @@ class Instrument:
     async def historic_data(self, date: int | str) -> dict:
         """Get general info about an instrument in a specific date.
 
-        The retuned dict contains the following keys: {
+        The returned dict contains the following keys: {
         'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
         'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
         'flowTitle', 'cgrValCotTitle'}
@@ -657,6 +657,38 @@ class Instrument:
         df.iloc[:, :3] = df.iloc[:, :3].apply(
             lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col])
         return df
+
+    def on_date(self, date: int | str) -> '_InstrumentOnDate':
+        """Return an object resembling Instrument on a specific date.
+
+        :param date: Gregorian date in YYYYMMDD format.
+        """
+        return _InstrumentOnDate(self.code, date)
+
+
+class _InstrumentOnDate:
+
+    __slots__ = 'date', 'code'
+
+    def __init__(self, code: int | str, date: int | str):
+        """Return an object resembling Instrument on a specific date.
+
+        :param code: Instrument.code
+        :param date: Gregorian date in YYYYMMDD format.
+        """
+        self.date = date
+        self.code = code
+
+    async def price(self) -> dict:
+        """Get general price info.
+
+        Return a dict with the following keys: {
+        'priceChange', 'priceMin', 'priceMax', 'priceYesterday', 'priceFirst',
+        'last', 'id', 'insCode', 'dEven', 'hEven', 'pClosing', 'iClose',
+        'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}
+        """
+        j = await _api(f'ClosingPrice/GetClosingPriceDaily/{self.code}/{self.date}')
+        return j['closingPriceDaily']
 
 
 async def price_adjustments(flow: int) -> _DataFrame:
