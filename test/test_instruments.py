@@ -406,7 +406,7 @@ async def test_intraday_closing_price():
 
 @patch_session('faraz_GetStaticThreshold_20220222.json')
 async def test_intraday_thresholds():
-    df = await FARAZ.intraday_thresholds(20220222)
+    df = await FARAZ.static_thresholds(20220222)
     assert [*df.dtypes.items()] == [
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),

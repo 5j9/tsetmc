@@ -289,8 +289,10 @@ class Instrument:
     async def trade_history(self, top: int, all_=False) -> _DataFrame:
         """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
 
-        :param top: number of top rows to return
+        :param top: number of top rows (days) to return
         :param all_: include dates with no trade
+
+        Use ``intraday_trades`` for fetching intraday trade history.
         """
         content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
         df = _csv2df(
@@ -453,6 +455,24 @@ class Instrument:
 
         For the meaning of instrument state codes refer to
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Y
+
+        This method uses the old way of fetching intraday data from tsetmc.com
+        which is not used on the live site anymore.
+
+        For fetching individual parameters, the following alternatives exist:
+
+            parameter name      new method
+            --------------     -----------
+            general
+            thresholds          static_thresholds
+            closings            intraday_closing_price
+            candles
+            states              intraday_states
+            trades              intraday_trades
+            holders             holders_by_date
+            yesterday_holders   holders_by_date
+            client_types        client_type_history
+            best_limits         intraday_best_limits
         """
         text = await _get_par_tree(f'15131P&i={self.code}&d={date}')
         find = text.find
@@ -577,12 +597,14 @@ class Instrument:
         """Get intraday trades.
 
         :param date: Gregorian date in YYYYMMDD format
+
+        See also: ``Instrument.trade_history``
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{date}/true')
         return _DataFrame(j['tradeHistory'], copy=False)
 
-    async def intraday_thresholds(self, date: int | str) -> _DataFrame:
+    async def static_thresholds(self, date: int | str) -> _DataFrame:
         """Get intraday static thresholds.
 
         :param date: Gregorian date in YYYYMMDD format
