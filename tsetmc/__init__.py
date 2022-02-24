@@ -129,7 +129,7 @@ async def _get(url: str, *, fa=False) -> str | bytes:
     return content
 
 
-_DOMAIN = 'http://tsetmc.com/'
+_DOMAIN = 'http://www.tsetmc.com/'
 
 
 async def _get_data(path: str, *, fa=False) -> str | bytes:

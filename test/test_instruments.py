@@ -140,8 +140,8 @@ async def test_vskhooz_long():
 
 @patch_session('fmelli_trade_history_top2.txt')
 async def test_trade_history():
-    df = await Instrument(35425587644337450).trade_history(2)
-    assert [*df.dtypes.items()] == [
+    df0 = await Instrument(35425587644337450).trade_history(2)
+    assert [*df0.dtypes.items()] == [
         ('pmax', dtype('float64')),
         ('pmin', dtype('float64')),
         ('pc', dtype('float64')),
@@ -151,8 +151,10 @@ async def test_trade_history():
         ('tval', dtype('float64')),
         ('tvol', dtype('int64')),
         ('tno', dtype('int64'))]
-    assert df.index.name == 'date'
-    assert isinstance(df.index, DatetimeIndex)
+    assert df0.index.name == 'date'
+    assert isinstance(df0.index, DatetimeIndex)
+    df1 = await Instrument(35425587644337450).trade_history(2, 1)
+    assert len(df1) >= len(df0)
 
 
 @patch_session('vsadid.txt')
