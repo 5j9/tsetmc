@@ -620,7 +620,10 @@ class InstrumentOnDate:
         return _DataFrame(j['closingPriceHistory'], copy=False)
 
     async def states(self) -> _DataFrame:
-        """Get intraday instrument states."""
+        """Get intraday instrument states.
+
+        http://www.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833
+        """
         j = await _api(f'MarketData/GetInstrumentState/{self.code}/{self.date}')
         return _DataFrame(j['instrumentState'], copy=False)
 
