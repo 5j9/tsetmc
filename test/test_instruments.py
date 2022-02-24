@@ -340,7 +340,7 @@ async def test_intraday_general():
         'qo': 111906, 'zo': 15}
 
 
-@patch_session('faraz20220222.json')
+@patch_session('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
     i = Instrument(13666407494621646)
     df = await i.intraday_closing_price(20220222)
@@ -356,6 +356,25 @@ async def test_intraday_closing_price():
         ('zTotTran', dtype('float64')),
         ('qTotTran5J', dtype('float64')),
         ('qTotCap', dtype('float64'))]
+
+
+@patch_session('faraz_BestLimits_20220222.json')
+async def test_intraday_best_limits():
+    i = Instrument(13666407494621646)
+    df = await i.intraday_best_limits(20220222)
+    assert [*df.dtypes.items()] == [
+        ('idn', dtype('int64')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('refID', dtype('int64')),
+        ('number', dtype('int64')),
+        ('qTitMeDem', dtype('int64')),
+        ('zOrdMeDem', dtype('int64')),
+        ('pMeDem', dtype('float64')),
+        ('pMeOf', dtype('float64')),
+        ('zOrdMeOf', dtype('int64')),
+        ('qTitMeOf', dtype('int64')),
+        ('insCode', dtype('O'))]
 
 
 @patch_session('fmelli_price_adjustment.html')

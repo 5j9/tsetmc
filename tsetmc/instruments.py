@@ -521,6 +521,14 @@ class Instrument:
         j = await _api(f'ClosingPrice/GetClosingPriceHistory/{self.code}/{date}')
         return _DataFrame(j['closingPriceHistory'], copy=False)
 
+    async def intraday_best_limits(self, date) -> _DataFrame:
+        """Get intraday best limits history.
+
+        :param date: Gregorian date in YYYYMMDD format
+        """
+        j = await _api(f'BestLimits/{self.code}/{date}')
+        return _DataFrame(j['bestLimitsHistory'], copy=False)
+
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
