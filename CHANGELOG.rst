@@ -9,7 +9,7 @@ Unreleased
 * feat(Instrument.holders_by_date): new method
 * feat(Instrument.client_type_history): new method
 * feat(Instrument.historic_data): new method
-* feat(Instrument.on_date): new method which returns an object with the following methods:
+* feat(Instrument.on_date): new method returning an ``InstrumentOnDate`` object which has the following methods:
 
   * ``price``
 

@@ -658,26 +658,29 @@ class Instrument:
             lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col])
         return df
 
-    def on_date(self, date: int | str) -> '_InstrumentOnDate':
+    def on_date(self, date: int | str) -> 'InstrumentOnDate':
         """Return an object resembling Instrument on a specific date.
 
         :param date: Gregorian date in YYYYMMDD format.
         """
-        return _InstrumentOnDate(self.code, date)
+        return InstrumentOnDate(self.code, date)
 
 
-class _InstrumentOnDate:
+class InstrumentOnDate:
 
     __slots__ = 'date', 'code'
 
-    def __init__(self, code: int | str, date: int | str):
+    def __init__(self, _code: int | str, _date: int | str):
         """Return an object resembling Instrument on a specific date.
 
-        :param code: Instrument.code
-        :param date: Gregorian date in YYYYMMDD format.
+        :param _code: Instrument.code
+        :param _date: Gregorian date in YYYYMMDD format.
+
+        Users should not instantiate this class directly, but use
+        ``Instrument.on_date()`` instead.
         """
-        self.date = date
-        self.code = code
+        self.date = _date
+        self.code = _code
 
     async def price(self) -> dict:
         """Get general price info.
