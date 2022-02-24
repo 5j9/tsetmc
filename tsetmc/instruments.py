@@ -7,7 +7,8 @@ from pathlib import Path
 
 from pandas import to_datetime as _to_datetime
 
-from . import _FARSI_NORM, _MarketState, _csv2df, _F, _TypedDict, _get_data, \
+from . import _FARSI_NORM, _MarketState, _api, _csv2df, _F, _TypedDict, \
+    _get_data, \
     _numerize, _parse_market_state, _parse_ombud_messages, _rc, \
     _get, _StringIO, _BytesIO, _DF, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree, _jdatetime
@@ -511,6 +512,14 @@ class Instrument:
             best_limits_df.set_index('time', inplace=True)
             result['best_limits'] = best_limits_df
         return result
+
+    async def intraday_closing_price(self, date) -> _DataFrame:
+        """Get intraday closing price history.
+
+        :param date: Gregorian date in YYYYMMDD format
+        """
+        j = await _api(f'ClosingPrice/GetClosingPriceHistory/{self.code}/{date}')
+        return _DataFrame(j['closingPriceHistory'], copy=False)
 
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)

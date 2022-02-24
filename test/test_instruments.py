@@ -340,6 +340,24 @@ async def test_intraday_general():
         'qo': 111906, 'zo': 15}
 
 
+@patch_session('faraz20220222.json')
+async def test_intraday_closing_price():
+    i = Instrument(13666407494621646)
+    df = await i.intraday_closing_price(20220222)
+    assert [*df.dtypes.items()] == [
+        ('id', dtype('int64')),
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('iClose', dtype('bool')),
+        ('yClose', dtype('bool')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64'))]
+
+
 @patch_session('fmelli_price_adjustment.html')
 async def test_adjustments():
     df = await Instrument(35425587644337450).adjustments()

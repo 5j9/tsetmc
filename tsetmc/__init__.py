@@ -1,5 +1,6 @@
 __version__ = '0.40.2.dev0'
 
+from json import loads
 from typing import TypedDict as _TypedDict
 from functools import partial as _partial
 from re import compile as _rc
@@ -130,6 +131,8 @@ async def _get(url: str, *, fa=False) -> str | bytes:
 
 
 _DOMAIN = 'http://www.tsetmc.com/'
+# API does not work on www domain
+_API = 'http://cdn.tsetmc.com/api/'
 
 
 async def _get_data(path: str, *, fa=False) -> str | bytes:
@@ -138,6 +141,10 @@ async def _get_data(path: str, *, fa=False) -> str | bytes:
 
 async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
+
+
+async def _api(path: str):
+    return loads(await _get(f'{_API}{path}'))
 
 
 def _numerize(df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False):
