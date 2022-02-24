@@ -378,7 +378,7 @@ async def test_intraday_best_limits():
 
 
 @patch_session('faraz_Shareholder_20220222.json')
-async def test_holders():
+async def test_intraday_holders():
     i = Instrument(13666407494621646)
     df = await i.intraday_holders(20220222)
     assert [*df.dtypes.items()] == [
@@ -390,6 +390,19 @@ async def test_holders():
         ('perOfShares', dtype('float64')),
         ('change', dtype('int64')),
         ('changeAmount', dtype('float64'))]
+
+
+@patch_session('faraz_GetInstrumentState_20220222.json')
+async def test_intraday_holders():
+    i = Instrument(13666407494621646)
+    df = await i.intraday_states(20220222)
+    assert [*df.dtypes.items()] == [
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('insCode', dtype('O')),
+        ('cEtaval', dtype('O')),
+        ('realHeven', dtype('int64')),
+        ('cEtavalTitle', dtype('O'))]
 
 
 @patch_session('fmelli_price_adjustment.html')

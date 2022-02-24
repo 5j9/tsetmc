@@ -3,7 +3,8 @@ Unreleased
 * feat(Instrument.trade_history): add new param: ``all_=False``
 * feat(Instrument.intraday_closing_price): new method
 * feat(Instrument.intraday_best_limits): new method
-* feat(Instrument.shareholders): new method
+* feat(Instrument.intraday_holders): new method
+* feat(Instrument.intraday_states): new method
 
 v0.40.0
 -------
