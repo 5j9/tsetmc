@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.41.0
+-------
 * feat(Instrument.trade_history): add new param: ``all_=False``
 * feat(Instrument.client_type_history): new method
 * feat(Instrument.on_date): new method returning an ``InstrumentOnDate`` object which has the following methods:
