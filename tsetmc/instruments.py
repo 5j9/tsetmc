@@ -529,6 +529,14 @@ class Instrument:
         j = await _api(f'BestLimits/{self.code}/{date}')
         return _DataFrame(j['bestLimitsHistory'], copy=False)
 
+    async def intraday_holders(self, date) -> _DataFrame:
+        """Get intraday best share/unit holders.
+
+        :param date: Gregorian date in YYYYMMDD format
+        """
+        j = await _api(f'Shareholder/{self.code}/{date}')
+        return _DataFrame(j['shareShareholder'], copy=False)
+
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]

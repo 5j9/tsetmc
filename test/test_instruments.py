@@ -377,6 +377,21 @@ async def test_intraday_best_limits():
         ('insCode', dtype('O'))]
 
 
+@patch_session('faraz_Shareholder_20220222.json')
+async def test_holders():
+    i = Instrument(13666407494621646)
+    df = await i.intraday_holders(20220222)
+    assert [*df.dtypes.items()] == [
+        ('shareHolderID', dtype('int64')),
+        ('shareHolderName', dtype('O')),
+        ('cIsin', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('numberOfShares', dtype('float64')),
+        ('perOfShares', dtype('float64')),
+        ('change', dtype('int64')),
+        ('changeAmount', dtype('float64'))]
+
+
 @patch_session('fmelli_price_adjustment.html')
 async def test_adjustments():
     df = await Instrument(35425587644337450).adjustments()
