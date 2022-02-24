@@ -405,7 +405,7 @@ async def test_intraday_closing_price():
 
 
 @patch_session('faraz_GetStaticThreshold_20220222.json')
-async def test_intraday_thresholds():
+async def test_static_thresholds():
     df = await FARAZ.static_thresholds(20220222)
     assert [*df.dtypes.items()] == [
         ('insCode', dtype('O')),
@@ -462,6 +462,15 @@ async def test_intraday_trades():
         ('iAnuTran', dtype('int64')),
         ('xqVarPJDrPRf', dtype('float64')),
         ('canceled', dtype('int64'))]
+
+
+@patch_session('faraz_GetInstrumentHistory_20220222.json')
+async def test_historic_data():
+    d = await FARAZ.historic_data(20220222)
+    assert d.keys() == {
+        'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
+        'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
+        'flowTitle', 'cgrValCotTitle'}
 
 
 @patch_session('fmelli_price_adjustment.html')

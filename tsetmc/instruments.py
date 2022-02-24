@@ -463,7 +463,7 @@ class Instrument:
 
             parameter name      new method
             --------------     -----------
-            general
+            general             historic_data
             thresholds          static_thresholds
             closings            intraday_closing_price
             candles
@@ -611,6 +611,19 @@ class Instrument:
         """
         j = await _api(f'MarketData/GetStaticThreshold/{self.code}/{date}')
         return _DataFrame(j['staticThreshold'], copy=False)
+
+    async def historic_data(self, date: int | str) -> dict:
+        """Get general info about an instrument in a specific date.
+
+        The retuned dict contains the following keys: {
+        'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
+        'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
+        'flowTitle', 'cgrValCotTitle'}
+
+        :param date: Gregorian date in YYYYMMDD format
+        """
+        j = await _api(f'Instrument/GetInstrumentHistory/{self.code}/{date}')
+        return j['instrumentHistory']
 
     async def adjustments(self) -> _DataFrame:
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)

@@ -8,6 +8,7 @@ Unreleased
 * feat(Instrument.static_thresholds): new method
 * feat(Instrument.holders_by_date): new method
 * feat(Instrument.client_type_history): new method
+* feat(Instrument.historic_data): new method
 
 v0.40.0
 -------
