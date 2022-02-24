@@ -1,3 +1,7 @@
+Unreleased
+----------
+feat(Instrument.trade_history): add new param: ``all_=False``
+
 v0.40.0
 -------
 * BREAKING CHANGE: Make the framework async.

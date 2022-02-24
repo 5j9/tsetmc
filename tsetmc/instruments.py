@@ -285,8 +285,13 @@ class Instrument:
                 lineterminator=',')
         return result
 
-    async def trade_history(self, top: int) -> _DataFrame:
-        content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}')
+    async def trade_history(self, top: int, all_=False) -> _DataFrame:
+        """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
+
+        :param top: number of top rows to return
+        :param all_: include dates with no trade
+        """
+        content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
         df = _csv2df(
             _BytesIO(content)
             , sep='@'
