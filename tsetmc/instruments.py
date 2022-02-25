@@ -292,7 +292,7 @@ class Instrument:
         :param top: number of top rows (days) to return
         :param all_: include dates with no trade
 
-        Use ``Instrument.on_date(<date>).trades``.
+        Use :meth:`Instrument.on_date(<date>).trades` for intraday trades.
         """
         content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
         df = _csv2df(
@@ -320,7 +320,8 @@ class Instrument:
         This method returns the information available at the "حقیقی-حقوقی" tab
         of the instrument. It uses the `clienttype.aspx` module.
 
-        See also: ``Instrument.client_type_history``
+        See also:
+            :meth:`Instrument.client_type_history`
         """
         return _csv2df(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}'))
@@ -340,7 +341,8 @@ class Instrument:
 
         Uses the information from api/ClientType/GetClientTypeHistory.
 
-        See also: ``Instrument.client_type``
+        See also:
+            :meth:`Instrument.client_type`
         """
         if date is None:
             j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
@@ -378,7 +380,8 @@ class Instrument:
 
         If `cisin` is not provided, it will be fetched using a web request.
 
-        See also: ``Instrument.on_date(<date>).holders``
+        See also:
+            :meth:`Instrument.on_date(<date>).holders`
         """
         if cisin is None:
             cisin = await self.cisin
@@ -448,7 +451,7 @@ class Instrument:
         This method uses the old way of fetching intraday data from tsetmc.com
         which is not used on the live site anymore.
 
-        For fetching individual parameters, use ``instrument.on_date(date)``.
+        For fetching individual parameters, use :meth:`instrument.on_date`.
         """
         text = await _get_par_tree(f'15131P&i={self.code}&d={date}')
         find = text.find
@@ -597,7 +600,7 @@ class InstrumentOnDate:
         :param _date: Gregorian date in YYYYMMDD format.
 
         Users should not instantiate this class directly, but use
-        ``Instrument.on_date()`` instead.
+        :meth:`Instrument.on_date` instead.
         """
         self.date = _date
         self.inst = _inst
@@ -633,8 +636,9 @@ class InstrumentOnDate:
     async def holders(self) -> _DataFrame:
         """Return share/unit holders for a specific date and a day before that.
 
-        See also: ``Instrument.holders`` which returns the list of current
-        holders.
+        See also:
+            :meth:`Instrument.holders` which returns the list of current
+            holders.
         """
         j = await _api(f'Shareholder/{self.code}/{self.date}')
         return _DataFrame(j['shareShareholder'], copy=False)
@@ -647,7 +651,8 @@ class InstrumentOnDate:
     async def trades(self) -> _DataFrame:
         """Get intraday trades.
 
-        See also: ``Instrument.trade_history``
+         See also:
+            :meth:`Instrument.trade_history`
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
