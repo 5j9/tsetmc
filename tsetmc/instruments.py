@@ -583,14 +583,14 @@ class Instrument:
 
         :param date: Gregorian date in YYYYMMDD format.
         """
-        return InstrumentOnDate(self, date)
+        return InstrumentOnDate(_inst=self, _date=date)
 
 
 class InstrumentOnDate:
 
     __slots__ = 'date', 'code', 'inst'
 
-    def __init__(self, _inst: Instrument, _date: int | str):
+    def __init__(self, /, *, _inst: Instrument, _date: int | str):
         """Return an object resembling Instrument on a specific date.
 
         :param _inst: Instrument
