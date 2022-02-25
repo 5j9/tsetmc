@@ -30,7 +30,7 @@ You may create the session using ``tsetmc.Session`` class. Here is a complete wo
 
    asyncio.run(main())
 
-or directly use an ``aiohttp.ClientSession`` object: (useful if you want to use an already existing session and share it with other parts of your code)
+Alternatively, you may directly use an ``aiohttp.ClientSession`` object: (useful if you want to use an already existing session and share it with other parts of your code)
 
 .. code-block:: python
 
