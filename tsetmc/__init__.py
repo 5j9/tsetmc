@@ -109,7 +109,7 @@ class Session(_ClientSession):
                 total=30, sock_connect=5, sock_read=5)
         super().__init__(**kwargs)
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> _ClientSession:
         global SESSION
         SESSION = await super().__aenter__()
         return SESSION
