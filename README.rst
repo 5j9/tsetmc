@@ -59,7 +59,6 @@ Prepare the session:
 
 ... code-block:: python
 
-    >>> import asyncio
     >>> import tsetmc
     >>> tsetmc.SESSION = tsetmc.Session()
 
