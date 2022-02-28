@@ -57,7 +57,7 @@ You will need an asyncio capable REPL, like ``python -m asyncio`` or `IPython`_,
 
 Prepare the session:
 
-... code-block:: python
+.. code-block:: python
 
     >>> import tsetmc
     >>> tsetmc.SESSION = tsetmc.Session()
