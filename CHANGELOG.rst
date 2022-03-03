@@ -1,3 +1,7 @@
+Unreleased
+----------
+* feat(Session): TCPConnector(limit_per_host=1, keepalive_timeout=120.)
+
 v0.41.0
 -------
 * feat(Instrument.trade_history): add new param: ``all_=False``
