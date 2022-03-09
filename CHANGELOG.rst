@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* feat(Instrument.__hash__): handle ``numpy.int64`` ``Instrument.code``
 * feat(Session): TCPConnector(limit_per_host=1, keepalive_timeout=120.)
 
 v0.41.0

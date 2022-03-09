@@ -3,7 +3,7 @@ from types import NoneType
 from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
-from numpy import dtype
+from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
@@ -477,3 +477,7 @@ async def test_ombud_messages():
     assert type(df.iat[0, 0]) is jdatetime
     assert type(df.iat[0, 1]) is jdatetime
     assert type(df.iat[0, 2]) is jdatetime
+
+
+def test_hash():
+    assert hash(Instrument(int64(1))) == 1

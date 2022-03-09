@@ -131,7 +131,7 @@ class Instrument:
         return self.code == other.code
 
     def __hash__(self):
-        return self.code
+        return int(self.code)
     
     @property
     async def l18(self) -> str:
