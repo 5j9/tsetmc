@@ -101,26 +101,23 @@ def _parse_ombud_messages(text) -> _DataFrame:
 SESSION : _ClientSession | None = None
 
 
-class Session(_ClientSession):
+class Session:
+    """Create and return a ClientSession object.
 
-    def __init__(self, /, **kwargs):
-        """Create a ClientSession object.
+    Use
+    ``ClientTimeout(total=30., sock_connect=5., sock_read=5.)``
+    as the default timeout and
+    ``TCPConnector(limit_per_host=1, keepalive_timeout=120.)``
+    as the default connector.
+    """
 
-        Use
-        ``ClientTimeout(total=30., sock_connect=5., sock_read=5.)``
-        as the default timeout and
-        ``TCPConnector(limit_per_host=1, keepalive_timeout=120.)``
-        as the default connector.
-        """
+    def __new__(cls, *args, **kwargs) -> _ClientSession:
+        global SESSION
         if 'timeout' not in kwargs:
             kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=5., sock_read=5.)
         if 'connector' not in kwargs:
             kwargs['connector'] = _TCPConnector(limit_per_host=1, keepalive_timeout=120.)
-        super().__init__(**kwargs)
-
-    async def __aenter__(self) -> _ClientSession:
-        global SESSION
-        SESSION = await super().__aenter__()
+        SESSION = _ClientSession(**kwargs)
         return SESSION
 
 
@@ -139,7 +136,7 @@ async def _get(url: str, *, fa=False) -> str | bytes:
     return content
 
 
-_DOMAIN = 'http://www.tsetmc.com/'
+_DOMAIN = 'http://tsetmc.com/'
 # API does not work on www domain
 _API = 'http://cdn.tsetmc.com/api/'
 
