@@ -10,13 +10,8 @@ from pytest import raises
 # noinspection PyProtectedMember
 from tsetmc.instruments import Instrument, _LiveData, price_adjustments, search
 
-from test import assert_market_state, OFFLINE_MODE, patch_session
-
-
-if OFFLINE_MODE is True:
-    async def test_info_url():
-        with raises(AttributeError, match="'NoneType' object has no attribute 'get'"):
-            await Instrument(35425587644337450).live_data()
+from test import assert_market_state
+from test.aiohttp_test_utils import file
 
 
 def assert_page_data(d, general=True, trade_history=False, related_companies=False):
@@ -50,7 +45,7 @@ def assert_page_data(d, general=True, trade_history=False, related_companies=Fal
         assert all(type(v) is str for v in d.values())
 
 
-@patch_session('fmelli.html')
+@file('fmelli.html')
 async def test_page_data():
     ins = Instrument(35425587644337450)
     assert ins._l18 is ins._l30 is None
@@ -58,19 +53,19 @@ async def test_page_data():
     assert_page_data(d, True, True, True)
 
 
-@patch_session('dey.html')
+@file('dey.html')
 async def test_page_data_no_free_float():
     d = await Instrument(44818950263583523).page_data()
     assert_page_data(d)
 
 
-@patch_session('kala.html')
+@file('kala.html')
 async def test_page_data_no_eps():
     d = await Instrument(44549439964296944).page_data()
     assert_page_data(d)
 
 
-@patch_session('khgostar.html')
+@file('khgostar.html')
 async def test_page_data_negative_sector_pe():
     d = await Instrument(48990026850202503).page_data()
     assert_page_data(d)
@@ -104,41 +99,41 @@ def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=Fa
     assert all(type(v) is int for v in d.values())
 
 
-@patch_session('dara_yekom.txt')
+@file('dara_yekom.txt')
 async def test_dara1_instant():
     d = await Instrument(62235397452612911).live_data(market_state=True, best_limits=True)
     assert_live_data(d, best_limits=True, market_state=True, nav=True)
 
 
-@patch_session('asam.txt')
+@file('asam.txt')
 async def test_asam_instant():
     d = await Instrument(36592972482259020).live_data(best_limits=True)
     assert_live_data(d, best_limits=True, nav=True)
 
 
-@patch_session('negin.txt')
+@file('negin.txt')
 async def test_negin_instant():
     d = await Instrument(10145129193828624).live_data()
     assert_live_data(d, nav=True)
 
 
-@patch_session('fmelli.txt')
+@file('fmelli.txt')
 async def test_fmelli_instant():
     d = await Instrument(35425587644337450).live_data(best_limits=False)
     assert_live_data(d, best_limits=False)
 
 
-@patch_session('vskhooz_short_response.txt')
+@file('vskhooz_short_response.txt')
 async def test_vskhooz_short():
     assert_live_data(await Instrument(5454781314262062).live_data())
 
 
-@patch_session('vskhooz_long_response.txt')
+@file('vskhooz_long_response.txt')
 async def test_vskhooz_long():
     assert_live_data(await Instrument(5454781314262062).live_data())
 
 
-@patch_session('fmelli_trade_history_top2.txt')
+@file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
     df0 = await Instrument(35425587644337450).trade_history(2)
     assert [*df0.dtypes.items()] == [
@@ -157,13 +152,13 @@ async def test_trade_history():
     assert len(df1) >= len(df0)
 
 
-@patch_session('vsadid.txt')
+@file('vsadid.txt')
 async def test_vsadid():
     d = await Instrument(41713045190742691).live_data()
     assert_live_data(d)
 
 
-@patch_session('search_firuze.txt')
+@file('search_firuze.txt')
 async def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
     i = await Instrument.from_search('فیروزه')
@@ -186,7 +181,7 @@ async def test_equal():
     assert await Instrument.from_l18('فملی') == Instrument(35425587644337450)
 
 
-@patch_session('vsadid_identification.html')
+@file('vsadid_identification.html')
 async def test_identification():
     assert await Instrument(41713045190742691).identification() == {
         'بازار': 'بازار پایه زرد فرابورس',
@@ -205,7 +200,7 @@ async def test_identification():
         'گروه صنعت': 'فلزات اساسی'}
 
 
-@patch_session('opal_client_types.txt')
+@file('opal_client_types.txt')
 async def test_client_type():
     df = await Instrument(655060129740445).client_type()
     assert [*df.dtypes.items()] == [
@@ -223,7 +218,7 @@ async def test_client_type():
         ('l_sell_value', dtype('uint64'))]
 
 
-@patch_session('faraz_GetClientTypeHistory_20220222.json')
+@file('faraz_GetClientTypeHistory_20220222.json')
 async def test_client_type_history():
     d = await Instrument(13666407494621646).client_type_history(20220222)
     assert d.keys() == {
@@ -233,7 +228,7 @@ async def test_client_type_history():
         'sell_I_Count'}
 
 
-@patch_session('fzar_GetClientTypeHistory_all.json')
+@file('fzar_GetClientTypeHistory_all.json')
 async def test_client_type_history_no_date():
     df = await Instrument(8175784894140974).client_type_history()
     assert [*df.dtypes.items()] == [
@@ -253,7 +248,7 @@ async def test_client_type_history_no_date():
         ('sell_I_Count', dtype('int64'))]
 
 
-@patch_session('ava_holders.txt')
+@file('ava_holders.txt')
 async def test_holders_with_cisin():
     holders = await Instrument(18007109712724189).holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
@@ -264,7 +259,7 @@ async def test_holders_with_cisin():
         ('id_cisin', dtype('O'))]
 
 
-@patch_session('ava_holders2.txt')
+@file('ava_holders2.txt')
 async def test_holders_change_column_type():
     holders = await Instrument(18007109712724189).holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
@@ -275,7 +270,7 @@ async def test_holders_change_column_type():
         ('id_cisin', dtype('O'))]
 
 
-@patch_session('ava_holder.txt')
+@file('ava_holder.txt')
 async def test_holder():
     inst = Instrument(18007109712724189)
     # has no other holdings
@@ -290,7 +285,7 @@ async def test_holder():
     assert oth.equals(result)
 
 
-@patch_session('vsadid_identification.html')
+@file('vsadid_identification.html')
 async def test_holders_without_cisin():
     inst = Instrument(41713045190742691)
     assert (await inst.identification())['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
@@ -300,7 +295,7 @@ async def test_holders_without_cisin():
     page_data.assert_called_once()
 
 
-@patch_session('fmelli_20210602_intraday.html')
+@file('fmelli_20210602_intraday.html')
 async def test_intraday_general():
     result = await Instrument(35425587644337450).intraday(
         20210602, general=True, thresholds=True, closings=True, candles=True,
@@ -370,7 +365,7 @@ async def test_intraday_general():
         'qo': 111906, 'zo': 15}
 
 
-@patch_session('fmelli_price_adjustment.html')
+@file('fmelli_price_adjustment.html')
 async def test_adjustments():
     df = await Instrument(35425587644337450).adjustments()
     assert len(df) >= 18
@@ -381,7 +376,7 @@ async def test_adjustments():
     assert type(df.iat[0, 0]) is jdatetime
 
 
-@patch_session('adjustments_flow_7.html')
+@file('adjustments_flow_7.html')
 async def test_price_adjustments():
     df = await price_adjustments(7)
     assert [*df.dtypes.items()] == [
@@ -394,7 +389,7 @@ async def test_price_adjustments():
     assert df.iat[-1, -1] == 1000
 
 
-@patch_session('latif_financial_aph.aspx')
+@file('latif_financial_aph.aspx')
 async def test_adjusted_price_history():
     df = await Instrument(16422980660132735).price_history()
     assert df.index.name == 'date'
@@ -408,7 +403,7 @@ async def test_adjusted_price_history():
         ('pc', dtype('int64'))]
 
 
-@patch_session('search_mellat.txt')
+@file('search_mellat.txt')
 async def test_search():
     df = await search('ملت')
     assert type(df) is DataFrame
@@ -431,7 +426,7 @@ async def test_l18_without_web_request():
     assert await Instrument(46348559193224090).l18 == 'فولاد'
 
 
-@patch_session('fmelli_introduction.html')
+@file('fmelli_introduction.html')
 async def test_introduction():
     assert await (await Instrument.from_l18('فملی')).introduction() == {
         'موضوع فعالیت': 'اکتشافات، استخراج و بهره برداری از معادن مس ایران',
@@ -453,7 +448,7 @@ async def test_introduction():
     }
 
 
-@patch_session('tajalli_ombud_messages.html')
+@file('tajalli_ombud_messages.html')
 async def test_ombud_messages():
     df = await Instrument(1301069819790264).ombud_messages()
     assert [*df.dtypes.items()] == [
@@ -463,7 +458,7 @@ async def test_ombud_messages():
     assert type(df.iat[0, 1]) is jdatetime
 
 
-@patch_session('fmelli_dps.txt')
+@file('fmelli_dps.txt')
 async def test_ombud_messages():
     df = await Instrument(35425587644337450).dps_history()
     assert [*df.dtypes.items()] == [

@@ -7,19 +7,14 @@ from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
     key_stats, closing_price_all, client_type_all, status_changes, \
     ombud_messages
-from test import assert_market_state, patch_session, OFFLINE_MODE
-
-
-if OFFLINE_MODE:
-    async def test_info_url():
-        with raises(AttributeError):
-            await market_watch_init()
+from test import assert_market_state
+from test.aiohttp_test_utils import file
 
 
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 
 
-@patch_session('MarketWatchInit.aspx')
+@file('MarketWatchInit.aspx')
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
@@ -79,7 +74,7 @@ async def test_market_watch_init():
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
 
 
-@patch_session('ClosingPriceAll.aspx')
+@file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
     df = await closing_price_all()
     assert all(t == 'uint64' for t in df.dtypes)
@@ -91,7 +86,7 @@ async def test_closing_price_all():
     assert all(t == 'uint64' for t in index.dtypes)
 
 
-@patch_session('ClientTypeAll.aspx')
+@file('ClientTypeAll.aspx')
 async def test_client_type_all():
     df = await client_type_all()
     assert all(df.columns == [
@@ -101,7 +96,7 @@ async def test_client_type_all():
     assert df.index.name == 'ins_code'
 
 
-@patch_session('InstValue.aspx')
+@file('InstValue.aspx')
 async def test_key_stats():
     df = await key_stats()
     assert all(df.columns.str.startswith('is'))
@@ -171,7 +166,7 @@ def test_parse_index():
         "00/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
 
 
-@patch_session('MarketWatchInit2.aspx')
+@file('MarketWatchInit2.aspx')
 async def test_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
     # used to raise
@@ -179,7 +174,7 @@ async def test_market_watch_init_non_int_tmin_tmax():
     await market_watch_init()
 
 
-@patch_session('MarketWatchPlus00.txt')
+@file('MarketWatchPlus00.txt')
 async def test_market_watch_plus_new():
     mwp = await market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
@@ -198,7 +193,7 @@ async def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
-@patch_session('MarketWatchPlus_h64130_r9540883525.txt')
+@file('MarketWatchPlus_h64130_r9540883525.txt')
 async def test_market_watch_plus_update():
     mwp = await market_watch_plus(64130, 9540883525)
 
@@ -246,7 +241,7 @@ async def test_market_watch_plus_update():
         ('l30', 'string[python]')]
 
 
-@patch_session('status_changes.html')
+@file('status_changes.html')
 async def test_status_changes():
     df = await status_changes(3)
     assert len(df) == 3
@@ -258,7 +253,7 @@ async def test_status_changes():
     assert type(df.iat[0, 3]) is jdatetime
 
 
-@patch_session('ombud_messages.html')
+@file('ombud_messages.html')
 async def test_ombud_messages():
     df = await ombud_messages(top=3)
     assert len(df) == 3
@@ -269,7 +264,7 @@ async def test_ombud_messages():
     assert type(df.iat[0, 1]) is jdatetime
 
 
-@patch_session('empty_ombud_messages.html')
+@file('empty_ombud_messages.html')
 async def test_ombud_messages_empty():
     # `sh_date` cannot be used without `containing`
     df = await ombud_messages(top=1, sh_date='1400-11-02', flow=0)

@@ -1,34 +1,7 @@
-from unittest.mock import patch
-
 from jdatetime import datetime as jdatetime
 
-import tsetmc
 # noinspection PyProtectedMember
 from tsetmc import _MarketState
-
-
-RECORD_MODE = False
-OFFLINE_MODE = True and not RECORD_MODE
-
-
-def patch_session(filename):
-
-    async def _fake_session_get(url: str) -> str | bytes:
-        file = f'{__file__}/../testdata/{filename}'
-
-        if OFFLINE_MODE:
-            with open(file, 'rb') as f:
-                content = f.read()
-        else:
-            async with tsetmc.Session() as s:
-                content = await (await s.get(url)).read()
-            if RECORD_MODE:
-                with open(file, 'wb') as f:
-                    f.write(content)
-
-        return content
-
-    return patch('tsetmc._session_get', _fake_session_get)
 
 
 def assert_market_state(market_state: _MarketState):

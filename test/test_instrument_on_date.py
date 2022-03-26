@@ -1,13 +1,13 @@
 from numpy import dtype
 
-from test import patch_session
+from test.aiohttp_test_utils import file
 from tsetmc.instruments import Instrument
 
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
 
-@patch_session('faraz_GetClosingPriceHistory_20220222.json')
+@file('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
     df = await FARAZ_ON_DATE.closing_price_history()
     assert [*df.dtypes.items()] == [
@@ -24,7 +24,7 @@ async def test_intraday_closing_price():
         ('qTotCap', dtype('float64'))]
 
 
-@patch_session('faraz_GetStaticThreshold_20220222.json')
+@file('faraz_GetStaticThreshold_20220222.json')
 async def test_static_thresholds():
     df = await FARAZ_ON_DATE.static_thresholds()
     assert [*df.dtypes.items()] == [
@@ -35,7 +35,7 @@ async def test_static_thresholds():
         ('psGelStaMin', dtype('float64'))]
 
 
-@patch_session('faraz_BestLimits_20220222.json')
+@file('faraz_BestLimits_20220222.json')
 async def test_intraday_best_limits():
     df = await FARAZ_ON_DATE.best_limits()
     assert [*df.dtypes.items()] == [
@@ -53,7 +53,7 @@ async def test_intraday_best_limits():
         ('insCode', dtype('O'))]
 
 
-@patch_session('faraz_GetTradeHistory_20220222.json')
+@file('faraz_GetTradeHistory_20220222.json')
 async def test_intraday_trades():
     df = await FARAZ_ON_DATE.trades()
     assert [*df.dtypes.items()] == [
@@ -72,7 +72,7 @@ async def test_intraday_trades():
         ('canceled', dtype('int64'))]
 
 
-@patch_session('faraz_GetInstrumentHistory_20220222.json')
+@file('faraz_GetInstrumentHistory_20220222.json')
 async def test_historic_data():
     d = await FARAZ_ON_DATE.data()
     assert d.keys() == {
@@ -81,7 +81,7 @@ async def test_historic_data():
         'flowTitle', 'cgrValCotTitle'}
 
 
-@patch_session('faraz_GetClosingPriceDaily_20220222.json')
+@file('faraz_GetClosingPriceDaily_20220222.json')
 async def test_historic_data():
     d = await FARAZ_ON_DATE.closing_price()
     assert d.keys() == {
@@ -90,7 +90,7 @@ async def test_historic_data():
         'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}
 
 
-@patch_session('faraz_GetInstrumentState_20220222.json')
+@file('faraz_GetInstrumentState_20220222.json')
 async def test_intraday_states():
     df = await FARAZ_ON_DATE.states()
     assert [*df.dtypes.items()] == [
@@ -102,7 +102,7 @@ async def test_intraday_states():
         ('cEtavalTitle', dtype('O'))]
 
 
-@patch_session('faraz_Shareholder_20220222.json')
+@file('faraz_Shareholder_20220222.json')
 async def test_intraday_holders():
     df = await FARAZ_ON_DATE.holders()
     assert [*df.dtypes.items()] == [
