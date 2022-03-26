@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.42.0
+-------
 * feat(Instrument.__hash__): handle ``numpy.int64`` ``Instrument.code``
 * fix(Session): Do not inherit from ``aiohttp.ClientSession`` (deprecated by aiohttp).
 * feat(Session): use TCPConnector(limit_per_host=1, keepalive_timeout=120.)
