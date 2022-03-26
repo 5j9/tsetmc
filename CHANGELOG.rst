@@ -1,3 +1,7 @@
+Unreleased
+----------
+* update ids.json file
+
 v0.42.0
 -------
 * feat(Instrument.__hash__): handle ``numpy.int64`` ``Instrument.code``
