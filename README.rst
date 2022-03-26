@@ -60,7 +60,7 @@ Prepare the session:
 .. code-block:: python
 
     >>> import tsetmc
-    >>> tsetmc.SESSION = tsetmc.Session()
+    >>> session = fipiran.Session()
 
 Getting the static data available in the main page of an instrument:
 
