@@ -10,6 +10,12 @@ from tsetmc.market_watch import market_watch_init as _market_watch_init
 # cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
 _CS_EXCLUSIONS = {59, 69}
 
+# see dev/tsetmc_source_files/market_watch.html
+_YVAL_EXCLUSIONS = {
+    # OraghMosharekat
+    306, 301, 706, 208, 701,
+}
+
 
 def _dump_l18s():
     with open(_DB_PATH, 'w', encoding='utf8') as f:
@@ -20,8 +26,6 @@ async def add_instrument_to_db(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
     d = await inst.page_data()
-    if d['flow'] == 3 or d['cs'] in _CS_EXCLUSIONS or d['flow_name'] == 'بازار اوراق بدهی':
-        return
     # isin = df.at['کد 12 رقمی نماد', 1]
     l18 = d['l18']
     _L18S[l18] = ins_code, l18, d['l30']
@@ -33,11 +37,7 @@ async def update_db_using_market_watch() -> None:
     mwi = await _market_watch_init(market_state=False, best_limits=False)
     df = mwi['prices']
     # flow == 3: futures market
-    yval_exceptions = {  # see dev/tsetmc_source_files/market_watch.html
-        # OraghMosharekat
-        306, 301, 706, 208,
-    }
-    df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS and yval not in @yval_exceptions')
+    df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS and yval not in @_YVAL_EXCLUSIONS')
     glv = df.index.get_level_values
     ins_codes = glv('ins_code')
     l18s = glv('l18')
