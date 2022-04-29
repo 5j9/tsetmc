@@ -589,6 +589,9 @@ class Instrument:
         """Return an object resembling Instrument on a specific date.
 
         :param date: Gregorian date in YYYYMMDD format.
+
+        :note: methods of InstrumentOnDate are rate-limited.
+            Avoid making simultaneous calls.
         """
         return InstrumentOnDate(_inst=self, _date=date)
 
@@ -605,6 +608,9 @@ class InstrumentOnDate:
 
         Users should not instantiate this class directly, but use
         :meth:`Instrument.on_date` instead.
+
+        :note: methods of InstrumentOnDate are rate-limited.
+            Avoid making simultaneous calls.
         """
         self.date = _date
         self.inst = _inst

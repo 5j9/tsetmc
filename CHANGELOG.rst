@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* feat!: removed the 1-connection-per-host limit. However, users should note that `InstrumentOnDate` (`Instrument.on_date`) are rate-limited and avoid making simultaneous calls.
 * feat(docs): a new (and incomplete) module to fetch parsed documentation data
 * update ids.json file
 

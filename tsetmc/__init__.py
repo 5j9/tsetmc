@@ -14,7 +14,7 @@ from pandas import read_csv as _read_csv, DataFrame as _DataFrame
 # noinspection PyUnresolvedReferences
 from pandas import to_numeric as _to_numeric, read_html as _read_html
 from aiohttp import ClientSession as _ClientSession, \
-    ClientTimeout as _ClientTimeout, TCPConnector as _TCPConnector
+    ClientTimeout as _ClientTimeout
 
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -106,17 +106,13 @@ class Session:
 
     Use
     ``ClientTimeout(total=30., sock_connect=5., sock_read=5.)``
-    as the default timeout and
-    ``TCPConnector(limit_per_host=1, keepalive_timeout=120.)``
-    as the default connector.
+    as the default timeout.
     """
 
     def __new__(cls, *args, **kwargs) -> _ClientSession:
         global SESSION
         if 'timeout' not in kwargs:
             kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=5., sock_read=5.)
-        if 'connector' not in kwargs:
-            kwargs['connector'] = _TCPConnector(limit_per_host=1, keepalive_timeout=120.)
         SESSION = _ClientSession(**kwargs)
         return SESSION
 
