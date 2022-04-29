@@ -17,6 +17,7 @@ async def boards() -> dict[int, str]:
 
 
 async def cs_codes() -> dict[str, str]:
+    """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _get_par_tree('111C1213')
     iloc = _read_html(content, header=0)[0].iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))

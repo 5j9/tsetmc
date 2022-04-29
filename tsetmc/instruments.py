@@ -184,8 +184,12 @@ class Instrument:
         :param general: parse general data including bvol, cisin, etc.
         :param trade_history: include trade_history in the result.
         :param related_companies: parse and include related_companies.
-        For the meaning of keys see:
-            https://cdn.tsetmc.com/Site.aspx?ParTree=151713
+
+        For the meaning of yval column values see:
+            https://members.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
+
+        For the meaning of other column names see:
+            http://www.tsetmc.com/Site.aspx?ParTree=151713
         """
         text = await _get_par_tree(f'151311&i={self.code}')
         if general:
