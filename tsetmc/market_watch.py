@@ -25,14 +25,14 @@ _PRICE_DTYPES = {
     'eps': 'float64',
     'bvol': 'uint64',
     'visitcount': 'uint64',
-    # 0-7 /dev/docs/Instrument.html
+    # 0-7 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'flow': 'uint8',
     # 1-98, see tsetmc.general.cs_codes()
     'cs': 'uint8',
     'tmax': 'float64',
     'tmin': 'float64',
     'z': 'uint64',
-    # 67-701 /dev/docs/Instrument.html
+    # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'yval': 'uint16',
 }
 _PRICE_COLUMNS = _PRICE_DTYPES.keys()
@@ -55,11 +55,11 @@ async def market_watch_init(
 
     For more information about filters see:
         http://tsetmc.com/Loader.aspx?ParTree=15131F
-    For the meaning of column names in the returned DataFrame see:
-        https://cdn.tsetmc.com/Site.aspx?ParTree=151713
-        For `flow` and `yval` codes see: /dev/docs/Instrument.html
-        For `heven` see: /dev/docs/IndexB1LastDayOneInst.html
-            (it's the time of the last transaction in HHMMSS format)
+    For the meaning of column names in the returned DataFrame refer to:
+        http://tsetmc.com/Site.aspx?ParTree=151713
+        For persian translation of `flow` and `yval` codes use
+        `tsetmc.docs.instrument`.
+        `heven` is the time of the last transaction in HHMMSS format.
     """
     # todo: use content?
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)

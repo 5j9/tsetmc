@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* feat(docs): a new (and incomplete) module to fetch parsed documentation data
 * update ids.json file
 
 v0.42.0

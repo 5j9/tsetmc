@@ -1,0 +1,380 @@
+<!doctype html><html><head><title>.:TSETMC:. :: ClientType - اطلاعات معاملات به تفکیک حقیقی و حقوقی</title><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-63076930-1"></script><script> window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'UA-63076930-1');</script><script>var LongRunnigPagesSite='http://cdn8.tsetmc.com';function ens(ty,sv){var lv=localStorage.getItem("v_"+ty);var t;if (lv==null || lv!=sv){var oX=new XMLHttpRequest();oX.open('GET', 'tsev2/res/loader.aspx?t='+ty+'&_'+sv,false);oX.send(null);t=oX.responseText;if(t[t.length-1]!=';') return;localStorage.setItem("v_"+ty,sv);localStorage.setItem("t_"+ty,t)}else{t=localStorage.getItem("t_"+ty)}if (ty=='s'){document.write("<style>"+t+"</style>")}else{var h=document.getElementsByTagName('HEAD').item(0);var s=document.createElement("script");s.defer=true;s.text=t;h.appendChild(s)}}var version='521';ens('j',version); ens('s',version);  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)  })</script></head><body><div style="display:none">PSB is being developed by Pooya Paridel.</div><div id="FastView" class="slideTop"></div><div id="TopBar"><div id="company"><div id="company_logo"></div><div id="company_text">شركت مديريت فناوري بورس تهران<br/> Tehran Securities Exchange Technology Management Co</div></div><div id="menu_btns"></div><script>ShowMenuIcon(1)</script></div><div class="MainContainer">
+<span style="display:none"><form method="post" action="./Site.aspx?ParTree=1114111116&amp;LnkIdn=834" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="" />
+</div>
+</form></span>
+<span id="output"><div class="box1 s1 blue z4_4">
+   <div class="header">InstrumentFilterByDate - فهرست و مشخصات نمادهای جدید و تغییر یافته</div>
+   <div class="content"><p>&nbsp;</p>
+
+<table border="1" cellpadding="2" cellspacing="8" style="width:100%">
+	<tbody>
+		<tr>
+			<td>
+			<p>&nbsp;آدرس</p>
+
+			<p>(Address)</p>
+			</td>
+			<td>
+			<p>http://service.tsetmc.com/WebService/TsePublicV2.asmx</p>
+
+			<p>http://service.tsetmc.com/WebService/TsePublicV2.asmx?WSDL</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p>&nbsp;نام سرويس</p>
+
+			<p>(Service Name)</p>
+			</td>
+			<td>
+			<p>InstrumentFilterByDate</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p>&nbsp;توضيحات</p>
+
+			<p>(Description)</p>
+			</td>
+			<td>
+			<p>&nbsp;اطلاعات مربوط به نمادهای جدید و یا تغییر یافته از یک تاریخ به بعد را ارائه&nbsp;مي کند.&nbsp;</p>
+
+			<p>New Or Edited Instruments Since a Specific Date</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p>&nbsp;پارامترهاي ورودي</p>
+
+			<p>(Input Parameters)</p>
+			</td>
+			<td>
+			<p>&nbsp;</p>
+
+			<table border="0" cellpadding="2" cellspacing="2" style="width:100%">
+				<tbody>
+					<tr>
+						<td>&nbsp;UserName</td>
+						<td>&nbsp;نام کاربري مشترک</td>
+						<td>UserName</td>
+					</tr>
+					<tr>
+						<td>&nbsp;Password</td>
+						<td>&nbsp;کلمه عبور مشترک</td>
+						<td>Password</td>
+					</tr>
+					<tr>
+						<td>&nbsp;DEven</td>
+						<td>&nbsp;تاریخ</td>
+						<td>Date (yyyymmdd)</td>
+					</tr>
+					<tr>
+						<td>&nbsp;Flow</td>
+						<td>کد بازار
+						<ul>
+							<li>0 : عمومي - مشترک بين بورس و فرابورس</li>
+							<li>1 : بورس</li>
+							<li>2 : فرابورس</li>
+							<li>3 : آتی</li>
+							<li>4 : پایه فرابورس</li>
+							<li>5 : پایه فرابورس (منتشر نمی شود)</li>
+						</ul>
+						</td>
+						<td>&nbsp;</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>&nbsp;</p>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p>&nbsp;خروجي</p>
+
+			<p>(Output)</p>
+			</td>
+			<td>
+			<p>&nbsp;Dataset حاوي اطلاعات نمادها با ساختار زير:</p>
+
+			<div dir="ltr">&lt;xs:schema&nbsp;id=&quot;Instruments&quot;&nbsp;xmlns=&quot;&quot;&nbsp;xmlns:xs=<a href="http://www.w3.org/2001/XMLSchema">http://www.w3.org/2001/XMLSchema</a></div>
+
+			<div dir="ltr">&nbsp;xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;Instruments&quot;&nbsp;msdata:IsDataSet=&quot;true&quot;&nbsp;msdata:UseCurrentLocale=&quot;true&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:choice&nbsp;minOccurs=&quot;0&quot;&nbsp;maxOccurs=&quot;unbounded&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;TseInstruments&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:sequence&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;DEVen&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;InsCode&quot; type=&quot;xs:long&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;InstrumentID&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CValMne&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;LVal18&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CSocCSAC&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;LSoc30&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;LVal18AFC&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;LVal30&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CIsin&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;QNmVlo&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;ZTitad&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;DESop&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;YOPSJ&quot; type=&quot;xs:unsignedByte&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CGdSVal&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CGrValCot&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;DInMar&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;YUniExpP&quot; type=&quot;xs:unsignedByte&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;YMarNSC&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CComVal&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CSecVal&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;CSoSecVal&quot; type=&quot;xs:string&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;YDeComp&quot; type=&quot;xs:unsignedByte&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;PSaiSMaxOkValMdv&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;PSaiSMinOkValMdv&quot; type=&quot;xs:decimal&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;BaseVol&quot; type=&quot;xs:long&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;YVal&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;QPasCotFxeVal&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;QQtTranMarVal&quot; type=&quot;xs:int&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;xs:element name=&quot;Flow&quot; type=&quot;xs:unsignedByte&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;QtitMinSaiOmProd&quot; type=&quot;xs:long&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;QtitMaxSaiOmProd&quot; type=&quot;xs:long&quot; minOccurs=&quot;0&quot; /&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:sequence&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:choice&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br />
+			&nbsp;&nbsp;&lt;/xs:schema&gt;</div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+			<p>&nbsp;اطلاعات خروجي</p>
+
+			<p>(Output Columns)</p>
+			</td>
+			<td>
+			<table border="0" cellpadding="2" cellspacing="2" style="width:100%">
+				<tbody>
+					<tr>
+						<td>DEven</td>
+						<td><span dir="ltr">تاريخ - نمادهايي که در آخرين روز معاملاتي وجود نداشته باشند داراي تاريخ قديمي بوده و قابل شناسايي هستند </span></td>
+						<td>Date</td>
+					</tr>
+					<tr>
+						<td>InsCode</td>
+						<td><span dir="ltr">کد داخلي نماد - در تمام اطلاعات از اين کد براي شناسايي نماد استفاده مي شود.<br />
+						اين کد براي هر نماد يکتا بوده و در هنگام اضافه شدن هر نماد جديد به بورس,<br />
+						در بانک اطلاعاتي وب سايت شرکت مديريت فناوري بورس ساخته مي شود</span></td>
+						<td>Instrument Unique Key</td>
+					</tr>
+					<tr>
+						<td>&nbsp;InstrumentID</td>
+						<td><span dir="ltr">کد 12 رقمي لاتين نماد </span></td>
+						<td>English 12-Character Instrument ID</td>
+					</tr>
+					<tr>
+						<td>CValMne</td>
+						<td>&nbsp;<span dir="ltr">کد 5 رقمي لاتين نماد </span></td>
+						<td>English 5-Character Instrument Code &nbsp;</td>
+					</tr>
+					<tr>
+						<td>LVal18</td>
+						<td>نام 18 رقمي لاتين نماد</td>
+						<td>English 18-Character Instrument Name</td>
+					</tr>
+					<tr>
+						<td>CSocCSAC</td>
+						<td>کد 5 رقمي لاتين شرکت</td>
+						<td>English 5-Character Company Code</td>
+					</tr>
+					<tr>
+						<td>LSoc30</td>
+						<td>نام 30 رقمي فارسي شرکت</td>
+						<td>Persian 30-Character Company Name</td>
+					</tr>
+					<tr>
+						<td>LVal18AFC</td>
+						<td>کد 18 رقمي فارسي نماد</td>
+						<td>Persian 18-Character Instrument Name (Mnemonic)</td>
+					</tr>
+					<tr>
+						<td>LVal30</td>
+						<td>نام 30 رقمي فارسي نماد</td>
+						<td>Persian 30-Character Instrument Name</td>
+					</tr>
+					<tr>
+						<td>CIsin</td>
+						<td>کد 12 رقمي شرکت</td>
+						<td>English 12-Character Company ID</td>
+					</tr>
+					<tr>
+						<td>QNmVlo</td>
+						<td>قيمت اسمي</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>ZTitad</td>
+						<td>تعداد سهام - سرمايه</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>DESop</td>
+						<td>تاريخ تغيير نماد</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>YOPSJ</td>
+						<td>نوع تغيير امروز نماد</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>CGdSVal</td>
+						<td>نوع نماد يکي از مقادير: A - I - O</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>CGrValCot</td>
+						<td>کد گروه نماد</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>DInMar</td>
+						<td>تاريخ اولين روز معاملاتي نماد</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>YUniExpP</td>
+						<td>واحد قيمت - 1:قيمت - 2:درصد</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>YMarNSC</td>
+						<td>کد بازار
+						<div style="text-align: left; direction: ltr">
+						<ul>
+							<li>
+							<p>NO Normal market</p>
+							</li>
+							<li>
+							<p>OL Odd-lot market</p>
+							</li>
+							<li>
+							<p>BK Block market</p>
+							</li>
+							<li>
+							<p>BY Buying-in market</p>
+							</li>
+							<li>
+							<p>ID Index market</p>
+							</li>
+							<li>
+							<p>UI instruments</p>
+							</li>
+						</ul>
+						</div>
+						</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>CComVal</td>
+						<td>کد تابلو</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>CSecVal</td>
+						<td>کد گروه صنعت</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>CSoSecVal</td>
+						<td>کد زير گروه صنعت</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>YDeComp</td>
+						<td>ميزان تاخير تصويه</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;PSaiSMaxOkValMdv</td>
+						<td>حداکثر قيمت مجاز</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;PSaiSMinOkValMdv</td>
+						<td>حداقل قيمت مجاز</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>BaseVol</td>
+						<td>حجم مبنا</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;YVal</td>
+						<td>نوع نماد:
+						<ul>
+							<li>263: سبد قابل معامله در بورس</li>
+							<li>300: سهام</li>
+							<li>301: اوراق مشارکت</li>
+							<li>302: سبد مشاع</li>
+							<li>303: اتیسی</li>
+							<li>304: آتی</li>
+							<li>306: اوراق مشارکت اتیسی</li>
+							<li>248: گواهي خريد سهام</li>
+							<li>068: شاخص</li>
+							<li>400: حق تقدم سهم</li>
+							<li>403: حق تقدم اتیسی</li>
+							<li>500: جايزه سهم</li>
+						</ul>
+						</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;QPasCotFxeVal</td>
+						<td>تيک - کوچک ترين واحد قيمتي قابل معامله - قيمت فقط ضريبي از اين مقدار مي تواند باشد.</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>ًQQtTranMarVal</td>
+						<td>کوچک ترين&nbsp;تعداد سهام قابل معامله -&nbsp;تعداد سهام&nbsp;فقط ضريبي از اين مقدار مي تواند باشد.</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;Flow</td>
+						<td>بازار:
+						<ul>
+							<li>0 : عمومي - مشترک بين بورس و فرابورس</li>
+							<li>1 : بورس</li>
+							<li>2 : فرابورس</li>
+							<li>3 : آتی</li>
+							<li>4 : پایه فرابورس</li>
+							<li>5 : پایه فرابورس (منتشر نمی شود)</li>
+						</ul>
+						</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>&nbsp;QtitMinSaiOmProd</td>
+						<td>حداقل حجم مجاز قابل سفارش.</td>
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td>ًQtitMaxSaiOmProd</td>
+						<td>حداکثر حجم مجاز قابل سفارش.</td>
+						<td>&nbsp;</td>
+					</tr>
+				</tbody>
+			</table>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>&nbsp;</p>
+<div></div></div>
+</div></span>
+</div></body></html>

@@ -1,0 +1,193 @@
+<!doctype html><html><head><title>.:TSETMC:. :: TradeLastDay - اطلاعات معاملات آخرین روز</title><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-63076930-1"></script><script> window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'UA-63076930-1');</script><script>var LongRunnigPagesSite='http://cdn8.tsetmc.com';function ens(ty,sv){var lv=localStorage.getItem("v_"+ty);var t;if (lv==null || lv!=sv){var oX=new XMLHttpRequest();oX.open('GET', 'tsev2/res/loader.aspx?t='+ty+'&_'+sv,false);oX.send(null);t=oX.responseText;if(t[t.length-1]!=';') return;localStorage.setItem("v_"+ty,sv);localStorage.setItem("t_"+ty,t)}else{t=localStorage.getItem("t_"+ty)}if (ty=='s'){document.write("<style>"+t+"</style>")}else{var h=document.getElementsByTagName('HEAD').item(0);var s=document.createElement("script");s.defer=true;s.text=t;h.appendChild(s)}}var version='521';ens('j',version); ens('s',version);  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)  })</script></head><body><div style="display:none">PSB is being developed by Pooya Paridel.</div><div id="FastView" class="slideTop"></div><div id="TopBar"><div id="company"><div id="company_logo"></div><div id="company_text">شركت مديريت فناوري بورس تهران<br/> Tehran Securities Exchange Technology Management Co</div></div><div id="menu_btns"></div><script>ShowMenuIcon(1)</script></div><div class="MainContainer">
+<span style="display:none"><form method="post" action="./Site.aspx?ParTree=1114111113&amp;LnkIdn=84" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="" />
+</div>
+</form></span>
+<span id="output"><div class="box1 s1 blue z4_4">
+   <div class="header">TradeLastDay - اطلاعات معاملات آخرين روز </div>
+   <div class="content"><div style="direction: rtl">
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="2" cellspacing="8" style="width:100%">
+	<tbody>
+		<tr>
+			<td>&nbsp;آدرس</td>
+			<td>
+			<p>http://service.tsetmc.com/WebService/TsePublicV2.asmx</p>
+
+			<p>http://service.tsetmc.com/WebService/TsePublicV2.asmx?WSDL</p>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;نام سرويس</td>
+			<td>
+			<p>TradeLastDay</p>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;توضيحات</td>
+			<td>اطلاعات معاملات آخرين روز را ارائه&nbsp;مي کند.&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;پارامترهاي ورودي</td>
+			<td>
+			<p>&nbsp;</p>
+
+			<table border="0" cellpadding="2" cellspacing="2" style="width:100%">
+				<tbody>
+					<tr>
+						<td>&nbsp;UserName</td>
+						<td>&nbsp;نام کاربري مشترک</td>
+					</tr>
+					<tr>
+						<td>&nbsp;Password</td>
+						<td>&nbsp;کلمه عبور مشترک</td>
+					</tr>
+					<tr>
+						<td>&nbsp;Flow</td>
+						<td>
+						<p>&nbsp;کد بازار</p>
+
+						<ul>
+							<li>0 : عمومي - مشترک بين بورس و فرابورس</li>
+							<li>1 : بورس</li>
+							<li>2 : فرابورس</li>
+							<li>3 : آتی</li>
+							<li>4 : پایه فرابورس</li>
+							<li>5 : پایه فرابورس (منتشر نمی شود)</li>
+							<li>6 : بورس انرژی</li>
+							<li>7 : بورس کالا</li>
+						</ul>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>&nbsp;</p>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;خروجي</td>
+			<td>
+			<p>&nbsp;Dataset حاوي اطلاعات معاملات آخرين روز با ساختار زير:</p>
+
+			<div dir="ltr">&nbsp;&nbsp;&lt;xs:schema&nbsp;id=&quot;TradeLastDay&quot;&nbsp;xmlns=&quot;&quot;&nbsp;xmlns:xs=<a href="http://www.w3.org/2001/XMLSchema">http://www.w3.org/2001/XMLSchema</a>&nbsp;</div>
+
+			<div dir="ltr">xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;TradeLastDay&quot;&nbsp;msdata:IsDataSet=&quot;true&quot;&nbsp;msdata:UseCurrentLocale=&quot;true&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:choice&nbsp;minOccurs=&quot;0&quot;&nbsp;maxOccurs=&quot;unbounded&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;TradeLastDay&quot;&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:sequence&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;LVal18AFC&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;DEven&quot;&nbsp;type=&quot;xs:int&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;ZTotTran&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;QTotTran5J&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;QTotCap&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;InsCode&quot;&nbsp;type=&quot;xs:long&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;LVal30&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PClosing&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PDrCotVal&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PriceChange&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PriceMin&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PriceMax&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&lt;xs:element&nbsp;name=&quot;PriceFirst&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;PriceYesterday&quot;&nbsp;type=&quot;xs:decimal&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;</div>
+
+			<div dir="ltr">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xs:element name=&quot;Last&quot; type=&quot;xs:unsignedByte&quot; minOccurs=&quot;0&quot; /&gt;</div>
+
+			<div dir="ltr">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;HEven&quot;&nbsp;type=&quot;xs:int&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:sequence&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:choice&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br />
+			&nbsp;&nbsp;&lt;/xs:schema&gt;</div>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;اطلاعات خروجي</td>
+			<td>&nbsp;
+			<table border="0" cellpadding="2" cellspacing="2" style="width:100%">
+				<tbody>
+					<tr>
+						<td>&nbsp;LVal18AFC</td>
+						<td>&nbsp;<span dir="ltr">نماد </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;DEven</td>
+						<td>&nbsp;<span dir="ltr">تاريخ </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;ZTotTran</td>
+						<td><span dir="ltr">تعداد معاملات </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;QTotTran5J</td>
+						<td>&nbsp;<span dir="ltr">تعداد سهام معامله شده - <span dir="ltr">حجم</span></span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;QTotCap</td>
+						<td><span dir="ltr">ارزش معاملات</span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;InsCode</td>
+						<td>&nbsp;<span dir="ltr">کد نماد </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;LVal30</td>
+						<td><span dir="ltr">توضيح </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PClosing</td>
+						<td>&nbsp;&nbsp;<span dir="ltr">قيمت نهايي</span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PDrCotVal</td>
+						<td>&nbsp;<span dir="ltr">آخرين قيمت معامله شده </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PriceChange</td>
+						<td>&nbsp;<span dir="ltr">تغيير قيمت </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PriceMin</td>
+						<td>&nbsp;<span dir="ltr">حداقل قيمت </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PriceMax</td>
+						<td>&nbsp;<span dir="ltr">حداکثر قيمت</span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PriceFirst</td>
+						<td><span dir="ltr">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; قيمت اولين معامله</span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;PriceYesterday</td>
+						<td>&nbsp;<span dir="ltr">قيمت ديروز </span></td>
+					</tr>
+					<tr>
+						<td>&nbsp;Last</td>
+						<td>&nbsp; آخرین وضعیت</td>
+					</tr>
+					<tr>
+						<td>HEven</td>
+						<td>&nbsp;ساعت</td>
+					</tr>
+				</tbody>
+			</table>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>&nbsp;</p>
+</div>
+
+<p>&nbsp;</p>
+<div></div></div>
+</div></span>
+</div></body></html>

@@ -1,0 +1,189 @@
+<!doctype html><html><head><title>.:TSETMC:. :: ClientType - اطلاعات معاملات به تفکیک حقیقی و حقوقی</title><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-63076930-1"></script><script> window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', 'UA-63076930-1');</script><script>var LongRunnigPagesSite='http://cdn8.tsetmc.com';function ens(ty,sv){var lv=localStorage.getItem("v_"+ty);var t;if (lv==null || lv!=sv){var oX=new XMLHttpRequest();oX.open('GET', 'tsev2/res/loader.aspx?t='+ty+'&_'+sv,false);oX.send(null);t=oX.responseText;if(t[t.length-1]!=';') return;localStorage.setItem("v_"+ty,sv);localStorage.setItem("t_"+ty,t)}else{t=localStorage.getItem("t_"+ty)}if (ty=='s'){document.write("<style>"+t+"</style>")}else{var h=document.getElementsByTagName('HEAD').item(0);var s=document.createElement("script");s.defer=true;s.text=t;h.appendChild(s)}}var version='521';ens('j',version); ens('s',version);  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)  })</script></head><body><div style="display:none">PSB is being developed by Pooya Paridel.</div><div id="FastView" class="slideTop"></div><div id="TopBar"><div id="company"><div id="company_logo"></div><div id="company_text">شركت مديريت فناوري بورس تهران<br/> Tehran Securities Exchange Technology Management Co</div></div><div id="menu_btns"></div><script>ShowMenuIcon(1)</script></div><div class="MainContainer">
+<span style="display:none"><form method="post" action="./Site.aspx?ParTree=1114111116&amp;LnkIdn=833" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="" />
+</div>
+</form></span>
+<span id="output"><div class="box1 s1 blue z4_4">
+   <div class="header">InstrumentsState - وضعیت نمادها</div>
+   <div class="content"><div style="direction: rtl">
+	<p>
+		&nbsp;</p>
+	<table border="1" cellpadding="2" cellspacing="8" width="100%">
+		<tbody>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;آدرس </font></td>
+				<td>
+					<p align="left">
+						<font face="Tahoma">http://service.tsetmc.com/WebService/TsePublicV2.asmx</font></p>
+					<p align="left">
+						<font face="Tahoma">http://service.tsetmc.com/WebService/TsePublicV2.asmx?WSDL</font></p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;نام سرويس</font></td>
+				<td>
+					<p align="left">
+						<font face="Tahoma">InstrumentsState</font></p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;توضيحات</font></td>
+				<td>
+					<font face="Tahoma">&nbsp; اطلاعات وضعیت نمادها را ارائه می کند. <span style="color:#ff0000;">در صورتی که نمادی در این متود وجود نداشته باشد به معنی باز بودن نماد است.</span></font></td>
+			</tr>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;پارامترهاي ورودي</font></td>
+				<td>
+					<p>
+						&nbsp;</p>
+					<table border="0" cellpadding="2" cellspacing="2" width="100%">
+						<tbody>
+							<tr>
+								<td bgcolor="#eeeeff">
+									<font face="Tahoma">&nbsp;UserName</font></td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma">&nbsp;نام کاربري مشترک</font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									<font face="Tahoma">&nbsp;Password</font></td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma">&nbsp;کلمه عبور مشترک</font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									&nbsp;Flow</td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma">کد بازار</font>
+									<ul>
+										<li>
+											<font face="Tahoma">0 : عمومي - مشترک بين بورس و فرابورس</font></li>
+										<li>
+											<font face="Tahoma">1 : بورس</font></li>
+										<li>
+											<font face="Tahoma">2 : فرابورس</font></li>
+										<li>
+											<font face="Tahoma">3 : آتی</font></li>
+										<li>
+											<font face="Tahoma">4 : پایه فرابورس</font></li>
+										<li>
+											<font face="Tahoma">5 : پایه فرابورس (منتشر نمی شود)</font></li>
+									</ul>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<p>
+						&nbsp;</p>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;خروجي</font></td>
+				<td>
+					<p>
+						<font face="Tahoma">&nbsp;Dataset حاوي اطلاعات وضعیت نمادها با ساختار زير:</font></p>
+					<div dir="ltr">
+						<font size="2">&nbsp;&nbsp;&lt;xs:schema&nbsp;id=&quot;InstrumentsStates&quot;&nbsp;xmlns=&quot;&quot;&nbsp;xmlns:xs=<a href="http://www.w3.org/2001/XMLSchema">http://www.w3.org/2001/XMLSchema</a></font></div>
+					<div dir="ltr">
+						<font size="2">&nbsp;xmlns:msdata=&quot;urn:schemas-microsoft-com:xml-msdata&quot;&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;<font size="2">InstrumentsStates</font>&quot;&nbsp;msdata:IsDataSet=&quot;true&quot;&nbsp;msdata:UseCurrentLocale=&quot;true&quot;&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:choice&nbsp;minOccurs=&quot;0&quot;&nbsp;maxOccurs=&quot;unbounded&quot;&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;<font size="2">InstrumentsStates</font>&quot;&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:complexType&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:sequence&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;InsCode&quot;&nbsp;type=&quot;xs:long&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;<font size="2">LVal18AFC</font>&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;<br>
+						<font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;LVal30&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;</font><br>
+						<font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;LBoard&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;</font><br>
+						<font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;<font size="2">StateTypeDesc</font>&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;</font><br>
+						<font size="2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;xs:element&nbsp;name=&quot;<font size="2">CEtaVal</font>&quot;&nbsp;type=&quot;xs:string&quot;&nbsp;minOccurs=&quot;0&quot;&nbsp;/&gt;</font><br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:sequence&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:choice&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:complexType&gt;<br>
+						&nbsp;&nbsp;&nbsp;&nbsp;&lt;/xs:element&gt;<br>
+						&nbsp;&nbsp;&lt;/xs:schema&gt;</font></div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<font face="Tahoma">&nbsp;اطلاعات خروجي</font></td>
+				<td>
+					<font face="Tahoma">&nbsp; </font>
+					<table border="0" cellpadding="2" cellspacing="2" width="100%">
+						<tbody>
+							<tr>
+								<td bgcolor="#eeeeff">
+									<font face="Tahoma"><font size="2">&nbsp;<font face="Arial">InsCode</font></font></font></td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma"><font size="2">کد داخلی نماد&nbsp; </font></font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									<font face="Tahoma"><font size="2">&nbsp;<font face="Arial">LVal18AFC</font></font></font></td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma"><font size="2"><font face="Tahoma" size="2">کد 18 رقمي فارسي نماد</font></font></font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									<font size="2">&nbsp;LVal30</font></td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma"><font size="2"><font face="Tahoma" size="2">نام 30 رقمي فارسي نماد</font></font></font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									&nbsp;LBoard</td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma"><font size="2">نام تابلو</font></font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									&nbsp;StateTypeDesc</td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma"><font size="2">دلیل توقف</font></font></td>
+							</tr>
+							<tr>
+								<td bgcolor="#eeeeff">
+									CEtaVal</td>
+								<td bgcolor="#ffffee">
+									<font face="Tahoma" size="2">وضعیت نماد</font><br>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;I &quot;:</span></span>&quot;ممنوع&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;A &quot;:</span></span>&quot;مجاز&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;AG&quot;:</span></span>&quot;مجاز-مسدود&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &quot;AS&quot;:&quot;مجاز-متوقف&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;AR&quot;:</span></span>&quot;مجاز-محفوظ&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;IG&quot;:</span></span>&quot;ممنوع-مسدود&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;IS&quot;:</span></span>&quot;ممنوع-متوقف&quot;</font></p>
+									<p style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; font: normal normal normal 9.5px/normal Helvetica; ">
+										<font face="Tahoma" size="2"><span style="font-size: 12px; "><span style="font-family: tahoma, geneva, sans-serif; ">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&quot;IR&quot;:</span></span>&quot;ممنوع-محفوظ&quot;</font></p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>
+		&nbsp;</p>
+</div>
+<p>
+	&nbsp;</p>
+<div></div></div>
+</div></span>
+</div></body></html>
