@@ -727,6 +727,7 @@ def _parse_price_info(price_info):
         nav_datetime,  # 14
         nav  # 15
     ) = price_info
+
     result = {
         'timestamp': timestamp, 'status': status
         , 'datetime': _strptime(
@@ -734,7 +735,9 @@ def _parse_price_info(price_info):
         , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
         , 'pmin': int(pmin), 'pmax': int(pmax)
         , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+
     if nav:
         result['nav'] = int(nav)
         result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+
     return result
