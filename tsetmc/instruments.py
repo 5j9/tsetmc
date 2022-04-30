@@ -721,7 +721,7 @@ def _parse_price_info(price_info):
         tno,  # 8
         tvol,  # 9
         tval,  # 10
-        _,  # 11
+        _, # 11 is used to add css styles for pc/pl, not important.
         info_datetime_date,  # 12
         last_info_time,  # 13
         nav_datetime,  # 14
