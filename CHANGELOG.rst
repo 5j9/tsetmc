@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.43.1
+-------
 * fixed a bug in ``Instrument.live_data``
 
 v0.43.0
