@@ -266,18 +266,7 @@ class Instrument:
             _warning(text)  # The service is unavailable.
             raise
         if general:
-            timestamp, status, pl, pc, pf, py, pmin, pmax, tno, tvol, tval, _, \
-                info_datetime_date, last_info_time, nav_datetime, nav = price_info.split(',')
-            result = {
-                'timestamp': timestamp, 'status': status
-                , 'datetime': _strptime(
-                    info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
-                , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
-                , 'pmin': int(pmin), 'pmax': int(pmax)
-                , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
-            if nav:
-                result['nav'] = int(nav)
-                result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+            result = _parse_price_info(price_info)
         else:
             result = {}
         if market_state:
@@ -706,3 +695,42 @@ async def search(skey: str, /) -> _DataFrame:
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
             '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'))
+
+
+def _parse_price_info(price_info):
+    price_info = price_info.split(',')
+
+    if len(price_info) == 17:
+        # this is unexpected according to js source
+        assert price_info[14] == price_info[10]
+        del price_info[14]
+
+    (  # see dev/tsetmc_source_files/Instinfo.js
+        timestamp,  # 0
+        status,  # 1
+        pl,  # 2
+        pc,  # 3
+        pf,  # 4
+        py,  # 5
+        pmin,  # 6
+        pmax,  # 7
+        tno,  # 8
+        tvol,  # 9
+        tval,  # 10
+        _,  # 11
+        info_datetime_date,  # 12
+        last_info_time,  # 13
+        nav_datetime,  # 14
+        nav  # 15
+    ) = price_info
+    result = {
+        'timestamp': timestamp, 'status': status
+        , 'datetime': _strptime(
+            info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
+        , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
+        , 'pmin': int(pmin), 'pmax': int(pmax)
+        , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+    if nav:
+        result['nav'] = int(nav)
+        result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+    return result

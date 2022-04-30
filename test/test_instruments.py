@@ -8,7 +8,8 @@ from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
 # noinspection PyProtectedMember
-from tsetmc.instruments import Instrument, _LiveData, price_adjustments, search
+from tsetmc.instruments import Instrument, _LiveData, _parse_price_info, \
+    price_adjustments, search
 
 from test import assert_market_state
 from test.aiohttp_test_utils import file
@@ -476,3 +477,11 @@ async def test_ombud_messages():
 
 def test_hash():
     assert hash(Instrument(int64(1))) == 1
+
+
+def test_parse_price_info():
+    assert _parse_price_info(  # len == 17
+        '12:29:23,A ,75910,75850,76030,75860,76280,75500,887,1599031,121280988420,1,20220430,122923,121280988420,1401/2/10 15:30:00,79184'
+    ) == _parse_price_info(  # len == 16
+        '12:29:23,A ,75910,75850,76030,75860,76280,75500,887,1599031,121280988420,0,20220430,122923,1401/2/10 15:30:00,79184'
+    )
