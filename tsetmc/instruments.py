@@ -256,7 +256,11 @@ class Instrument:
         # return the same response.
         text = await _get_data(
             'instinfodata.aspx'
-            # &e=1 parameter is required to get NAV
+            # &e=1 parameter is required to get cancel NAV for ETFs but it 
+            # seems to be ignored if no NAV is defined for the instrument.
+            # &c= is normally set to CSecVal, but does not seem to be required.
+            # CSecVal is idustry group code:
+            # http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111B&LnkIdn=107
             f'?i={self.code}&c=&e=1', fa=True)
         # the _s are unknown
         try:
