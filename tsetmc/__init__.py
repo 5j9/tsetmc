@@ -1,6 +1,6 @@
 __version__ = '0.43.2.dev0'
 
-from json import loads
+from json import loads, JSONDecodeError
 from typing import TypedDict as _TypedDict
 from functools import partial as _partial
 from re import compile as _rc
@@ -8,6 +8,7 @@ from re import compile as _rc
 from re import findall as _findall
 # noinspection PyUnresolvedReferences
 from io import BytesIO as _BytesIO, StringIO as _StringIO
+from logging import error
 
 from jdatetime import datetime as _jdatetime
 from pandas import read_csv as _read_csv, DataFrame as _DataFrame
@@ -118,11 +119,16 @@ class Session:
 
 
 _FARSI_NORM = ''.maketrans('يك', 'یک')
+_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0'
+}
 
 
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
-    return await (await SESSION.get(url)).read()
+    return await (await SESSION.get(
+        url, headers=_HEADERS
+    )).read()
 
 
 async def _get(url: str, *, fa=False) -> str | bytes:
@@ -146,7 +152,12 @@ async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
 
 
 async def _api(path: str):
-    return loads(await _get(f'{_API}{path}'))
+    content = await _get(f'{_API}{path}')
+    try:
+        return loads(content)
+    except JSONDecodeError:
+        error(f'{path=}\n{content=}')
+        raise
 
 
 def _numerize(df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False):
