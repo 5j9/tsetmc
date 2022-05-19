@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.43.2
+-------
 * fixed: Use fake user-agent for API requests due to a new restriction from server.
 * update ``ids.json`` file
 

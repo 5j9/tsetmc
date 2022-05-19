@@ -1,4 +1,4 @@
-__version__ = '0.43.2.dev0'
+__version__ = '0.43.2'
 
 from json import loads, JSONDecodeError
 from typing import TypedDict as _TypedDict
