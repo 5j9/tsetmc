@@ -696,6 +696,12 @@ async def search(skey: str, /) -> _DataFrame:
     return _csv2df(
         _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
         header=None,
+        # Another terminology would be: {
+        #   ins_code: round_lot,
+        #   retail: odd_lot,
+        #   compensation: buyback,
+        #   wholesale: block,
+        # } see: https://www.sena.ir/news/77488/
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
             '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'))
