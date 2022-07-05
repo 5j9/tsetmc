@@ -99,6 +99,7 @@ async def test_intraday_states():
         ('insCode', dtype('O')),
         ('cEtaval', dtype('O')),
         ('realHeven', dtype('int64')),
+        ('underSupervision', dtype('int64')),
         ('cEtavalTitle', dtype('O'))]
 
 
