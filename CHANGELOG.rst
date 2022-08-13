@@ -1,7 +1,11 @@
+Unreleased
+----------
+* Breaking: renamed the database module to dataset
+* feat(_parse_price_info): handle invalid nav_datetime
+
 v0.43.2
 -------
 * fixed: Use fake user-agent for API requests due to a new restriction from server.
-* update ``ids.json`` file
 
 v0.43.1
 -------
@@ -11,7 +15,6 @@ v0.43.0
 -------
 * feat!: removed the 1-connection-per-host limit. However, users should note that ``InstrumentOnDate`` (``Instrument.on_date``) methods are rate-limited and avoid making simultaneous calls.
 * feat(docs): a new (and incomplete) module to fetch parsed documentation data
-* update ``ids.json`` file
 
 v0.42.0
 -------
