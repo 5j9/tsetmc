@@ -1,7 +1,6 @@
 from ast import literal_eval as _literal_eval
 from datetime import datetime as _datetime
 from functools import partial as _partial
-from json import load as _jload
 from logging import warning as _warning
 from pathlib import Path
 
@@ -66,18 +65,18 @@ _TRADE_HISTORY = _rc(r"var TradeHistory=(\[.*\]);").search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
-_DS_DF = _read_csv(_DS_PATH, low_memory=False, lineterminator='\n')
-_L18S = {k: v for k, (*v,) in zip(_DS_DF['l18'], _DS_DF.itertuples(index=False))}
-del _DS_DF  # don't need this anymore
+_DS = _read_csv(_DS_PATH, low_memory=False, lineterminator='\n')
+_L18S = {k: v for k, (*v,) in zip(_DS['l18'], _DS.itertuples(index=False))}
+del _DS  # don't need this anymore
 
-_INS_CODE_TO_L18 = None
+_CODE_TO_L18 = None
 
 
-def _l18_l30(ins_code: int) -> tuple:
-    global _INS_CODE_TO_L18
-    if _INS_CODE_TO_L18 is None:
-        _INS_CODE_TO_L18 = {v[0]: k for k, v in _L18S.items()}
-    return _L18S[_INS_CODE_TO_L18[ins_code]][1:]
+def _l18_l30(code: int) -> tuple:
+    global _CODE_TO_L18
+    if _CODE_TO_L18 is None:
+        _CODE_TO_L18 = {v[0]: k for k, v in _L18S.items()}
+    return _L18S[_CODE_TO_L18[code]][1:]
 
 
 class _IntraDay(_TypedDict, total=False):

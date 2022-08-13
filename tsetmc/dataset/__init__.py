@@ -1,4 +1,4 @@
-from pandas import DataFrame as _DataFrame
+from tsetmc import _DataFrame
 from tsetmc.instruments import _DS_PATH, Instrument as _Instrument, _L18S
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
@@ -18,21 +18,28 @@ _YVAL_EXCLUSIONS = {
 
 
 def _dump_l18s():
-    df = _DataFrame(_L18S.values())
-    df.sort_values('l18')
+    cols = ['code', 'l18', 'l30']
+    df = _DataFrame(_L18S.values(), columns=cols)
+
+    if not df['code'].is_unique:
+        # Some of the newly added codes are not unique, remove old duplicates.
+        df = df[~df['code'].duplicated(keep='last')]
+
+    assert df['l18'].is_unique
+
+    df.sort_values('l18', inplace=True)
     df.to_csv(
-        _DS_PATH, index=False, header=['ins_code', 'l18', 'l30'],
-        encoding='utf-8-sig', line_terminator='\n'
+        _DS_PATH, index=False, encoding='utf-8-sig', line_terminator='\n'
     )
 
 
 async def add_instrument(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
-    ins_code = inst.code
+    code = inst.code
     d = await inst.page_data()
     # isin = df.at['کد 12 رقمی نماد', 1]
     l18 = d['l18']
-    _L18S[l18] = ins_code, l18, d['l30']
+    _L18S[l18] = code, l18, d['l30']
     _dump_l18s()
 
 
@@ -43,11 +50,11 @@ async def update() -> None:
     # flow == 3: futures market
     df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS and yval not in @_YVAL_EXCLUSIONS')
     glv = df.index.get_level_values
-    ins_codes = glv('ins_code')
+    codes = glv('ins_code')
     l18s = glv('l18')
     l30s = glv('l30')
     # zip create an iterator which will be consumed on the first run
-    values = *zip(ins_codes, l18s, l30s),
+    values = *zip(codes, l18s, l30s),
     old_len = len(_L18S)
     _L18S |= zip(l18s, values)
     diff = len(_L18S) - old_len
