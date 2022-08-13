@@ -1,10 +1,10 @@
-from json import dump as _dump
-
-from tsetmc.instruments import _DB_PATH, Instrument as _Instrument, _L18S
+from pandas import DataFrame as _DataFrame
+from tsetmc.instruments import _DS_PATH, Instrument as _Instrument, _L18S
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 
 # todo: add tests for this module
+# todo: avoid duplicate inscodes
 
 # cs == 69: اوراق تامين مالي
 # cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
@@ -18,11 +18,15 @@ _YVAL_EXCLUSIONS = {
 
 
 def _dump_l18s():
-    with open(_DB_PATH, 'w', encoding='utf8') as f:
-        _dump(_L18S, f, check_circular=False, ensure_ascii=False, indent='\t', sort_keys=True)
+    df = _DataFrame(_L18S.values())
+    df.sort_values('l18')
+    df.to_csv(
+        _DS_PATH, index=False, header=['ins_code', 'l18', 'l30'],
+        encoding='utf-8-sig', line_terminator='\n'
+    )
 
 
-async def add_instrument_to_db(inst: _Instrument) -> None:
+async def add_instrument(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     ins_code = inst.code
     d = await inst.page_data()
@@ -32,7 +36,7 @@ async def add_instrument_to_db(inst: _Instrument) -> None:
     _dump_l18s()
 
 
-async def update_db_using_market_watch() -> None:
+async def update() -> None:
     global _L18S
     mwi = await _market_watch_init(market_state=False, best_limits=False)
     df = mwi['prices']

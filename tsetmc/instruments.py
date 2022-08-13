@@ -5,7 +5,7 @@ from json import load as _jload
 from logging import warning as _warning
 from pathlib import Path
 
-from pandas import to_datetime as _to_datetime
+from pandas import to_datetime as _to_datetime, read_csv as _read_csv
 
 from . import _FARSI_NORM, _MarketState, _api, _csv2df, _F, _TypedDict, \
     _get_data, \
@@ -16,7 +16,7 @@ from . import _FARSI_NORM, _MarketState, _api, _csv2df, _F, _TypedDict, \
 
 _strptime = _datetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-_DB_PATH = Path(__file__).parent / 'dataset/ids.json'
+_DS_PATH = Path(__file__).parent / 'dataset/dataset.csv'
 
 
 _FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}
@@ -65,8 +65,10 @@ _RELATED_COMPANIES = _rc(r"var RelatedCompanies=(\[.*\]);").search
 _TRADE_HISTORY = _rc(r"var TradeHistory=(\[.*\]);").search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
-with open(_DB_PATH, encoding='utf8') as _f:
-    _L18S: dict[str, tuple] = _jload(_f)
+
+_DS_DF = _read_csv(_DS_PATH, low_memory=False, lineterminator='\n')
+_L18S = {k: v for k, (*v,) in zip(_DS_DF['l18'], _DS_DF.itertuples(index=False))}
+del _DS_DF  # don't need this anymore
 
 _INS_CODE_TO_L18 = None
 

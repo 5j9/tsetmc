@@ -6,7 +6,7 @@ from tsetmc.instruments import _L18S
 from tsetmc.instruments import Instrument
 # noinspection PyProtectedMember
 from tsetmc.dataset import _CS_EXCLUSIONS
-from tsetmc.dataset import update_db_using_market_watch
+from tsetmc.dataset import update
 # noinspection PyProtectedMember
 from tsetmc import _DF
 from tsetmc import Session
@@ -49,7 +49,7 @@ async def main():
                 pass
 
         # uses the modified _L18S
-        await update_db_using_market_watch()
+        await update()
 
 
 run(main())
