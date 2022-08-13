@@ -3,6 +3,7 @@ from datetime import datetime as _datetime
 from functools import partial as _partial
 from logging import warning as _warning
 from pathlib import Path
+from re import fullmatch as _fullmatch
 
 from pandas import to_datetime as _to_datetime, read_csv as _read_csv
 
@@ -709,12 +710,12 @@ async def search(skey: str, /) -> _DataFrame:
 
 
 def _parse_price_info(price_info):
-    price_info = price_info.split(',')
+    price_parts = price_info.split(',')
 
-    if len(price_info) == 17:
+    if len(price_parts) == 17:
         # this is unexpected according to js source
-        assert price_info[14] == price_info[10]
-        del price_info[14]
+        assert price_parts[14] == price_parts[10]
+        del price_parts[14]
 
     (  # see dev/tsetmc_source_files/Instinfo.js
         timestamp,  # 0
@@ -733,7 +734,7 @@ def _parse_price_info(price_info):
         last_info_time,  # 13
         nav_datetime,  # 14
         nav  # 15
-    ) = price_info
+    ) = price_parts
 
     result = {
         'timestamp': timestamp, 'status': status
@@ -745,6 +746,11 @@ def _parse_price_info(price_info):
 
     if nav:
         result['nav'] = int(nav)
-        result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+        try:
+            _jdatetime(1400, 12, 1, 16, 30, 0)
+            _fullmatch(r'(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)', nav_datetime)
+            result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+        except ValueError:  # could be invalid day of the month
+            result['nav_datetime'] = nav_datetime
 
     return result

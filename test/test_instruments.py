@@ -89,7 +89,7 @@ def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=Fa
             assert_market_state(market_state)
 
     if nav:
-        assert type(d.pop('nav_datetime')) is jdatetime
+        assert type(d.pop('nav_datetime')) in (jdatetime, str)
         assert type(d.pop('nav')) is int
 
     assert type(d.pop('datetime')) is datetime
@@ -485,3 +485,10 @@ def test_parse_price_info():
     ) == _parse_price_info(  # len == 16
         '12:29:23,A ,75910,75850,76030,75860,76280,75500,887,1599031,121280988420,0,20220430,122923,1401/2/10 15:30:00,79184'
     )
+
+
+def test_parse_price_info_bad_date():
+    # 1400/12/30 is not a valid date
+    assert _parse_price_info(
+        '12:19:35,A ,63070,64270,62540,63550,64300,62540,30,7973,512457280,1,20220813,121935,1400/12/30 16:30:00,63354'
+    )['nav_datetime'] == '1400/12/30 16:30:00'
