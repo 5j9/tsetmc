@@ -18,7 +18,7 @@ _YVAL_EXCLUSIONS = {
 
 def _dump_l18s():
     cols = ['code', 'l18', 'l30']
-    df = _DataFrame(_L18S.values(), columns=cols)
+    df = _DataFrame(_L18S.values(), columns=cols, copy=False)
 
     if not df['code'].is_unique:
         # Some of the newly added codes are not unique, remove old duplicates.
