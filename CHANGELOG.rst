@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.44.0
+-------
 * Breaking: renamed the database module to dataset
 * feat(_parse_price_info): handle invalid nav_datetime
 
