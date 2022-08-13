@@ -4,7 +4,6 @@ from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 
 # todo: add tests for this module
-# todo: avoid duplicate inscodes
 
 # cs == 69: اوراق تامين مالي
 # cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
