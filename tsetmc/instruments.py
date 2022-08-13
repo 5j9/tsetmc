@@ -16,7 +16,7 @@ from . import _FARSI_NORM, _MarketState, _api, _csv2df, _F, _TypedDict, \
 
 _strptime = _datetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-_DB_PATH = Path(__file__).parent / 'database/ids.json'
+_DB_PATH = Path(__file__).parent / 'dataset/ids.json'
 
 
 _FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}

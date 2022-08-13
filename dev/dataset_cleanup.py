@@ -5,8 +5,8 @@ from asyncio import run, as_completed
 from tsetmc.instruments import _L18S
 from tsetmc.instruments import Instrument
 # noinspection PyProtectedMember
-from tsetmc.database import _CS_EXCLUSIONS
-from tsetmc.database import update_db_using_market_watch
+from tsetmc.dataset import _CS_EXCLUSIONS
+from tsetmc.dataset import update_db_using_market_watch
 # noinspection PyProtectedMember
 from tsetmc import _DF
 from tsetmc import Session
