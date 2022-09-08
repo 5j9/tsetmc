@@ -26,9 +26,6 @@ _INDEX_CHANGE_MATCH = _rc(rf"<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?").match
 _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 
-_DF = _partial(_DataFrame, copy=False)
-
-
 _jstrptime = _jdatetime.strptime
 
 
@@ -88,9 +85,9 @@ def _parse_ombud_messages(text) -> _DataFrame:
     headers = _findall(r'<th>(.+?)</th>', text)
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
-    df = _DF({
+    df = _DataFrame({
         'header': headers, 'date': dates, 'description': descriptions
-    }, dtype='string')
+    }, dtype='string', copy=False)
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
         df['date'] = ('14' + df['date']).apply(
             _jstrptime, format='%Y/%m/%d %H:%M')

@@ -10,7 +10,7 @@ from pandas import to_datetime as _to_datetime, read_csv as _read_csv
 from . import _FARSI_NORM, _MarketState, _api, _csv2df, _F, _TypedDict, \
     _get_data, \
     _numerize, _parse_market_state, _parse_ombud_messages, _rc, \
-    _get, _StringIO, _BytesIO, _DF, _DataFrame, \
+    _get, _StringIO, _BytesIO, _DataFrame, \
     _to_numeric, _read_html, _findall, _jstrptime, _get_par_tree, _jdatetime
 
 
@@ -233,7 +233,9 @@ class Instrument:
         if trade_history:
             m = _TRADE_HISTORY(text, m.end())
             th = _literal_eval(_STR_TO_NUM(m[1]))
-            th = _DF(th, columns=('date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'))
+            th = _DataFrame(th, copy=False, columns=(
+                'date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'
+            ))
             th['date'] = _to_datetime(th['date'], format='%Y%m%d')
             th.set_index('date', inplace=True)
             result['trade_history'] = th
@@ -466,15 +468,19 @@ class Instrument:
         if thresholds:
             find_start = find('StaticTreshholdData=') + 20
             end = find('];', find_start)
-            result['thresholds'] = _DF(_literal_eval(text[find_start: end + 1]), columns=('time', 'tmax', 'tmin'))
+            result['thresholds'] = _DataFrame(
+                _literal_eval(text[find_start: end + 1]),
+                columns=('time', 'tmax', 'tmin'),
+                copy=False,
+            )
             find_start = end
         if closings:
             find_start = find('ClosingPriceData=', find_start) + 17
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
-            closings = _DF(evaluated, columns=(
+            closings = _DataFrame(evaluated, columns=(
                 'date', '?1', 'pl', 'pc', 'pf', 'py', 'pmin', 'pmax', 'tno',
-                'tvol', 'tval', '?2', 'heven'))
+                'tvol', 'tval', '?2', 'heven'), copy=False)
             if len(closings['?1'].unique()) != 1 or closings['?2'].unique() != 1:
                 # See if you can find the meaning of ?2 column
                 _warning(f'Unusual ?1 or ?2. Parameters: {date=} {self.code}. Please report this at https://github.com/5j9/tsetmc/issues.')
@@ -484,20 +490,30 @@ class Instrument:
             find_start = find('IntraDayPriceData=', find_start) + 18
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
-            result['candles'] = _DF(evaluated, columns=('time', 'high', 'low', 'open', 'close', 'tvol'))
+            result['candles'] = _DataFrame(
+                evaluated,
+                columns=('time', 'high', 'low', 'open', 'close', 'tvol'),
+                copy=False,
+            )
             find_start = end
         if states:
             find_start = find('InstrumentStateData=', find_start) + 20
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
-            result['states'] = _DF(evaluated, columns=('date', 'time', 'state'))
+            result['states'] = _DataFrame(
+                evaluated, columns=('date', 'time', 'state'), copy=False
+            )
             find_start = end
         if trades:
             find_start = find('IntraTradeData=', find_start) + 15
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
             find_start = end
-            trades = _DF(evaluated, columns=('-', 'time', 'tvol', 'pl', 'annulled'))
+            trades = _DataFrame(
+                evaluated,
+                columns=('-', 'time', 'tvol', 'pl', 'annulled'),
+                copy=False,
+            )
             trades['annulled'] = trades['annulled'].astype(bool, False)
             numeric_cols = ['-', 'tvol', 'pl']
             trades[numeric_cols] = trades[numeric_cols].apply(_to_numeric)
@@ -511,13 +527,17 @@ class Instrument:
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
             # noinspection PyUnboundLocalVariable
-            result['holders'] = _DF(evaluated, columns=holder_cols)
+            result['holders'] = _DataFrame(
+                evaluated, columns=holder_cols, copy=False
+            )
             find_start = end
         if yesterday_holders:
             find_start = find('ShareHolderDataYesterday=', find_start) + 25
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
-            result['yesterday_holders'] = _DF(evaluated, columns=holder_cols)
+            result['yesterday_holders'] = _DataFrame(
+                evaluated, columns=holder_cols, copy=False
+            )
             find_start = end
         if client_types:
             find_start = find('ClientTypeData=', find_start) + 15
@@ -540,7 +560,11 @@ class Instrument:
             find_start = find('var BestLimitData=', find_start) + 18
             end = find('];', find_start)
             evaluated = _literal_eval(text[find_start: end + 1])
-            best_limits_df = _DF(evaluated, columns=('time', 'row', 'zd', 'qd', 'pd', 'po', 'qo', 'zo'))
+            best_limits_df = _DataFrame(
+                evaluated,
+                columns=('time', 'row', 'zd', 'qd', 'pd', 'po', 'qo', 'zo'),
+                copy=False,
+            )
             # todo: use astype?
             best_limits_df : _DataFrame = best_limits_df.apply(_to_numeric)
             best_limits_df.set_index('time', inplace=True)

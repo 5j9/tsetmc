@@ -1,4 +1,3 @@
-from pytest import raises
 from numpy import dtype
 from jdatetime import datetime as jdatetime
 

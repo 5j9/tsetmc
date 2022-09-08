@@ -1,7 +1,7 @@
 from numpy import nan as _nan
 
 from . import _get_data, _get_par_tree, _parse_market_state, _TypedDict, \
-    _MarketState, _csv2df, _StringIO, _BytesIO, _DF, _DataFrame, \
+    _MarketState, _csv2df, _StringIO, _BytesIO, _DataFrame, \
     _parse_ombud_messages, _to_numeric, _read_html, _jstrptime
 
 
@@ -124,14 +124,14 @@ async def market_watch_plus(
         inst_prices = [ip.split(',') for ip in inst_price.split(';')]
         if new_prices:
             lst = [ip for ip in inst_prices if len(ip) != 10]
-            df = _DF(lst, columns=_PRICE_COLUMNS)
+            df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             df['eps'].replace('', _nan, inplace=True)
             df = df.astype(_PRICE_DTYPES, False)
             df.set_index(_PRICE_INDEX_COLS, inplace=True)
             result['new_prices'] = df
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
-            df = _DF(lst, columns=_PRICE_UPDATE_COLUMNS)
+            df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
             df = df.astype('uint64', False)
             df.set_index('ins_code', inplace=True)
             result['price_updates'] = df
@@ -170,9 +170,9 @@ async def closing_price_all() -> _DataFrame:
     data = _split_id_rows(content, id_row_len=11)
     # dtype='uint64' param cannot be used due to
     # https://github.com/pandas-dev/pandas/issues/44835
-    df = _DF(data, columns=(
+    df = _DataFrame(data, columns=(
         'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
-        , 'pmin', 'pmax', 'py', 'pf')).astype('uint64', False)
+        , 'pmin', 'pmax', 'py', 'pf'), copy=False).astype('uint64', False)
     df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
@@ -200,7 +200,7 @@ async def key_stats() -> _DataFrame:
     """
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
-    df = _DF(data, columns=('ins_code', 'n', 'value'))
+    df = _DataFrame(data, columns=('ins_code', 'n', 'value'), copy=False)
     # noinspection PyTypeChecker
     df = df.apply(_to_numeric)
     df = df.pivot('ins_code', 'n', 'value')

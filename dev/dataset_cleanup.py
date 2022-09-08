@@ -8,12 +8,12 @@ from tsetmc.instruments import Instrument
 from tsetmc.dataset import _CS_EXCLUSIONS
 from tsetmc.dataset import update
 # noinspection PyProtectedMember
-from tsetmc import _DF
+from tsetmc import _DataFrame
 from tsetmc import Session
 
 
 is_commodity_certificate_of_deposit = rc(r'\d{4}پ\d\d$').search
-l18_df = _DF(_L18S).T
+l18_df = _DataFrame(_L18S, copy=False).T
 
 REMOVABLES = []
 RA = REMOVABLES.append
