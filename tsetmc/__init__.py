@@ -110,7 +110,7 @@ class Session:
     def __new__(cls, *args, **kwargs) -> _ClientSession:
         global SESSION
         if 'timeout' not in kwargs:
-            kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=5., sock_read=5.)
+            kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=10., sock_read=10.)
         SESSION = _ClientSession(**kwargs)
         return SESSION
 
@@ -153,7 +153,7 @@ async def _api(path: str):
     try:
         return loads(content)
     except JSONDecodeError:
-        error(f'{path=}\n{content=}')
+        error(f'url={_API}{path}\n{content=}')
         raise
 
 
