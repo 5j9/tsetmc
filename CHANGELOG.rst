@@ -1,3 +1,9 @@
+Unreleased
+----------
+* Increased default timeout from 5 to 10 seconds
+* Fixed some deprecation/future warnings
+* Updated dataset
+
 v0.44.0
 -------
 * Breaking: renamed the database module to dataset
