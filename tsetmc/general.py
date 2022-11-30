@@ -91,7 +91,7 @@ async def top_industry_groups() -> _DataFrame:
 
 def _parse_tds(tds):
     for td in tds[1:]:
-        text = td.find(text=True)
+        text = td.text
         try:
             yield float(text.replace(',', ''))
         except ValueError:

@@ -276,8 +276,8 @@ async def test_holder():
     inst = Instrument(18007109712724189)
     # has no other holdings
     hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
-    assert hist.to_csv(line_terminator='\n').startswith('date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n')
-    assert oth.to_csv(line_terminator='\n') == 'ins_code,name,shares,percent\n'
+    assert hist.to_csv(lineterminator='\n').startswith('date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n')
+    assert oth.to_csv(lineterminator='\n') == 'ins_code,name,shares,percent\n'
     hist = await inst.holder('69867,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
     oth = await inst.holder('69867,IRT3AVAF0003', False, True)
@@ -313,7 +313,7 @@ async def test_intraday_general():
         'isin': 'IRO1MSMI0001',
         'z': 200000000000,
         'bvol': 10143702}
-    assert result['thresholds'].to_csv(line_terminator='\n') == (
+    assert result['thresholds'].to_csv(lineterminator='\n') == (
         ',time,tmax,tmin\n'
         '0,1,13080.0,11840.0\n'
         '1,63122,13000.0,11780.0\n')

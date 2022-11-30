@@ -203,7 +203,7 @@ async def key_stats() -> _DataFrame:
     df = _DataFrame(data, columns=('ins_code', 'n', 'value'), copy=False)
     # noinspection PyTypeChecker
     df = df.apply(_to_numeric)
-    df = df.pivot('ins_code', 'n', 'value')
+    df = df.pivot(index='ins_code', columns='n', values='value')
     df.columns = [f'is{c}' for c in df.columns]
     return df
 
