@@ -34,6 +34,8 @@ _PRICE_DTYPES = {
     'z': 'uint64',
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'yval': 'uint16',
+    'predtran': 'float64',
+    'buyop': 'UInt64',
 }
 _PRICE_COLUMNS = _PRICE_DTYPES.keys()
 _PRICE_UPDATE_COLUMNS = ('ins_code', *(*_PRICE_COLUMNS,)[4:13])
@@ -126,6 +128,8 @@ async def market_watch_plus(
             lst = [ip for ip in inst_prices if len(ip) != 10]
             df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             df['eps'].replace('', _nan, inplace=True)
+            df['predtran'].replace('', _nan, inplace=True)
+            df['buyop'].replace('', _nan, inplace=True)
             df = df.astype(_PRICE_DTYPES, False)
             df.set_index(_PRICE_INDEX_COLS, inplace=True)
             result['new_prices'] = df
