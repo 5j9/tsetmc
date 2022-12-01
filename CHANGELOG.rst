@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.45.1
+-------
 * Fixed some deprecation warning during update
 * Updated dataset
 
