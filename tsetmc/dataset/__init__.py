@@ -28,7 +28,7 @@ def _dump_l18s():
 
     df.sort_values('l18', inplace=True)
     df.to_csv(
-        _DS_PATH, index=False, encoding='utf-8-sig', line_terminator='\n'
+        _DS_PATH, index=False, encoding='utf-8-sig', lineterminator='\n'
     )
 
 
