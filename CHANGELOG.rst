@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.45.0
+-------
 * Fixed market_watch issue with newly defined columns
 * Fixed some deprecation/future warnings
 * Increased default timeout from 5 to 10 seconds
