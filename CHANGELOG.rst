@@ -1,3 +1,8 @@
+Unreleased
+----------
+* Fixed some deprecation warning during update
+* Updated dataset
+
 v0.45.0
 -------
 * Fixed market_watch issue with newly defined columns
