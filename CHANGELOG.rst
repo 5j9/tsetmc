@@ -1,3 +1,8 @@
+Unreleased
+----------
+* Increased default socket timeouts to 30s
+* Updated dataset
+
 v0.45.1
 -------
 * Fixed some deprecation warning during update
