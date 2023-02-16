@@ -110,7 +110,7 @@ class Session:
     def __new__(cls, *args, **kwargs) -> _ClientSession:
         global SESSION
         if 'timeout' not in kwargs:
-            kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=10., sock_read=10.)
+            kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=30., sock_read=30.)
         SESSION = _ClientSession(**kwargs)
         return SESSION
 
