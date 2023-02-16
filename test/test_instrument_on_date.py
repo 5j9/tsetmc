@@ -1,6 +1,6 @@
 from numpy import dtype
+from aiohttp_test_utils import file
 
-from test.aiohttp_test_utils import file
 from tsetmc.instruments import Instrument
 
 

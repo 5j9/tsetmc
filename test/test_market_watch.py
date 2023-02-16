@@ -1,13 +1,14 @@
 from numpy import dtype
 from jdatetime import datetime as jdatetime
 
+from aiohttp_test_utils import file
+
 # noinspection PyProtectedMember
 from tsetmc.market_watch import _PRICE_DTYPES, _parse_market_state
 from tsetmc.market_watch import market_watch_init, market_watch_plus, \
     key_stats, closing_price_all, client_type_all, status_changes, \
     ombud_messages
 from test import assert_market_state
-from test.aiohttp_test_utils import file
 
 
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]

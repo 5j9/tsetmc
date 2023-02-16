@@ -1,6 +1,6 @@
 from numpy import dtype
+from aiohttp_test_utils import file
 
-from test.aiohttp_test_utils import file
 from tsetmc.docs import best_limits_all_ins, client_type, \
     instrument_filter_by_date, \
     instrument_state, instrument, trade_last_day

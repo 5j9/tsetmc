@@ -7,12 +7,13 @@ from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
+from aiohttp_test_utils import file
+
 # noinspection PyProtectedMember
 from tsetmc.instruments import Instrument, _LiveData, _parse_price_info, \
     price_adjustments, search
 
 from test import assert_market_state
-from test.aiohttp_test_utils import file
 
 
 def assert_page_data(d, general=True, trade_history=False, related_companies=False):

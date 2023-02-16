@@ -1,7 +1,11 @@
 from jdatetime import datetime as jdatetime
+from aiohttp_test_utils import init_tests
 
 # noinspection PyProtectedMember
 from tsetmc import _MarketState
+
+
+init_tests()
 
 
 def assert_market_state(market_state: _MarketState):

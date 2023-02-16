@@ -1,8 +1,8 @@
-import tsetmc
-
+from aiohttp_test_utils import session_fixture_factory
 # noinspection PyUnresolvedReferences
-from test.aiohttp_test_utils import event_loop
-from test.aiohttp_test_utils import session_fixture_factory
+from aiohttp_test_utils import event_loop
+
+import tsetmc
 
 
 session = session_fixture_factory(tsetmc)
