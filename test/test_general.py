@@ -111,24 +111,29 @@ async def test_industrial_groups_overview():
 @file('weatherforecast.json')
 async def test_market_map_data():
     df = await market_map_data()
-    assert len(df) == 301
+    assert len(df) > 300
+    assert not df.lVal18AFC.str.contains('ي').any()
     assert [*df.dtypes.items()] == [
-        ('IsGreen', dtype('O')),
-        ('InsCode', dtype('int64')),
-        ('Weight', dtype('int64')),
-        ('LVal18AFC', dtype('O')),
-        ('LVal30', dtype('O')),
-        ('Percent', dtype('float64')),
-        ('LSecVal', dtype('O')),
-        ('CSecVal', dtype('int64')),
-        ('FontSize', dtype('int64')),
-        ('PClosing', dtype('int64')),
-        ('PClosingChange', dtype('float64')),
-        ('PDrCotVal', dtype('int64')),
-        ('ZTotTran', dtype('int64')),
-        ('QTotTran5J', dtype('int64')),
-        ('QTotCap', dtype('int64')),
-        ('Heven', dtype('O'))]
+        ('insCode', dtype('int64')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64')),
+        ('priceYesterday', dtype('float64')),
+        ('lVal18AFC', dtype('O')),
+        ('lVal30', dtype('O')),
+        ('lSecVal', dtype('O')),
+        ('percent', dtype('float64')),
+        ('priceChangePercent', dtype('float64')),
+        ('hEvenShow', dtype('O')),
+        ('color', dtype('O')),
+        ('fontSize', dtype('int64')),
+        ('fontColor', dtype('O')),
+        ('customLabel', dtype('O')),
+    ]
 
 
 @file('major_holders_activity.html')

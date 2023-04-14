@@ -8,7 +8,7 @@ from pandas import (
     read_json as _read_json,
 )
 
-from tsetmc import _DataFrame, _get, _get_par_tree, _numerize, _partial
+from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
 
 _make_soup = _partial(_BeautifulSoup, features='lxml')
 
@@ -45,14 +45,15 @@ async def industrial_groups_overview() -> _DataFrame:
     return df
 
 
-async def market_map_data() -> _DataFrame:
-    text = await _get('http://new.tsetmc.com/weatherforecast', fa=True)
-    df: _DataFrame = _read_json(_StringIO(text), convert_dates=False)
-    comma_nums = ('QTotCap', 'QTotTran5J', 'ZTotTran')
-    for c in comma_nums:
-        df[c] = df[c].str.replace(
-            ',', '', regex=False
-        ).astype('int64', copy=False)
+async def market_map_data(*, market=0, size=9999, sector=0, typeSelected=1, heven=0) -> _DataFrame:
+    j = await _api(
+        f'ClosingPrice/GetMarketMap'
+        f'?market={market}&size={size}&sector={sector}'
+        f'&typeSelected={typeSelected}&hEven={heven}',
+        fa=True,
+    )
+    df = _DataFrame(j)
+    df['insCode'] = df.insCode.astype('int64')
     return df
 
 

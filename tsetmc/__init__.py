@@ -143,8 +143,8 @@ async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
 
 
-async def _api(path: str):
-    content = await _get(f'{_API}{path}')
+async def _api(path: str, *, fa=False):
+    content = await _get(f'{_API}{path}', fa=fa)
     try:
         return loads(content)
     except JSONDecodeError:
