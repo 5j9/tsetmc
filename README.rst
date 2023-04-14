@@ -289,8 +289,8 @@ Searching for an instrument:
 
 .. code-block:: python
 
-    >>> await Instrument.from_search('توسعه اندوخته آینده')
-    Instrument(11427939669935844, 'اطلس')
+    >>> await Instrument.from_search('چادرملو')
+    Instrument(18027801615184692, 'کچاد')
 
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
