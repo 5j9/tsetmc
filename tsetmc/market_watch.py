@@ -1,7 +1,9 @@
+from io import BytesIO as _BytesIO, StringIO as _StringIO
+
 from numpy import nan as _nan
+from pandas import read_html as _read_html, to_numeric as _to_numeric
 
 from . import (
-    _BytesIO,
     _csv2df,
     _DataFrame,
     _get_data,
@@ -10,9 +12,6 @@ from . import (
     _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
-    _read_html,
-    _StringIO,
-    _to_numeric,
     _TypedDict,
 )
 

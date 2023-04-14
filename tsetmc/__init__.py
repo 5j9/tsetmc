@@ -1,22 +1,17 @@
 __version__ = '0.45.2.dev0'
 
-from json import loads, JSONDecodeError
-from typing import TypedDict as _TypedDict
 from functools import partial as _partial
-from re import compile as _rc
-# noinspection PyUnresolvedReferences
-from re import findall as _findall
-# noinspection PyUnresolvedReferences
-from io import BytesIO as _BytesIO, StringIO as _StringIO
+from json import JSONDecodeError, loads
 from logging import error
+from re import compile as _rc, findall as _findall
+from typing import TypedDict as _TypedDict
 
+from aiohttp import (
+    ClientSession as _ClientSession,
+    ClientTimeout as _ClientTimeout,
+)
 from jdatetime import datetime as _jdatetime
-from pandas import read_csv as _read_csv, DataFrame as _DataFrame
-# noinspection PyUnresolvedReferences
-from pandas import to_numeric as _to_numeric, read_html as _read_html
-from aiohttp import ClientSession as _ClientSession, \
-    ClientTimeout as _ClientTimeout
-
+from pandas import DataFrame as _DataFrame, read_csv as _read_csv
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern

@@ -1,6 +1,7 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
+from pandas import read_html as _read_html
 
-from tsetmc import _DOMAIN, _get, _read_html
+from tsetmc import _DOMAIN, _get
 from tsetmc.general import _make_soup
 
 
