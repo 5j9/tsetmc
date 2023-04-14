@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.46.0
+-------
 * Increased default socket timeouts to 30s
 * Fixed market_map_data (the result has changed due to tsetmc API changes)
 * Updated dataset
