@@ -1,3 +1,5 @@
+from logging import info
+
 from tsetmc import _DataFrame
 from tsetmc.instruments import _DS_PATH, Instrument as _Instrument, _L18S
 from tsetmc.market_watch import market_watch_init as _market_watch_init
@@ -13,6 +15,8 @@ _CS_EXCLUSIONS = {59, 69}
 _YVAL_EXCLUSIONS = {
     # OraghMosharekat
     306, 301, 706, 208, 701,
+    # گواهی سسپرده کالایی (سیمان/زعفران)
+    327,
 }
 
 
@@ -59,6 +63,6 @@ async def update() -> None:
     diff = len(_L18S) - old_len
     if diff:
         _dump_l18s()
-        print(f'{diff} new entries were added.')
+        info(f'{diff} new entries were added by market watch.')
     else:
-        print('No new entries were found.')
+        info('No new entries were added by market watch.')

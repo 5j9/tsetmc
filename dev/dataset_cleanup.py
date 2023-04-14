@@ -5,14 +5,13 @@ from asyncio import run, as_completed
 from tsetmc.instruments import _L18S
 from tsetmc.instruments import Instrument
 # noinspection PyProtectedMember
-from tsetmc.dataset import _CS_EXCLUSIONS
-from tsetmc.dataset import update
+from tsetmc.dataset import _CS_EXCLUSIONS, _dump_l18s
 # noinspection PyProtectedMember
 from tsetmc import _DataFrame
 from tsetmc import Session
 
 
-is_commodity_certificate_of_deposit = rc(r'\d{4}پ\d\d$').search
+is_commodity_certificate_of_deposit = rc(r'(\d{4}پ|\dن)\d\d+$').search
 l18_df = _DataFrame(_L18S, copy=False).T
 
 REMOVABLES = []
@@ -40,16 +39,8 @@ async def main():
     async with Session():
         for coro in as_completed([check(l18) for l18 in l18_df[1]]):
             await coro
-
         print(f'{len(REMOVABLES)=}')
-        for i in REMOVABLES:
-            try:
-                del _L18S[i]
-            except KeyError:
-                pass
-
-        # uses the modified _L18S
-        await update()
+        _dump_l18s()  # uses the modified _L18S
 
 
 run(main())
