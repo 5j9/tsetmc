@@ -1,9 +1,14 @@
-from numpy import dtype
 from aiohttp_test_utils import file
+from numpy import dtype
 
-from tsetmc.docs import best_limits_all_ins, client_type, \
-    instrument_filter_by_date, \
-    instrument_state, instrument, trade_last_day
+from tsetmc.docs import (
+    best_limits_all_ins,
+    client_type,
+    instrument,
+    instrument_filter_by_date,
+    instrument_state,
+    trade_last_day,
+)
 
 
 @file('client_type.html')

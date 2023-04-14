@@ -1,6 +1,6 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
 
-from tsetmc import _read_html, _get, _DOMAIN
+from tsetmc import _DOMAIN, _get, _read_html
 from tsetmc.general import _make_soup
 
 

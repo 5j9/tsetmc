@@ -1,10 +1,15 @@
-from pandas import concat as _concat, read_json as _read_json, NA as _NA
 from bs4 import BeautifulSoup as _BeautifulSoup
+from pandas import NA as _NA, concat as _concat, read_json as _read_json
 
-from tsetmc import _get, _get_par_tree, _numerize, _read_html, _DataFrame, \
-    _StringIO, \
-    _partial
-
+from tsetmc import (
+    _DataFrame,
+    _get,
+    _get_par_tree,
+    _numerize,
+    _partial,
+    _read_html,
+    _StringIO,
+)
 
 _make_soup = _partial(_BeautifulSoup, features='lxml')
 

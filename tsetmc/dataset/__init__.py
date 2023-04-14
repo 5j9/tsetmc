@@ -1,9 +1,8 @@
 from logging import info
 
 from tsetmc import _DataFrame
-from tsetmc.instruments import _DS_PATH, Instrument as _Instrument, _L18S
+from tsetmc.instruments import _DS_PATH, _L18S, Instrument as _Instrument
 from tsetmc.market_watch import market_watch_init as _market_watch_init
-
 
 # todo: add tests for this module
 

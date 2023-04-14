@@ -1,8 +1,7 @@
-from numpy import dtype
 from aiohttp_test_utils import file
+from numpy import dtype
 
 from tsetmc.instruments import Instrument
-
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 

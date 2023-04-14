@@ -1,7 +1,6 @@
 # generate the pattern for PAGE_VARS regex
 
-from re import sub, match, findall
-
+from re import findall, match, sub
 
 strings = [
     "<script>var TopInst='1',LVal18AFC='فملي',DEven='0',LSecVal='فلزات اساسي',CgrValCot='N1',Flow='1',InstrumentID='IRO1MSMI0001',InsCode='35425587644337450',BaseVol=8817046,EstimatedEPS='1045',ZTitad=200000000000,CIsin='IRO1MSMI0000',LVal18AFC='فملي',CSecVal='27 ',PdrCotVal='',PClosing='',PSGelStaMax='14230.00',PSGelStaMin='13170.00',Title='ملي‌ صنايع‌ مس‌ ايران‌ (فملي) - بازار اول (تابلوي اصلي) بورس',FaraDesc ='',MinWeek='12620.00',MaxWeek='13940.00',MinYear='6880.00',MaxYear='39810.00',QTotTran5JAvg='96382065',SectorPE='12.03',KAjCapValCpsIdx='33',PriceMin=0,PriceMax=0,PriceYesterday=0;ThemeCount='5';ContractSize='0';NAV='0.0000';</script>",

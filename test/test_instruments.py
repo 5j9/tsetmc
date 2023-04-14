@@ -1,19 +1,22 @@
 from datetime import datetime
+from test import assert_market_state
 from types import NoneType
 from unittest.mock import patch
 
+from aiohttp_test_utils import file
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises
 
-from aiohttp_test_utils import file
-
 # noinspection PyProtectedMember
-from tsetmc.instruments import Instrument, _LiveData, _parse_price_info, \
-    price_adjustments, search
-
-from test import assert_market_state
+from tsetmc.instruments import (
+    Instrument,
+    _LiveData,
+    _parse_price_info,
+    price_adjustments,
+    search,
+)
 
 
 def assert_page_data(d, general=True, trade_history=False, related_companies=False):

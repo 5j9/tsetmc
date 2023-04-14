@@ -1,15 +1,14 @@
+from asyncio import as_completed, run
 from re import compile as rc
-from asyncio import run, as_completed
 
 # noinspection PyProtectedMember
-from tsetmc.instruments import _L18S
-from tsetmc.instruments import Instrument
+from tsetmc import Session, _DataFrame
+
 # noinspection PyProtectedMember
 from tsetmc.dataset import _CS_EXCLUSIONS, _dump_l18s
-# noinspection PyProtectedMember
-from tsetmc import _DataFrame
-from tsetmc import Session
 
+# noinspection PyProtectedMember
+from tsetmc.instruments import _L18S, Instrument
 
 is_commodity_certificate_of_deposit = rc(r'(\d{4}پ|\dن)\d\d+$').search
 l18_df = _DataFrame(_L18S, copy=False).T

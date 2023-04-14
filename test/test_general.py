@@ -1,8 +1,14 @@
-from numpy import dtype
 from aiohttp_test_utils import file
+from numpy import dtype
 
-from tsetmc.general import boards, cs_codes, industrial_groups_overview, \
-    major_holders_activity, market_map_data, top_industry_groups
+from tsetmc.general import (
+    boards,
+    cs_codes,
+    industrial_groups_overview,
+    major_holders_activity,
+    market_map_data,
+    top_industry_groups,
+)
 
 
 @file('boards.html')
