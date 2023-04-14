@@ -93,6 +93,7 @@ async def test_historic_data():
 async def test_intraday_states():
     df = await FARAZ_ON_DATE.states()
     assert [*df.dtypes.items()] == [
+        ('idn', dtype('int64')),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('insCode', dtype('O')),
