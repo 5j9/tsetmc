@@ -24,7 +24,6 @@ PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
-    # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
     assert 'market_state' not in mwi
@@ -66,7 +65,6 @@ async def test_market_watch_init():
         ('zo5', dtype('uint64')),
         * PRICE_DTYPES_ITEMS]
 
-    # noinspection PyUnresolvedReferences
     assert [*prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', 'string[python]'),
@@ -75,7 +73,6 @@ async def test_market_watch_init():
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
-    # noinspection PyUnresolvedReferences
     assert [*mwi['best_limits'].index.dtypes.items()] == [
         ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
 
@@ -88,7 +85,6 @@ async def test_closing_price_all():
     index = df.index
     assert index.names == ['ins_code', 'n']
     assert index.dtype == 'O'
-    # noinspection PyUnresolvedReferences
     assert all(t == 'uint64' for t in index.dtypes)
 
 
@@ -185,7 +181,6 @@ async def test_market_watch_plus_new():
     mwp = await market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', 'string[python]'),
@@ -239,7 +234,6 @@ async def test_market_watch_plus_update():
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    # noinspection PyUnresolvedReferences
     assert [*new_prices.index.dtypes.items()] == [
         ('ins_code', dtype('uint64')),
         ('isin', 'string[python]'),
