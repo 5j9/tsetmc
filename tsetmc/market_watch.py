@@ -18,34 +18,34 @@ from . import (
 _PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
 _PRICE_DTYPES = {
-    'ins_code': 'uint64',
+    'ins_code': 'int64',
     'isin': 'string',
     'l18': 'string',
     'l30': 'string',
-    'heven': 'uint32',
-    'pf': 'uint64',
-    'pc': 'uint64',
-    'pl': 'uint64',
-    'tno': 'uint64',
-    'tvol': 'uint64',
-    'tval': 'uint64',
-    'pmin': 'uint64',
-    'pmax': 'uint64',
-    'py': 'uint64',
+    'heven': 'int32',
+    'pf': 'int64',
+    'pc': 'int64',
+    'pl': 'int64',
+    'tno': 'int64',
+    'tvol': 'int64',
+    'tval': 'int64',
+    'pmin': 'int64',
+    'pmax': 'int64',
+    'py': 'int64',
     'eps': 'float64',
-    'bvol': 'uint64',
-    'visitcount': 'uint64',
+    'bvol': 'int64',
+    'visitcount': 'int64',
     # 0-7 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'flow': 'uint8',
+    'flow': 'int16',
     # 1-98, see tsetmc.general.cs_codes()
-    'cs': 'uint8',
+    'cs': 'int16',
     'tmax': 'float64',
     'tmin': 'float64',
-    'z': 'uint64',
+    'z': 'int64',
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'yval': 'uint16',
+    'yval': 'int16',
     'predtran': 'float64',
-    'buyop': 'UInt64',
+    'buyop': 'Int64',
 }
 _PRICE_COLUMNS = _PRICE_DTYPES.keys()
 _PRICE_UPDATE_COLUMNS = ('ins_code', *(*_PRICE_COLUMNS,)[4:13])
@@ -85,7 +85,7 @@ async def market_watch_init(
     if best_limits:
         result['best_limits'] = best_limits_df = _csv2df(
             _StringIO(price_rows), names=_BEST_LIMITS_NAMES,
-            dtype='uint64', index_col=('ins_code', 'number'))
+            dtype='int64', index_col=('ins_code', 'number'))
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
@@ -146,13 +146,13 @@ async def market_watch_plus(
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
             df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
-            df = df.astype('uint64', False)
+            df = df.astype('int64', False)
             df.set_index('ins_code', inplace=True)
             result['price_updates'] = df
     if best_limits:
         result['best_limits'] = _csv2df(
             _StringIO(best_limit), index_col='ins_code',
-            names=_BEST_LIMITS_NAMES, dtype='uint64')
+            names=_BEST_LIMITS_NAMES, dtype='int64')
     result['refid'] = int(refid)
     return result
 
@@ -182,11 +182,9 @@ async def closing_price_all() -> _DataFrame:
     """
     content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
-    # dtype='uint64' param cannot be used due to
-    # https://github.com/pandas-dev/pandas/issues/44835
     df = _DataFrame(data, columns=(
         'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
-        , 'pmin', 'pmax', 'py', 'pf'), copy=False).astype('uint64', False)
+        , 'pmin', 'pmax', 'py', 'pf'), copy=False).astype('int64')
     df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
@@ -201,7 +199,7 @@ async def client_type_all() -> _DataFrame:
         _BytesIO(content), names=(
             'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
             , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
-        , dtype='uint64', index_col='ins_code')
+        , dtype='int64', index_col='ins_code')
     return df
 
 

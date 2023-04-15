@@ -209,18 +209,18 @@ async def test_identification():
 async def test_client_type():
     df = await Instrument(655060129740445).client_type()
     assert [*df.dtypes.items()] == [
-        ('n_buy_count', dtype('uint64')),
-        ('l_buy_count', dtype('uint64')),
-        ('n_sell_count', dtype('uint64')),
-        ('l_sell_count', dtype('uint64')),
-        ('n_buy_volume', dtype('uint64')),
-        ('l_buy_volume', dtype('uint64')),
-        ('n_sell_volume', dtype('uint64')),
-        ('l_sell_volume', dtype('uint64')),
-        ('n_buy_value', dtype('uint64')),
-        ('l_buy_value', dtype('uint64')),
-        ('n_sell_value', dtype('uint64')),
-        ('l_sell_value', dtype('uint64'))]
+        ('n_buy_count', dtype('int64')),
+        ('l_buy_count', dtype('int64')),
+        ('n_sell_count', dtype('int64')),
+        ('l_sell_count', dtype('int64')),
+        ('n_buy_volume', dtype('int64')),
+        ('l_buy_volume', dtype('int64')),
+        ('n_sell_volume', dtype('int64')),
+        ('l_sell_volume', dtype('int64')),
+        ('n_buy_value', dtype('int64')),
+        ('l_buy_value', dtype('int64')),
+        ('n_sell_value', dtype('int64')),
+        ('l_sell_value', dtype('int64'))]
 
 
 @file('faraz_GetClientTypeHistory_20220222.json')

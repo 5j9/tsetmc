@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Avoid unsigned data-types in returned values. This should help with some overflow bugs when user is not careful.
+
 v0.46.0
 -------
 * Increased default socket timeouts to 30s

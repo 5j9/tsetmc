@@ -350,7 +350,7 @@ class Instrument:
                 , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
                 , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
-            , index_col='date', parse_dates=True , dtype='uint64')
+            , index_col='date', parse_dates=True , dtype='int64')
 
     async def client_type_history(self, date: int | str = None) -> _DataFrame | dict:
         """Return natural/legal client type history.
@@ -433,7 +433,7 @@ class Instrument:
             return _csv2df(
                 _StringIO(hist),
                 names=('date', 'shares'),
-                dtype='uint64',
+                dtype='int64',
                 index_col='date',
                 parse_dates=True)
 

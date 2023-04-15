@@ -25,7 +25,7 @@ async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
+        ('ins_code', dtype('int64')), ('number', dtype('int64'))]
     assert 'market_state' not in mwi
 
     mwi = await market_watch_init(market_state=True)
@@ -33,40 +33,40 @@ async def test_market_watch_init():
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
     assert [*prices.dtypes.items()] == [
-        ('pd1', dtype('uint64')),
-        ('po1', dtype('uint64')),
-        ('qd1', dtype('uint64')),
-        ('qo1', dtype('uint64')),
-        ('zd1', dtype('uint64')),
-        ('zo1', dtype('uint64')),
-        ('pd2', dtype('uint64')),
-        ('po2', dtype('uint64')),
-        ('qd2', dtype('uint64')),
-        ('qo2', dtype('uint64')),
-        ('zd2', dtype('uint64')),
-        ('zo2', dtype('uint64')),
-        ('pd3', dtype('uint64')),
-        ('po3', dtype('uint64')),
-        ('qd3', dtype('uint64')),
-        ('qo3', dtype('uint64')),
-        ('zd3', dtype('uint64')),
-        ('zo3', dtype('uint64')),
-        ('pd4', dtype('uint64')),
-        ('po4', dtype('uint64')),
-        ('qd4', dtype('uint64')),
-        ('qo4', dtype('uint64')),
-        ('zd4', dtype('uint64')),
-        ('zo4', dtype('uint64')),
-        ('pd5', dtype('uint64')),
-        ('po5', dtype('uint64')),
-        ('qd5', dtype('uint64')),
-        ('qo5', dtype('uint64')),
-        ('zd5', dtype('uint64')),
-        ('zo5', dtype('uint64')),
+        ('pd1', dtype('int64')),
+        ('po1', dtype('int64')),
+        ('qd1', dtype('int64')),
+        ('qo1', dtype('int64')),
+        ('zd1', dtype('int64')),
+        ('zo1', dtype('int64')),
+        ('pd2', dtype('int64')),
+        ('po2', dtype('int64')),
+        ('qd2', dtype('int64')),
+        ('qo2', dtype('int64')),
+        ('zd2', dtype('int64')),
+        ('zo2', dtype('int64')),
+        ('pd3', dtype('int64')),
+        ('po3', dtype('int64')),
+        ('qd3', dtype('int64')),
+        ('qo3', dtype('int64')),
+        ('zd3', dtype('int64')),
+        ('zo3', dtype('int64')),
+        ('pd4', dtype('int64')),
+        ('po4', dtype('int64')),
+        ('qd4', dtype('int64')),
+        ('qo4', dtype('int64')),
+        ('zd4', dtype('int64')),
+        ('zo4', dtype('int64')),
+        ('pd5', dtype('int64')),
+        ('po5', dtype('int64')),
+        ('qd5', dtype('int64')),
+        ('qo5', dtype('int64')),
+        ('zd5', dtype('int64')),
+        ('zo5', dtype('int64')),
         * PRICE_DTYPES_ITEMS]
 
     assert [*prices.index.dtypes.items()] == [
-        ('ins_code', dtype('uint64')),
+        ('ins_code', dtype('int64')),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
@@ -74,18 +74,18 @@ async def test_market_watch_init():
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', dtype('uint64')), ('number', dtype('uint64'))]
+        ('ins_code', dtype('int64')), ('number', dtype('int64'))]
 
 
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
     df = await closing_price_all()
-    assert all(t == 'uint64' for t in df.dtypes)
+    assert all(t == 'int64' for t in df.dtypes)
     assert df.columns.to_list() == ['pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'pf']
     index = df.index
     assert index.names == ['ins_code', 'n']
     assert index.dtype == 'O'
-    assert all(t == 'uint64' for t in index.dtypes)
+    assert all(t == 'int64' for t in index.dtypes)
 
 
 @file('ClientTypeAll.aspx')
@@ -94,7 +94,7 @@ async def test_client_type_all():
     assert all(df.columns == [
         'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
         , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
-    assert all(dt == 'uint64' for dt in df.dtypes)
+    assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'ins_code'
 
 
@@ -182,14 +182,14 @@ async def test_market_watch_plus_new():
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', dtype('uint64')),
+        ('ins_code', dtype('int64')),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
     best_limits = mwp['best_limits']
-    assert all(t == 'uint64' for t in best_limits.dtypes)
+    assert all(t == 'int64' for t in best_limits.dtypes)
     assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
-    assert best_limits.index.dtype == dtype('uint64')  # ins_code
+    assert best_limits.index.dtype == dtype('int64')  # ins_code
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
 
@@ -200,16 +200,16 @@ async def test_market_watch_plus_update():
 
     price_updates = mwp['price_updates']
     assert [*price_updates.dtypes.items()] == [
-        ('heven', dtype('uint64')),
-        ('pf', dtype('uint64')),
-        ('pc', dtype('uint64')),
-        ('pl', dtype('uint64')),
-        ('tno', dtype('uint64')),
-        ('tvol', dtype('uint64')),
-        ('tval', dtype('uint64')),
-        ('pmin', dtype('uint64')),
-        ('pmax', dtype('uint64'))]
-    assert price_updates.index.dtype == 'uint64'
+        ('heven', dtype('int64')),
+        ('pf', dtype('int64')),
+        ('pc', dtype('int64')),
+        ('pl', dtype('int64')),
+        ('tno', dtype('int64')),
+        ('tvol', dtype('int64')),
+        ('tval', dtype('int64')),
+        ('pmin', dtype('int64')),
+        ('pmax', dtype('int64'))]
+    assert price_updates.index.dtype == 'int64'
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
@@ -221,21 +221,21 @@ async def test_market_watch_plus_update():
 
     best_limits = mwp['best_limits']
     assert [*best_limits.dtypes.items()] == [
-        ('number', dtype('uint64')),
-        ('zo', dtype('uint64')),
-        ('zd', dtype('uint64')),
-        ('pd', dtype('uint64')),
-        ('po', dtype('uint64')),
-        ('qd', dtype('uint64')),
-        ('qo', dtype('uint64'))]
-    assert best_limits.index.dtype == 'uint64'
+        ('number', dtype('int64')),
+        ('zo', dtype('int64')),
+        ('zd', dtype('int64')),
+        ('pd', dtype('int64')),
+        ('po', dtype('int64')),
+        ('qd', dtype('int64')),
+        ('qo', dtype('int64'))]
+    assert best_limits.index.dtype == 'int64'
 
     assert type(mwp['refid']) == int
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', dtype('uint64')),
+        ('ins_code', dtype('int64')),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
