@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Added ``market_watch.MarketWatch`` class that helps with watching the market.
 * Avoid unsigned data-types in returned values. This should help with some overflow bugs when user is not careful.
 
 v0.46.0

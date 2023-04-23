@@ -1,3 +1,5 @@
+from asyncio import sleep as _sleep
+from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 
 from numpy import nan as _nan
@@ -55,6 +57,7 @@ class _MarketWatchInit(_TypedDict, total=False):
     prices: _DataFrame
     best_limits: _DataFrame
     market_state: _MarketState
+    refid: int
 
 
 async def market_watch_init(
@@ -75,8 +78,8 @@ async def market_watch_init(
     """
     # todo: use content?
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
-    _, market_state_str, states, price_rows, _ = text.split('@')
-    result = {}
+    _, market_state_str, states, price_rows, refid = text.split('@')
+    result = {'refid': int(refid)}
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
@@ -252,3 +255,65 @@ async def status_changes(top: int | str) -> _DataFrame:
         _jstrptime, format='%Y/%m/%d %H:%M:%S')
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df
+
+
+class MarketWatch:
+
+    __slots__ = (
+        'interval',
+        'init_callback',
+        'init_kwargs',
+        'plus_callback',
+        'plus_kwargs',
+        'refid',
+        'heven',
+    )
+
+    def __init__(
+        self, *,
+        init_kwargs: dict=None,
+        plus_kwargs: dict=None,
+        init_callback: _Callable,
+        plus_callback: _Callable,
+        interval=1,
+    ):
+        """Create an object that helps with watching the market watch.
+
+        :param init_kwargs: kwargs to be passed to market_watch_init
+        :param plus_kwargs: kwargs to be passed to market_watch_plus
+        :param init_callback: function to be called with the result of
+            market_watch_init. This function should return True, otherwise the
+            watch will be stopped.
+        :param plus_callback: function to be called with the result of
+            market_watch_plus. This function should return True, otherwise the
+            watch will be stopped.
+        :param interval: The sleep interval.
+
+        To stop the watch, set `plus_callback` to `lambda a: False`.
+        """
+        self.interval = interval
+        self.init_kwargs: dict = {} if init_kwargs is None else init_kwargs
+        self.init_callback = init_callback
+        self.plus_kwargs: dict = {} if plus_kwargs is None else plus_callback
+        self.plus_callback = plus_callback
+
+
+    async def start(self):
+        mwi = await market_watch_init(**self.init_kwargs)
+        if not self.init_callback(mwi):
+            return
+
+        heven = mwi['prices'].heven.max()
+        refid = mwi['refid']
+
+        while True:
+            mwp = await market_watch_plus(refid=refid, heven=heven, **self.plus_kwargs)
+            if not self.plus_callback(mwp):
+                return
+            refid = mwp['refid']
+            heven = max(
+                mwp['price_updates'].heven.max(),
+                mwp['new_prices'].heven.max(),
+            )
+            print(refid, heven)
+            await _sleep(self.interval)
