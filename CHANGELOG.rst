@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.0
+-------
 * Added a quick fix for the new design of tsetmc.com by using `old.tsetmc.com` domain. Some modules are still failing in tests and should wait for the next released.
 * Added ``market_watch.MarketWatch`` class that helps with watching the market.
 * Avoid unsigned data-types in returned values. This should help with some overflow bugs when user is not careful.
