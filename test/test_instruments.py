@@ -19,7 +19,9 @@ from tsetmc.instruments import (
 )
 
 
-def assert_page_data(d, general=True, trade_history=False, related_companies=False):
+def assert_page_data(
+    d, general=True, trade_history=False, related_companies=False
+):
     if trade_history:
         trade_history = d.pop('trade_history')
         assert [*trade_history.dtypes.items()] == [
@@ -44,9 +46,12 @@ def assert_page_data(d, general=True, trade_history=False, related_companies=Fal
             assert type(d.pop(k)) in (int, NoneType)
         for k in ('bvol', 'cs', 'flow', 'month_average_volume', 'z'):
             assert type(d.pop(k)) is int
-        for k in ('sector_pe', 'tmax', 'tmin', 'week_max', 'week_min', 'year_max', 'year_min'):
+        for k in (
+        'sector_pe', 'tmax', 'tmin', 'week_max', 'week_min', 'year_max',
+        'year_min'):
             assert type(d.pop(k)) is float
-        assert d.keys() == {'cisin', 'flow_name', 'isin', 'group_code', 'l18', 'l30', 'sector_name'}
+        assert d.keys() == {'cisin', 'flow_name', 'isin', 'group_code', 'l18',
+            'l30', 'sector_name'}
         assert all(type(v) is str for v in d.values())
 
 
@@ -76,7 +81,9 @@ async def test_page_data_negative_sector_pe():
     assert_page_data(d)
 
 
-def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=False):
+def assert_live_data(
+    d: _LiveData, best_limits=False, market_state=False, nav=False
+):
     if best_limits:
         best_limits = d.pop('best_limits')
         assert [*best_limits.dtypes.items()] == [
@@ -106,7 +113,9 @@ def assert_live_data(d: _LiveData, best_limits=False, market_state=False, nav=Fa
 
 @file('dara_yekom.txt')
 async def test_dara1_instant():
-    d = await Instrument(62235397452612911).live_data(market_state=True, best_limits=True)
+    d = await Instrument(62235397452612911).live_data(
+        market_state=True, best_limits=True
+    )
     assert_live_data(d, best_limits=True, market_state=True, nav=True)
 
 
@@ -174,12 +183,13 @@ async def test_from_search_with_numeric_description():
 async def test_repr():
     # known l18
     assert repr(
-        await Instrument.from_l18('فملی')) == \
+        await Instrument.from_l18('فملی')
+    ) == \
            "Instrument(35425587644337450, 'فملی')"
     # unknown l18
     assert repr(Instrument(1)) == "Instrument(1)"
     assert repr(Instrument(1, l30='مجتمع جهان فولاد سيرجان')) == \
-        "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
+           "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
 
 
 async def test_equal():
@@ -202,12 +212,13 @@ async def test_identification():
         'کد تابلو': '7',
         'کد زیر گروه صنعت': '2799',
         'کد گروه صنعت': '27',
-        'گروه صنعت': 'فلزات اساسی'}
+        'گروه صنعت': 'فلزات اساسی',
+    }
 
 
 @file('opal_client_types.txt')
-async def test_client_type():
-    df = await Instrument(655060129740445).client_type()
+async def test_client_type_history_old():
+    df = await Instrument(655060129740445).client_type_history_old()
     assert [*df.dtypes.items()] == [
         ('n_buy_count', dtype('int64')),
         ('l_buy_count', dtype('int64')),
@@ -280,7 +291,9 @@ async def test_holder():
     inst = Instrument(18007109712724189)
     # has no other holdings
     hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
-    assert hist.to_csv(lineterminator='\n').startswith('date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n')
+    assert hist.to_csv(lineterminator='\n').startswith(
+        'date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n'
+    )
     assert oth.to_csv(lineterminator='\n') == 'ins_code,name,shares,percent\n'
     hist = await inst.holder('69867,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
@@ -294,7 +307,9 @@ async def test_holder():
 async def test_holders_without_cisin():
     inst = Instrument(41713045190742691)
     assert (await inst.identification())['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
-    with patch.object(Instrument, 'page_data', side_effect=NotImplementedError) as page_data:
+    with patch.object(
+        Instrument, 'page_data', side_effect=NotImplementedError
+    ) as page_data:
         with raises(NotImplementedError):
             await (inst.holders())
     page_data.assert_called_once()
@@ -430,60 +445,18 @@ def test_parse_price_info_bad_date():
 
 KARIS = Instrument(69067576215760005)
 
+
 @file('karis_info.json')
 async def test_info():
     info = await KARIS.info()
-    assert info == {
-        'baseVol': 1,
-        'cComVal': '4',
-        'cIsin': 'IRT3SSKF0006',
-        'cSocCSAC': None,
-        'cValMne': None,
-        'cgrValCot': 'T1',
-        'cgrValCotTitle': 'بازار ابزارهای نوین مالی فرابورس',
-        'contractSize': 0,
-        'dEven': 0,
-        'eps': {
-            'epsValue': None,
-            'estimatedEPS': None,
-            'psr': 0.0,
-            'sectorPE': 1375.46
-        },
-        'faraDesc': '',
-        'flow': 2,
-        'flowTitle': 'بازار فرابورس',
-        'insCode': '69067576215760005',
-        'instrumentID': 'IRT3SSKF0001',
-        'kAjCapValCpsIdx': '',
-        'lSoc30': None,
-        'lVal18': 'Sepand CharismaETF',
-        'lVal18AFC': 'کاریس',
-        'lVal30': 'صندوق س.سپند کاریزما-س',
-        'lastDate': 0,
-        'maxWeek': 25000.0,
-        'maxYear': 27280.0,
-        'minWeek': 23700.0,
-        'minYear': 12491.0,
-        'nav': 0.0,
-        'qTotTran5JAvg': 14770822.0,
-        'sector': {
-            'cSecVal': '68 ',
-            'dEven': 0,
-            'lSecVal': 'صندوق سرمایه گذاری قابل معامله'
-        },
-        'sourceID': 0,
-        'staticThreshold': {
-            'dEven': 0,
-            'hEven': 0,
-            'insCode': None,
-            'psGelStaMax': 26858.0,
-            'psGelStaMin': 21976.0
-        },
-        'topInst': 0,
-        'underSupervision': 0,
-        'yMarNSC': None,
-        'yVal': '305',
-        'zTitad': 51200000000.0
+    assert info.keys() == {
+        'baseVol', 'cComVal', 'cIsin', 'cSocCSAC', 'cValMne',
+        'cgrValCot', 'cgrValCotTitle', 'contractSize', 'dEven', 'eps',
+        'faraDesc', 'flow', 'flowTitle', 'insCode', 'instrumentID',
+        'kAjCapValCpsIdx', 'lSoc30', 'lVal18', 'lVal18AFC', 'lVal30',
+        'lastDate', 'maxWeek', 'maxYear', 'minWeek', 'minYear', 'nav',
+        'qTotTran5JAvg', 'sector', 'sourceID', 'staticThreshold', 'topInst',
+        'underSupervision', 'yMarNSC', 'yVal', 'zTitad'
     }
 
 
@@ -568,6 +541,7 @@ async def test_info():
         'thirtyDayClosingHistory', 'yClose', 'zTotTran'
     }
 
+
 @file('best_limits.json')
 async def test_best_limits():
     df = await KARIS.best_limits()
@@ -581,4 +555,14 @@ async def test_best_limits():
         ('qTitMeOf', dtype('int64')),
         ('insCode', dtype('O')),
     ]
-    assert len(df) == 3
+    assert len(df) == 5
+
+
+@file('client_type_karis.json')
+async def test_client_type():
+    d = await KARIS.client_type()
+    assert d.keys() == {
+        'buy_I_Volume', 'buy_N_Volume', 'buy_DDD_Volume', 'buy_CountI',
+        'buy_CountN', 'buy_CountDDD', 'sell_I_Volume', 'sell_N_Volume',
+        'sell_CountI', 'sell_CountN',
+    }

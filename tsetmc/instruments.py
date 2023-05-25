@@ -10,7 +10,6 @@ from pandas import (
     read_csv as _read_csv,
     read_html as _read_html,
     to_datetime as _to_datetime,
-    to_numeric as _to_numeric,
 )
 
 from . import (
@@ -225,6 +224,10 @@ class Instrument:
         df = _DataFrame(j['bestLimits'], copy=False)
         return df
 
+    async def client_type(self) -> dict:
+        j = await _api(f'ClientType/GetClientType/{self.code}/1/0', fa=True)
+        return j['clientType']
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:
@@ -360,13 +363,18 @@ class Instrument:
             , index_col='date', parse_dates=True)
         return df
 
-    async def client_type(self) -> _DataFrame:
+
+    async def client_type_history_old(self) -> _DataFrame:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
 
         This method returns the information available at the "حقیقی-حقوقی" tab
-        of the instrument. It uses the `clienttype.aspx` module.
+        of the instrument. It uses the `clienttype.aspx` module of
+        old.tsetmc.com.
+
+        This method may stop working in the future if the old tsetmc site
+        shuts down.
 
         See also:
             :meth:`Instrument.client_type_history`
@@ -380,14 +388,15 @@ class Instrument:
                 , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
             , index_col='date', parse_dates=True , dtype='int64')
 
-    async def client_type_history(self, date: int | str = None) -> _DataFrame | dict:
+
+    async def client_type_history(
+        self, date: int | str = None
+    ) -> _DataFrame | dict:
         """Return natural/legal client type history.
 
         :param date: Gregorian date in YYYYMMDD format. If None, return the
-        full history as a DataFrame. Otherwise, return the data for that
-        specific date as a dict.
-
-        Uses the information from api/ClientType/GetClientTypeHistory.
+            full history as a DataFrame. Otherwise, return the data for that
+            specific date as a dict.
 
         See also:
             :meth:`Instrument.client_type`

@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* BREAKING CHANGE: Renamed ``Instrument.client_type`` to ``client_type_history_old``. The old name is overwritten with a new method.
 * Removed the broken ``Instrument.intraday()`` method. This method is not available in the new design of tsetmc.com. Use `Instrument.on_date` instead.
 * Fixed ``market_watch_plus`` by allowing ``float64`` dtype on po and pd columns.
 * Added the following methods to ``Instrument`` class:
@@ -10,6 +11,7 @@ Unreleased
    * ``daily_closing_price()``
    * ``closing_price_info()``
    * ``best_limits()``
+   * ``client_type()``
 
 
 v0.47.0
