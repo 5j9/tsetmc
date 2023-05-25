@@ -197,9 +197,14 @@ class Instrument:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
-    async def info(self):
+    async def info(self) -> dict:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
         return j['instrumentInfo']
+
+    async def trades(self) -> _DataFrame:
+        j = await _api(f'Trade/GetTrade/{self.code}', fa=True)
+        df = _DataFrame(j['trade'], copy=False)
+        return df
 
     async def page_data(
         self, general=True, trade_history=False, related_companies=False

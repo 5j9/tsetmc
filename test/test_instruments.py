@@ -428,9 +428,11 @@ def test_parse_price_info_bad_date():
     )['nav_datetime'] == '1400/12/30 16:30:00'
 
 
+KARIS = Instrument(69067576215760005)
+
 @file('karis_info.json')
 async def test_info():
-    info = await Instrument(69067576215760005).info()
+    info = await KARIS.info()
     assert info == {
         'baseVol': 1,
         'cComVal': '4',
@@ -483,3 +485,23 @@ async def test_info():
         'yVal': '305',
         'zTitad': 51200000000.0
     }
+
+
+@file('karis_trades.json')
+async def test_trades():
+    df = await KARIS.trades()
+    assert [*df.dtypes.items()] == [
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('nTran', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('qTitTran', dtype('int64')),
+        ('pTran', dtype('float64')),
+        ('qTitNgJ', dtype('int64')),
+        ('iSensVarP', dtype('O')),
+        ('pPhSeaCotJ', dtype('float64')),
+        ('pPbSeaCotJ', dtype('float64')),
+        ('iAnuTran', dtype('int64')),
+        ('xqVarPJDrPRf', dtype('float64')),
+        ('canceled', dtype('int64')),
+    ]
