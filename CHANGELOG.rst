@@ -9,15 +9,15 @@ v0.48.0
 * Fixed ``market_watch_plus`` by allowing ``float64`` dtype on po and pd columns.
 * Added the following methods to ``Instrument`` class:
 
-   * ``info()``
-   * ``trades()``
-   * ``codal()``
-   * ``daily_closing_price()``
-   * ``closing_price_info()``
-   * ``best_limits()``
-   * ``client_type()``
-   * ``etf()``
-   * ``related_companies()``
+  * ``info()``
+  * ``trades()``
+  * ``codal()``
+  * ``daily_closing_price()``
+  * ``closing_price_info()``
+  * ``best_limits()``
+  * ``client_type()``
+  * ``etf()``
+  * ``related_companies()``
 
 
 v0.47.0
