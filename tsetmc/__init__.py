@@ -119,7 +119,7 @@ _HEADERS = {
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
     response = await SESSION.get(url, headers=_HEADERS)
-    if response.url != url:
+    if f'{response.url}' != url:
         warning(f'URL mismatch:\n{response.url=}\n{url}')
     return await response.read()
 

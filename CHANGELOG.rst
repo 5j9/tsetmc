@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Fixed URL mismatch warning during web requests.
+
 v0.48.0
 -------
 * BREAKING CHANGE: Renamed ``Instrument.client_type`` to ``client_type_history_old``. The old name is overwritten with a new method.
