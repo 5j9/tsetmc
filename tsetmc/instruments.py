@@ -197,6 +197,10 @@ class Instrument:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
+    async def info(self):
+        j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
+        return j['instrumentInfo']
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:

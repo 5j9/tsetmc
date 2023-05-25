@@ -426,3 +426,60 @@ def test_parse_price_info_bad_date():
     assert _parse_price_info(
         '12:19:35,A ,63070,64270,62540,63550,64300,62540,30,7973,512457280,1,20220813,121935,1400/12/30 16:30:00,63354'
     )['nav_datetime'] == '1400/12/30 16:30:00'
+
+
+@file('karis_info.json')
+async def test_info():
+    info = await Instrument(69067576215760005).info()
+    assert info == {
+        'baseVol': 1,
+        'cComVal': '4',
+        'cIsin': 'IRT3SSKF0006',
+        'cSocCSAC': None,
+        'cValMne': None,
+        'cgrValCot': 'T1',
+        'cgrValCotTitle': 'بازار ابزارهای نوین مالی فرابورس',
+        'contractSize': 0,
+        'dEven': 0,
+        'eps': {
+            'epsValue': None,
+            'estimatedEPS': None,
+            'psr': 0.0,
+            'sectorPE': 1375.46
+        },
+        'faraDesc': '',
+        'flow': 2,
+        'flowTitle': 'بازار فرابورس',
+        'insCode': '69067576215760005',
+        'instrumentID': 'IRT3SSKF0001',
+        'kAjCapValCpsIdx': '',
+        'lSoc30': None,
+        'lVal18': 'Sepand CharismaETF',
+        'lVal18AFC': 'کاریس',
+        'lVal30': 'صندوق س.سپند کاریزما-س',
+        'lastDate': 0,
+        'maxWeek': 25000.0,
+        'maxYear': 27280.0,
+        'minWeek': 23700.0,
+        'minYear': 12491.0,
+        'nav': 0.0,
+        'qTotTran5JAvg': 14770822.0,
+        'sector': {
+            'cSecVal': '68 ',
+            'dEven': 0,
+            'lSecVal': 'صندوق سرمایه گذاری قابل معامله'
+        },
+        'sourceID': 0,
+        'staticThreshold': {
+            'dEven': 0,
+            'hEven': 0,
+            'insCode': None,
+            'psGelStaMax': 26858.0,
+            'psGelStaMin': 21976.0
+        },
+        'topInst': 0,
+        'underSupervision': 0,
+        'yMarNSC': None,
+        'yVal': '305',
+        'zTitad': 51200000000.0
+    }

@@ -2,6 +2,7 @@ Unreleased
 ----------
 * Removed the broken ``Instrument.intraday()`` method. This method is not available in the new design of tsetmc.com. Use `Instrument.on_date` instead.
 * Fixed ``market_watch_plus`` by allowing ``float64`` dtype on po and pd columns.
+* Added ``Instrument.info()``
 
 v0.47.0
 -------
