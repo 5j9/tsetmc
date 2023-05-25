@@ -530,3 +530,28 @@ async def test_codal():
         ('tracingNo', dtype('O'))
     ]
     assert len(df) == 3
+
+
+@file('daily_closing_price_karis.json')
+async def test_daily_closing_price():
+    df = await KARIS.daily_closing_price(n=3)
+    assert [*df.dtypes.items()] == [
+        ('priceChange', dtype('float64')),
+        ('priceMin', dtype('float64')),
+        ('priceMax', dtype('float64')),
+        ('priceYesterday', dtype('float64')),
+        ('priceFirst', dtype('float64')),
+        ('last', dtype('bool')),
+        ('id', dtype('int64')),
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('iClose', dtype('bool')),
+        ('yClose', dtype('bool')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64')),
+    ]
+    assert len(df) == 3

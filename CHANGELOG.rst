@@ -7,6 +7,7 @@ Unreleased
    * ``info()``
    * ``trades()``
    * ``codal()``
+   * ``daily_closing_price()``
 
 
 v0.47.0

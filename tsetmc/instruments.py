@@ -211,6 +211,11 @@ class Instrument:
         df = _DataFrame(j['preparedData'], copy=False)
         return df
 
+    async def daily_closing_price(self, n=9) -> _DataFrame:
+        j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}', fa=True)
+        df = _DataFrame(j['closingPriceDaily'], copy=False)
+        return df
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:
