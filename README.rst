@@ -4,7 +4,7 @@ Note: The API is provisional and may change rapidly without deprecation.
 
 Installation
 ------------
-Requires Python 3.10+.
+Requires latest stable Python version.
 
 ``pip install tsetmc``
 
@@ -53,86 +53,107 @@ Ideally, `the session object should only be instantiated once`_.
 The ``Instrument`` class provides many methods for getting information about an instrument.
 The following code blocks try to demonstrate its capabilities.
 
-You will need an asyncio capable REPL, like ``python -m asyncio`` or `IPython`_, to run these code samples.
-
-Prepare the session:
+You need an asyncio capable REPL, like ``python -m asyncio`` or `IPython`_, to run these code samples.
 
 .. code-block:: python
 
-    >>> import tsetmc
-    >>> session = fipiran.Session()
-
-Getting the static data available in the main page of an instrument:
-
-.. code-block:: python
-
+    >>> from tsetmc import Session
     >>> from tsetmc.instruments import Instrument
     >>> inst = await Instrument.from_l18('فملی')
-    >>> await inst.page_data(general=True, trade_history=True, related_companies=True)
-    {'bvol': 9803922,
-     'cisin': 'IRO1MSMI0000',
-     'cs': 27,
-     'eps': 1339,
-     'sps': 2452.07,
-     'flow': 1,
-     'free_float': 33,
-     'group_code': 'N1',
-     'isin': 'IRO1MSMI0001',
-     'l18': 'فملی',
-     'l30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
-     'flow_name': 'بازار اول (تابلوی اصلی) بورس',
-     'month_average_volume': 80515596,
-     'sector_name': 'فلزات اساسی',
-     'sector_pe': 8.9,
-     'tmax': 12650.0,
-     'tmin': 11450.0,
-     'week_max': 12380.0,
-     'week_min': 11770.0,
-     'year_max': 39810.0,
-     'year_min': 0.0,
-     'z': 200000000000,
-     'trade_history':                  pc       py     pmin     pmax    tno       tvol          tval
-     date
-     2021-07-04  12050.0  12040.0  11770.0  12190.0  10504   60085175  7.239613e+11
-     2021-07-03  12040.0  12240.0  11800.0  12380.0  14905   88571671  1.066283e+12
-     2021-06-30  12240.0  12240.0  12180.0  12370.0  11639   61924440  7.580286e+11
-     2021-06-29  12240.0  12140.0  12110.0  12410.0  13153   80738158  9.886263e+11
-     2021-06-28  12140.0  12220.0  11990.0  12290.0  12556   69479692  8.434176e+11
-     2021-06-27  12220.0  12420.0  12040.0  12440.0  18830   93937722  1.148373e+12
-     2021-06-26  12420.0  12310.0  12120.0  12600.0  25260  155751582  1.934123e+12
-     2021-06-23  12310.0  11830.0  12020.0  12420.0  23635  204263514  2.514120e+12
-     2021-06-22  11830.0  11540.0  11530.0  12110.0  24234  170353210  2.014437e+12,
-     'related_companies': [
-        Instrument(46348559193224090, 'فولاد'),
-        Instrument(35425587644337450, 'فملی'),
-        Instrument(45507655586782998, 'فجهان'),
-        Instrument(9211775239375291, 'ذوب'),
-        ...]}
+    >>> async with Session():
+    ...     i = await inst.info()
+    >>> i
+    {'eps': {'epsValue': None,
+	  'estimatedEPS': '721',
+	  'sectorPE': 12.02,
+	  'psr': 1472.8279},
+	 'sector': {'dEven': 0, 'cSecVal': '27 ', 'lSecVal': 'فلزات اساسی'},
+	 'staticThreshold': {'insCode': None,
+	  'dEven': 0,
+	  'hEven': 0,
+	  'psGelStaMax': 8270.0,
+	  'psGelStaMin': 7190.0},
+	 'minWeek': 7630.0,
+	 'maxWeek': 7970.0,
+	 'minYear': 4630.0,
+	 'maxYear': 10670.0,
+	 'qTotTran5JAvg': 179233329.0,
+	 'kAjCapValCpsIdx': '43',
+	 'dEven': 0,
+	 'topInst': 1,
+	 'faraDesc': '',
+	 'contractSize': 0,
+	 'nav': 0.0,
+	 'underSupervision': 0,
+	 'cValMne': None,
+	 'lVal18': 'S*I. N. C. Ind.',
+	 'cSocCSAC': None,
+	 'lSoc30': None,
+	 'yMarNSC': None,
+	 'yVal': '300',
+	 'insCode': '35425587644337450',
+	 'lVal30': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
+	 'lVal18AFC': 'فملی',
+	 'flow': 1,
+	 'cIsin': 'IRO1MSMI0000',
+	 'zTitad': 600000000000.0,
+	 'baseVol': 15584416,
+	 'instrumentID': 'IRO1MSMI0001',
+	 'cgrValCot': 'N1',
+	 'cComVal': '1',
+	 'lastDate': 0,
+	 'sourceID': 0,
+	 'flowTitle': 'بازار بورس',
+	 'cgrValCotTitle': 'بازار اول (تابلوی اصلی) بورس'}
 
 
 Getting the latest price information:
 
 .. code-block:: python
 
-    >>> await inst.live_data()
-    {'timestamp': '12:30:00',
-     'status': 'A ',
-     'datetime': datetime.datetime(2021, 7, 5, 12, 30),
-     'pl': 12250,
-     'pc': 12210,
-     'pf': 12140,
-     'py': 12050,
-     'pmin': 12340,
-     'pmax': 12100,
-     'tno': 10904,
-     'tvol': 57477120,
-     'tval': 701852286450}
+    >>> async with Session():
+    ...     i = await inst.closing_price_info()
+    >>> i
+    {'instrumentState': {'idn': 0,
+	  'dEven': 0,
+	  'hEven': 0,
+	  'insCode': None,
+	  'cEtaval': 'A ',
+	  'realHeven': 0,
+	  'underSupervision': 0,
+	  'cEtavalTitle': 'مجاز'},
+	 'instrument': None,
+	 'lastHEven': 170725,
+	 'finalLastDate': 20230524,
+	 'nvt': 0.0,
+	 'mop': 0,
+	 'thirtyDayClosingHistory': None,
+	 'priceChange': 0.0,
+	 'priceMin': 7630.0,
+	 'priceMax': 7900.0,
+	 'priceYesterday': 7730.0,
+	 'priceFirst': 7750.0,
+	 'last': True,
+	 'id': 0,
+	 'insCode': '0',
+	 'dEven': 20230524,
+	 'hEven': 170725,
+	 'pClosing': 7700.0,
+	 'iClose': False,
+	 'yClose': False,
+	 'pDrCotVal': 7670.0,
+	 'zTotTran': 7206.0,
+	 'qTotTran5J': 84108817.0,
+	 'qTotCap': 648015842640.0}
+
 
 Getting the daily trade history for the last n days: (as a DataFrame)
 
 .. code-block:: python
 
-    >>> await inst.trade_history(top=2)
+    >>> async with Session():
+    ...     h = await inst.trade_history(top=2)
+    >>> h
                    pmax     pmin       pc  ...          tval      tvol    tno
     date                                   ...
     2021-07-18  12880.0  12530.0  12650.0  ...  1.114773e+12  88106162  14485
@@ -144,7 +165,9 @@ Getting adjusted daily prices:
 
 .. code-block:: python
 
-    >>> await inst.price_history(adjusted=True)
+    >>> async with Session():
+    ...     h = await inst.price_history(adjusted=True)
+    >>> h
                  pmax   pmin     pf     pl       tvol     pc
     date
     2007-02-04     45     41     45     42  172898994     42
@@ -161,52 +184,13 @@ Getting adjusted daily prices:
     [3192 rows x 6 columns]
 
 
-Getting legal/natural client types: (the result is a DataFrame)
-
-.. code-block:: python
-
-    >>> await inst.client_type()
-                n_buy_count  l_buy_count  ...  n_sell_value  l_sell_value
-    date                                  ...
-    2021-07-04         4447           14  ...  586457311950  137504028420
-    2021-07-03         5890           23  ...  994298662870   71984465160
-    2021-06-30         5032           19  ...  637609524840  120419036770
-    2021-06-29         5851           12  ...  562034366100  426591980560
-    2021-06-28         5349           17  ...  767532788130   75884839930
-                     ...          ...  ...           ...           ...
-    2008-12-02            0            1  ...         53664             0
-    2008-12-01            0            1  ...             0        212750
-    2008-11-30            2            1  ...       2565810             0
-    2008-11-29            1            0  ...       4521000             0
-    2008-11-26            1            1  ...       1487409         46600
-    [2715 rows x 12 columns]
-
-Getting the data in identification (شناسه) tab of the instrument:
-
-.. code-block:: python
-
-    >>> await inst.identification()
-    {'بازار': 'بازار اول (تابلوی اصلی) بورس',
-     'زیر گروه صنعت': 'تولید فلزات گرانبهای غیرآهن',
-     'نام شرکت': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c\u200c',
-     'نام لاتین شرکت': 'S*I. N. C. Ind.',
-     'نماد 30 رقمی فارسی': 'ملی\u200c صنایع\u200c مس\u200c ایران\u200c',
-     'نماد فارسی': 'فملی',
-     'کد 12 رقمی شرکت': 'IRO1MSMI0000',
-     'کد 12 رقمی نماد': 'IRO1MSMI0001',
-     'کد 4 رقمی شرکت': 'MSMI',
-     'کد 5 رقمی نماد': 'MSMI1',
-     'کد تابلو': '1',
-     'کد زیر گروه صنعت': '2720',
-     'کد گروه صنعت': '27',
-     'گروه صنعت': 'فلزات اساسی'}
-
-
 Getting the share/unit holders:
 
 .. code-block:: python
 
-    >>> await inst.holders()
+    >>> async with Session():
+    ...     h = await inst.holders()
+    >>> h
                                         سهامدار/دارنده  ...            id_cisin
     0    سازمان توسعه ونوسازی معادن وصنایع معدنی ایران  ...    104,IRO1MSMI0000
     1    موسسه صندوق بازنشستگی شرکت ملی صنایع مس ایران  ...    770,IRO1MSMI0000
@@ -220,7 +204,9 @@ Getting information of a specific share/unit holder:
 
 .. code-block:: python
 
-    >>> await inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+    >>> async with Session():
+    ...     h = await inst.holder('21630,IRO1MSMI0000', history=True, other_holdings=True)
+    >>> h
     (                shares
      date
      2021-02-17  2003857980
@@ -242,29 +228,23 @@ Getting information of a specific share/unit holder:
      26014913469567886       سرمایه‌گذاری‌غدیر(هلدینگ‌  3356161798     4.66
      ...
 
-Getting intraday data:
+Getting intraday data for a specific date:
 
 .. code-block:: python
 
-    >>> await inst.intraday(
-        date=20210704,
-        general=False,
-        thresholds=False,
-        closings=False,
-        candles=False,
-        states=True,
-        trades=True,
-        holders=False,
-        yesterday_holders=False,
-        client_types=True,
-        best_limits=True,
-    )  # the result is too long and not shown here
+    >>> async with Session():
+    ...     states = await inst.on_date(20210704).states()
+	>>> states  # a dataframe
+	   idn  dEven  hEven insCode cEtaval  realHeven  underSupervision cEtavalTitle
+	0    0      0      1       0      A       94838                 0         None
 
 Getting the history of price adjustments:
 
 .. code-block:: python
 
-    >>> await inst.adjustments()
+    >>> async with Session():
+    >>>     a = await inst.adjustments()
+    >>> a
                        date  adj_pc     pc
     0   1399-05-01 00:00:00   35720  35970
     1   1398-04-26 00:00:00    4269   4419
@@ -289,13 +269,15 @@ Searching for an instrument:
 
 .. code-block:: python
 
-    >>> await Instrument.from_search('چادرملو')
+    >>> async with Session():
+    ...     r = await Instrument.from_search('چادرملو')
+    >>> r
     Instrument(18027801615184692, 'کچاد')
 
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
 
-`market_watch`_ module contains the following functions:
+The `market_watch`_ module contains several function to fetch market watch data. They include:
 
 * ``market_watch_init``
 * ``market_watch_plus``
@@ -305,9 +287,9 @@ The ``instruments.price_adjustments`` function gets all the price adjustments fo
 * ``ombud_messages``
 * ``status_changes``
 
-There are several other functions in ``general`` module.
+There are many other functions and methods that are not covered here. Explore the codebase to learn more.
 
-If you are interested in other information that are available on tsetmc.com but this library has no API for, please `open an issue`_ for them.
+If you are interested in other information available on tsetmc.com that this library has no API for, please `open an issue`_ for them.
 
 
 See also
