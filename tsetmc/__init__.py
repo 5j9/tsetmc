@@ -2,9 +2,10 @@ __version__ = '0.48.2.dev0'
 
 from functools import partial as _partial
 from json import JSONDecodeError, loads
-from logging import error, warning
+from logging import error
 from re import compile as _rc, findall as _findall
 from typing import TypedDict as _TypedDict
+from warnings import warn as _warn
 
 from aiohttp import (
     ClientSession as _ClientSession,
@@ -12,6 +13,7 @@ from aiohttp import (
 )
 from jdatetime import datetime as _jdatetime
 from pandas import DataFrame as _DataFrame, read_csv as _read_csv
+from yarl import URL as _URL
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
@@ -119,8 +121,12 @@ _HEADERS = {
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
     response = await SESSION.get(url, headers=_HEADERS)
-    if f'{response.url}' != url:
-        warning(f'URL mismatch:\n{response.url=}\n{url}')
+    if response.url != _URL(url):
+        _warn(
+            f'response.url does not match original url:\n'
+            f'* url          = {url}\n'
+            f'* response.url = {response.url.human_repr()}'
+        )
     return await response.read()
 
 

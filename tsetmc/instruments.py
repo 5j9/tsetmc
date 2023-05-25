@@ -385,7 +385,7 @@ class Instrument:
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
         content = await _get(
-            f'http://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
+            f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = _csv2df(
             _BytesIO(content)
             , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
