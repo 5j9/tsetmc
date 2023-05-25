@@ -21,7 +21,6 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "aiohttp[speedups]",
-    "yarl",
     "jdatetime",
     "pandas>=1.4.0",
     "numpy",

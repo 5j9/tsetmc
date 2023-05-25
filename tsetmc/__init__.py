@@ -13,7 +13,6 @@ from aiohttp import (
 )
 from jdatetime import datetime as _jdatetime
 from pandas import DataFrame as _DataFrame, read_csv as _read_csv
-from yarl import URL as _URL
 
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
@@ -120,14 +119,10 @@ _HEADERS = {
 
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
-    response = await SESSION.get(url, headers=_HEADERS)
-    if response.url != _URL(url):
-        _warn(
-            f'response.url does not match original url:\n'
-            f'* url          = {url}\n'
-            f'* response.url = {response.url.human_repr()}'
-        )
-    return await response.read()
+    r = await SESSION.get(url, headers=_HEADERS)
+    if r.history:
+        _warn(f'r.history is not empty (possible redirection): {r.history}')
+    return await r.read()
 
 
 async def _get(url: str, *, fa=False) -> str | bytes:
