@@ -567,3 +567,18 @@ async def test_info():
         'priceMin', 'priceYesterday', 'qTotCap', 'qTotTran5J',
         'thirtyDayClosingHistory', 'yClose', 'zTotTran'
     }
+
+@file('best_limits.json')
+async def test_best_limits():
+    df = await KARIS.best_limits()
+    assert [*df.dtypes.items()] == [
+        ('number', dtype('int64')),
+        ('qTitMeDem', dtype('int64')),
+        ('zOrdMeDem', dtype('int64')),
+        ('pMeDem', dtype('float64')),
+        ('pMeOf', dtype('float64')),
+        ('zOrdMeOf', dtype('int64')),
+        ('qTitMeOf', dtype('int64')),
+        ('insCode', dtype('O')),
+    ]
+    assert len(df) == 3

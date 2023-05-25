@@ -9,6 +9,7 @@ Unreleased
    * ``codal()``
    * ``daily_closing_price()``
    * ``closing_price_info()``
+   * ``best_limits()``
 
 
 v0.47.0

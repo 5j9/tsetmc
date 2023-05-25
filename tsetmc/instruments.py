@@ -220,6 +220,11 @@ class Instrument:
         j = await _api(f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True)
         return j['closingPriceInfo']
 
+    async def best_limits(self) -> _DataFrame:
+        j = await _api(f'BestLimits/{self.code}', fa=True)
+        df = _DataFrame(j['bestLimits'], copy=False)
+        return df
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:
