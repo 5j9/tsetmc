@@ -224,8 +224,8 @@ async def test_market_watch_plus_update():
         ('number', dtype('int64')),
         ('zo', dtype('int64')),
         ('zd', dtype('int64')),
-        ('pd', dtype('int64')),
-        ('po', dtype('int64')),
+        ('pd', dtype('float64')),
+        ('po', dtype('float64')),
         ('qd', dtype('int64')),
         ('qo', dtype('int64'))]
     assert best_limits.index.dtype == 'int64'

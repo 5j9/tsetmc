@@ -155,7 +155,7 @@ async def market_watch_plus(
     if best_limits:
         result['best_limits'] = _csv2df(
             _StringIO(best_limit), index_col='ins_code',
-            names=_BEST_LIMITS_NAMES, dtype='int64')
+            names=_BEST_LIMITS_NAMES)
     result['refid'] = int(refid)
     return result
 
