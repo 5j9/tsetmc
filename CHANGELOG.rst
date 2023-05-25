@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Removed the broken ``Instrument.intraday()`` method. This method is not available in the new design of tsetmc.com. Use `Instrument.on_date` instead.
+
 v0.47.0
 -------
 * Added a quick fix for the new design of tsetmc.com by using `old.tsetmc.com` domain. Some modules are still failing in tests and should wait for the next released.
