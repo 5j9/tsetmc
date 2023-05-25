@@ -43,7 +43,7 @@ Homepage = "https://github.com/5j9/tsetmc"
 
 [project.optional-dependencies]
 test = [
-    "aiohttp_test_utils",
+    "aiohttp_test_utils>=0.3.0",
 ]
 
 [tool.setuptools]
