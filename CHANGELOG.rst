@@ -13,6 +13,7 @@ Unreleased
    * ``best_limits()``
    * ``client_type()``
    * ``etf()``
+   * ``related_companies()``
 
 
 v0.47.0

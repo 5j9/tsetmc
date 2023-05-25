@@ -236,6 +236,27 @@ class Instrument:
         j = await _api(f'Fund/GetETFByInsCode/{self.code}')
         return j['etf']
 
+    async def related_companies(self, c_sec_val=None) -> dict[str, _DataFrame]:
+        if c_sec_val is None:
+            info = await self.info()
+            c_sec_val = info['sector']['cSecVal']
+
+        j = await _api(f'ClosingPrice/GetRelatedCompany/{c_sec_val}')
+
+        j['relatedCompany'] = _DataFrame(
+            # flatten the records
+            [c.pop('instrument') | c for c in j.pop('relatedCompany')],
+            copy=False,
+        )
+
+        j['relatedCompanyThirtyDayHistory'] = _DataFrame(
+            j.pop('relatedCompanyThirtyDayHistory'),
+            copy=False,
+        )
+
+        return j
+
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:
@@ -321,7 +342,7 @@ class Instrument:
             # &e=1 parameter is required to get cancel NAV for ETFs but it 
             # seems to be ignored if no NAV is defined for the instrument.
             # &c= is normally set to CSecVal, but does not seem to be required.
-            # CSecVal is idustry group code:
+            # CSecVal is industry group code:
             # http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111B&LnkIdn=107
             f'?i={self.code}&c=&e=1', fa=True)
         # the _s are unknown

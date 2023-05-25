@@ -47,8 +47,8 @@ def assert_page_data(
         for k in ('bvol', 'cs', 'flow', 'month_average_volume', 'z'):
             assert type(d.pop(k)) is int
         for k in (
-        'sector_pe', 'tmax', 'tmin', 'week_max', 'week_min', 'year_max',
-        'year_min'):
+            'sector_pe', 'tmax', 'tmin', 'week_max', 'week_min', 'year_max',
+            'year_min'):
             assert type(d.pop(k)) is float
         assert d.keys() == {'cisin', 'flow_name', 'isin', 'group_code', 'l18',
             'l30', 'sector_name'}
@@ -574,3 +574,71 @@ async def test_client_type():
     assert d.keys() == {
         'insCode', 'deven', 'hEven', 'pRedTran', 'pSubTran', 'iClose'
     }
+
+
+@file('related_companies_karis.json')
+async def test_related_companies():
+    # await KARIS.info()['sector']['cSecVal'] == "68 "
+    d = await KARIS.related_companies(c_sec_val="68 ")
+    c = d['relatedCompany']
+    h = d['relatedCompanyThirtyDayHistory']
+
+    assert [*c.dtypes.items()] == [
+        ('cValMne', dtype('O')),
+        ('lVal18', dtype('O')),
+        ('cSocCSAC', dtype('O')),
+        ('lSoc30', dtype('O')),
+        ('yMarNSC', dtype('O')),
+        ('yVal', dtype('O')),
+        ('insCode', dtype('O')),
+        ('lVal30', dtype('O')),
+        ('lVal18AFC', dtype('O')),
+        ('flow', dtype('int64')),
+        ('cIsin', dtype('O')),
+        ('zTitad', dtype('float64')),
+        ('baseVol', dtype('int64')),
+        ('instrumentID', dtype('O')),
+        ('cgrValCot', dtype('O')),
+        ('cComVal', dtype('O')),
+        ('lastDate', dtype('int64')),
+        ('sourceID', dtype('int64')),
+        ('flowTitle', dtype('O')),
+        ('cgrValCotTitle', dtype('O')),
+        ('instrumentState', dtype('O')),
+        ('lastHEven', dtype('int64')),
+        ('finalLastDate', dtype('int64')),
+        ('nvt', dtype('float64')),
+        ('mop', dtype('int64')),
+        ('thirtyDayClosingHistory', dtype('O')),
+        ('priceChange', dtype('float64')),
+        ('priceMin', dtype('float64')),
+        ('priceMax', dtype('float64')),
+        ('priceYesterday', dtype('float64')),
+        ('priceFirst', dtype('float64')),
+        ('last', dtype('bool')),
+        ('id', dtype('int64')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('iClose', dtype('bool')),
+        ('yClose', dtype('bool')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64'))
+    ]
+    assert [*h.dtypes.items()] == [
+        ('id', dtype('int64')),
+        ('insCode', dtype('O')),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('iClose', dtype('bool')),
+        ('yClose', dtype('bool')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64'))
+    ]
+
+    assert h.groupby('insCode')['insCode'].agg(len).mode()[0] == 29
