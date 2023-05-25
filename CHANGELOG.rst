@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.48.2
+-------
 * Fixed an unneeded URL redirect in ``Instrument.price_history``
 * Fixed URL mismatch warning during web requests.
 
