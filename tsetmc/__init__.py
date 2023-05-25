@@ -2,7 +2,7 @@ __version__ = '0.47.1.dev0'
 
 from functools import partial as _partial
 from json import JSONDecodeError, loads
-from logging import error
+from logging import error, warning
 from re import compile as _rc, findall as _findall
 from typing import TypedDict as _TypedDict
 
@@ -118,9 +118,10 @@ _HEADERS = {
 
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
-    return await (await SESSION.get(
-        url, headers=_HEADERS
-    )).read()
+    response = await SESSION.get(url, headers=_HEADERS)
+    if response.url != url:
+        warning(f'URL mismatch:\n{response.url=}\n{url}')
+    return await response.read()
 
 
 async def _get(url: str, *, fa=False) -> str | bytes:
