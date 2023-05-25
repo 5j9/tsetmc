@@ -566,3 +566,11 @@ async def test_client_type():
         'buy_CountN', 'buy_CountDDD', 'sell_I_Volume', 'sell_N_Volume',
         'sell_CountI', 'sell_CountN',
     }
+
+
+@file('etf_karis.json')
+async def test_client_type():
+    d = await KARIS.etf()
+    assert d.keys() == {
+        'insCode', 'deven', 'hEven', 'pRedTran', 'pSubTran', 'iClose'
+    }

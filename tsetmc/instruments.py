@@ -201,7 +201,7 @@ class Instrument:
         return j['instrumentInfo']
 
     async def trades(self) -> _DataFrame:
-        j = await _api(f'Trade/GetTrade/{self.code}', fa=True)
+        j = await _api(f'Trade/GetTrade/{self.code}')
         df = _DataFrame(j['trade'], copy=False)
         return df
 
@@ -211,7 +211,7 @@ class Instrument:
         return df
 
     async def daily_closing_price(self, n=9) -> _DataFrame:
-        j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}', fa=True)
+        j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}')
         df = _DataFrame(j['closingPriceDaily'], copy=False)
         return df
 
@@ -220,13 +220,21 @@ class Instrument:
         return j['closingPriceInfo']
 
     async def best_limits(self) -> _DataFrame:
-        j = await _api(f'BestLimits/{self.code}', fa=True)
+        j = await _api(f'BestLimits/{self.code}')
         df = _DataFrame(j['bestLimits'], copy=False)
         return df
 
     async def client_type(self) -> dict:
-        j = await _api(f'ClientType/GetClientType/{self.code}/1/0', fa=True)
+        j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
+    
+    async def etf(self) -> dict:
+        """Return ETF data. (Includes redemption NAV and datetime of it).
+
+        This method is only valid for ETFs.
+        """
+        j = await _api(f'Fund/GetETFByInsCode/{self.code}')
+        return j['etf']
 
     async def page_data(
         self, general=True, trade_history=False, related_companies=False

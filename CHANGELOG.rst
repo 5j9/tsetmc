@@ -12,6 +12,7 @@ Unreleased
    * ``closing_price_info()``
    * ``best_limits()``
    * ``client_type()``
+   * ``etf()``
 
 
 v0.47.0
