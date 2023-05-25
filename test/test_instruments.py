@@ -505,3 +505,28 @@ async def test_trades():
         ('xqVarPJDrPRf', dtype('float64')),
         ('canceled', dtype('int64')),
     ]
+
+
+@file('karis_codal.json')
+async def test_codal():
+    df = await KARIS.codal(n=3)
+    assert [*df.dtypes.items()] == [
+        ('id', dtype('int64')),
+        ('symbol', dtype('O')),
+        ('name', dtype('O')),
+        ('title', dtype('O')),
+        ('sentDateTime_Gregorian', dtype('O')),
+        ('publishDateTime_Gregorian', dtype('O')),
+        ('publishDateTime_DEven', dtype('int64')),
+        ('mainTableRowID', dtype('int64')),
+        ('hasHtmlReport', dtype('int64')),
+        ('hasExcelReport', dtype('int64')),
+        ('hasPDFReport', dtype('int64')),
+        ('hasXMLReport', dtype('int64')),
+        ('attachmentID', dtype('int64')),
+        ('contentType', dtype('int64')),
+        ('fileName', dtype('O')),
+        ('fileExtension', dtype('O')),
+        ('tracingNo', dtype('O'))
+    ]
+    assert len(df) == 3

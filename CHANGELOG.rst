@@ -6,6 +6,7 @@ Unreleased
 
    * ``info()``
    * ``trades()``
+   * ``codal()``
 
 
 v0.47.0
