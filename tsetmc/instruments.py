@@ -216,6 +216,10 @@ class Instrument:
         df = _DataFrame(j['closingPriceDaily'], copy=False)
         return df
 
+    async def closing_price_info(self) -> dict:
+        j = await _api(f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True)
+        return j['closingPriceInfo']
+
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:

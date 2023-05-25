@@ -555,3 +555,15 @@ async def test_daily_closing_price():
         ('qTotCap', dtype('float64')),
     ]
     assert len(df) == 3
+
+
+@file('closing_price_info_karis.json')
+async def test_info():
+    info = await KARIS.closing_price_info()
+    assert info.keys() == {
+        'dEven', 'finalLastDate', 'hEven', 'iClose', 'id', 'insCode',
+        'instrument', 'instrumentState', 'last', 'lastHEven', 'mop', 'nvt',
+        'pClosing', 'pDrCotVal', 'priceChange', 'priceFirst', 'priceMax',
+        'priceMin', 'priceYesterday', 'qTotCap', 'qTotTran5J',
+        'thirtyDayClosingHistory', 'yClose', 'zTotTran'
+    }
