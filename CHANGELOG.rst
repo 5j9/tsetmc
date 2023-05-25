@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.48.1
+-------
 * Fixed URL mismatch warning during web requests.
 
 v0.48.0
