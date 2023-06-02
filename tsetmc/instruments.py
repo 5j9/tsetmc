@@ -130,6 +130,15 @@ class _LiveData(_TypedDict, total=False):
     nav_datatime: _jdatetime
 
 
+class _ETF(_TypedDict):
+    insCode: str
+    deven: int
+    hEven: int
+    pRedTran: int
+    pSubTran: int
+    iClose: int
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin'
@@ -228,7 +237,7 @@ class Instrument:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
     
-    async def etf(self) -> dict:
+    async def etf(self) -> _ETF:
         """Return ETF data. (Includes redemption NAV and datetime of it).
 
         This method is only valid for ETFs.
