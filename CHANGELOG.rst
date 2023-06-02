@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Improved type annotations
+
 v0.48.2
 -------
 * Fixed an unneeded URL redirect in ``Instrument.price_history``

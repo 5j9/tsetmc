@@ -1,7 +1,7 @@
 from aiohttp_test_utils import file
 from numpy import dtype
 
-from tsetmc.instruments import Instrument
+from tsetmc.instruments import Instrument, _ClosingPriceInfo
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
@@ -83,7 +83,7 @@ async def test_historic_data():
 @file('faraz_GetClosingPriceDaily_20220222.json')
 async def test_historic_data():
     d = await FARAZ_ON_DATE.closing_price()
-    assert d.keys() == {
+    assert _ClosingPriceInfo.__required_keys__ == {
         'priceChange', 'priceMin', 'priceMax', 'priceYesterday', 'priceFirst',
         'last', 'id', 'insCode', 'dEven', 'hEven', 'pClosing', 'iClose',
         'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}

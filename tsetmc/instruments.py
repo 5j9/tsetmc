@@ -130,6 +130,34 @@ class _LiveData(_TypedDict, total=False):
     nav_datatime: _jdatetime
 
 
+class _ETF(_TypedDict):
+    insCode: str
+    deven: int
+    hEven: int
+    pRedTran: int
+    pSubTran: int
+    iClose: int
+
+
+class _ClosingPriceInfo(_TypedDict):
+    priceChange: float
+    priceMin: float
+    priceMax: float
+    priceYesterday: float
+    priceFirst: float
+    last: bool
+    id: int
+    insCode: str
+    dEven: int
+    hEven: int
+    pClosing: float
+    iClose: bool
+    yClose: bool
+    pDrCotVal: float
+    zTotTran: float
+    qTotTran5J: float
+    qTotCap: float
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin'
@@ -215,7 +243,7 @@ class Instrument:
         df = _DataFrame(j['closingPriceDaily'], copy=False)
         return df
 
-    async def closing_price_info(self) -> dict:
+    async def closing_price_info(self) -> _ClosingPriceInfo:
         j = await _api(f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True)
         return j['closingPriceInfo']
 
@@ -228,7 +256,7 @@ class Instrument:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
     
-    async def etf(self) -> dict:
+    async def etf(self) -> _ETF:
         """Return ETF data. (Includes redemption NAV and datetime of it).
 
         This method is only valid for ETFs.
@@ -271,6 +299,11 @@ class Instrument:
 
         For the meaning of other column names see:
             http://www.tsetmc.com/Site.aspx?ParTree=151713
+
+        Alternative methods from the new API:
+        - self.info
+        - self.related_companies
+        - self.daily_closing_price
         """
         text = await _get_par_tree(f'151311&i={self.code}')
         if general:
@@ -333,6 +366,11 @@ class Instrument:
 
         :keyword best_limits: parse best_limits and include related values.
         :keyword market_state: parse values related to market state.
+
+        Alternative methods from the new API:
+        - self.closing
+        - self.best_limits
+        - self.etf
         """
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
