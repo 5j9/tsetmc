@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Added new async function: ``general.market_overview()``
 * Improved type annotations
 
 v0.48.2

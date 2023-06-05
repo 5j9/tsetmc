@@ -139,24 +139,43 @@ class _ETF(_TypedDict):
     iClose: int
 
 
-class _ClosingPriceInfo(_TypedDict):
-    priceChange: float
-    priceMin: float
-    priceMax: float
-    priceYesterday: float
-    priceFirst: float
-    last: bool
-    id: int
-    insCode: str
+class _InstrumentState(_TypedDict):
+    idn: int
     dEven: int
     hEven: int
-    pClosing: float
-    iClose: bool
-    yClose: bool
-    pDrCotVal: float
-    zTotTran: float
-    qTotTran5J: float
-    qTotCap: float
+    insCode: None
+    cEtaval: str
+    realHeven: int
+    underSupervision: int
+    cEtavalTitle: str
+
+
+class _ClosingPriceInfo(_TypedDict):
+        instrumentState: _InstrumentState
+        instrument: None
+        lastHEven: int
+        finalLastDate: int
+        nvt: float
+        mop: int
+        thirtyDayClosingHistory: None
+        priceChange: float
+        priceMin: float
+        priceMax: float
+        priceYesterday: float
+        priceFirst: float
+        last: bool
+        id: int
+        insCode: str
+        dEven: int
+        hEven: int
+        pClosing: float
+        iClose: bool
+        yClose: bool
+        pDrCotVal: float
+        zTotTran: float
+        qTotTran5J: float
+        qTotCap: float
+
 
 class Instrument:
 
@@ -598,6 +617,26 @@ class Instrument:
         return InstrumentOnDate(_inst=self, _date=date)
 
 
+class _ClosingPrice(_TypedDict):
+    priceChange: float
+    priceMin: float
+    priceMax: float
+    priceYesterday: float
+    priceFirst: float
+    last: bool
+    id: int
+    insCode: str
+    dEven: int
+    hEven: int
+    pClosing: float
+    iClose: bool
+    yClose: bool
+    pDrCotVal: float
+    zTotTran: float
+    qTotTran5J: float
+    qTotCap: float
+
+
 class InstrumentOnDate:
 
     __slots__ = 'date', 'code', 'inst'
@@ -618,7 +657,7 @@ class InstrumentOnDate:
         self.inst = _inst
         self.code = _inst.code
 
-    async def closing_price(self) -> dict:
+    async def closing_price(self) -> _ClosingPrice:
         """Return general closing price info.
 
         Result dict has the following keys: {

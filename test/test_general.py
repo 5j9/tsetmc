@@ -1,12 +1,16 @@
+from test import assert_dict_type
+
 from aiohttp_test_utils import file
 from numpy import dtype
 
 from tsetmc.general import (
+    _MarketOverview,
     boards,
     cs_codes,
     industrial_groups_overview,
     major_holders_activity,
     market_map_data,
+    market_overview,
     top_industry_groups,
 )
 
@@ -157,3 +161,9 @@ async def test_top_industry_groups():
         ('tno', dtype('int64')),
         ('tvol', dtype('float64')),
         ('tval', dtype('float64'))]
+
+
+@file('market_overview.json')
+async def test_market_overview():
+    d = await market_overview()
+    assert_dict_type(d, _MarketOverview)

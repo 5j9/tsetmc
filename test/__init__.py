@@ -1,5 +1,6 @@
 from aiohttp_test_utils import init_tests
 from jdatetime import datetime as jdatetime
+from pydantic import create_model_from_typeddict
 
 # noinspection PyProtectedMember
 from tsetmc import _MarketState
@@ -20,3 +21,7 @@ def assert_market_state(market_state: _MarketState):
         'fb_tvol', 'fb_tval', 'derivatives_tvol', 'derivatives_tval',
         'tse_index_change_percent'}
     assert all(type(v) is float for v in market_state.values())
+
+
+def assert_dict_type(d: dict, t: callable):
+    assert d == create_model_from_typeddict(t)(**d)

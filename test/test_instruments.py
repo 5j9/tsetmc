@@ -1,5 +1,5 @@
 from datetime import datetime
-from test import assert_market_state
+from test import assert_dict_type, assert_market_state
 from types import NoneType
 from unittest.mock import patch
 
@@ -12,6 +12,7 @@ from pytest import raises
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
     Instrument,
+    _ClosingPriceInfo,
     _LiveData,
     _parse_price_info,
     price_adjustments,
@@ -531,15 +532,9 @@ async def test_daily_closing_price():
 
 
 @file('closing_price_info_karis.json')
-async def test_info():
+async def test_closing_price_info():
     info = await KARIS.closing_price_info()
-    assert info.keys() == {
-        'dEven', 'finalLastDate', 'hEven', 'iClose', 'id', 'insCode',
-        'instrument', 'instrumentState', 'last', 'lastHEven', 'mop', 'nvt',
-        'pClosing', 'pDrCotVal', 'priceChange', 'priceFirst', 'priceMax',
-        'priceMin', 'priceYesterday', 'qTotCap', 'qTotTran5J',
-        'thirtyDayClosingHistory', 'yClose', 'zTotTran'
-    }
+    assert_dict_type(info, _ClosingPriceInfo)
 
 
 @file('best_limits.json')

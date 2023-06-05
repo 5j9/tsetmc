@@ -1,12 +1,8 @@
 from io import StringIO as _StringIO
+from typing import TypedDict as _TypedDict
 
 from bs4 import BeautifulSoup as _BeautifulSoup
-from pandas import (
-    NA as _NA,
-    concat as _concat,
-    read_html as _read_html,
-    read_json as _read_json,
-)
+from pandas import NA as _NA, concat as _concat, read_html as _read_html
 
 from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
 
@@ -102,3 +98,32 @@ def _parse_tds(tds):
         except ValueError:
             if td == '\xa0':
                 yield _NA
+
+
+class _MarketOverview(_TypedDict):
+    lastDataDEven: int
+    lastDataHEven: int
+    indexLastValue: float
+    indexChange: float
+    indexEqualWeightedLastValue: float
+    indexEqualWeightedChange: float
+    marketActivityDEven: int
+    marketActivityHEven: int
+    marketActivityZTotTran: int
+    marketActivityQTotCap: float
+    marketActivityQTotTran: float
+    marketState: str
+    marketValue: float
+    marketValueBase: float
+    marketStateTitle: str
+
+
+async def market_overview(n=1) -> _MarketOverview:
+    """Return GetMarketOverview result.
+
+    :param n:
+        1: bourse
+        2: fara-bourse
+    """
+    j = await _api(f'MarketData/GetMarketOverview/{n}')
+    return j['marketOverview']
