@@ -2,6 +2,7 @@ Unreleased
 ----------
 * Added new async function: ``general.market_overview()``
 * Improved type annotations
+* Deprecated ``Instrument.live_data``. It relies on the old tsetmc site. See the docstring for alternatives.
 
 v0.48.2
 -------

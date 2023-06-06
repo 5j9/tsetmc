@@ -7,7 +7,7 @@ from aiohttp_test_utils import file
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
-from pytest import raises
+from pytest import raises, warns
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
@@ -114,38 +114,44 @@ def assert_live_data(
 
 @file('dara_yekom.txt')
 async def test_dara1_instant():
-    d = await Instrument(62235397452612911).live_data(
-        market_state=True, best_limits=True
-    )
+    with warns(DeprecationWarning):
+        d = await Instrument(62235397452612911).live_data(
+            market_state=True, best_limits=True
+        )
     assert_live_data(d, best_limits=True, market_state=True, nav=True)
 
 
 @file('asam.txt')
 async def test_asam_instant():
-    d = await Instrument(36592972482259020).live_data(best_limits=True)
+    with warns(DeprecationWarning):
+        d = await Instrument(36592972482259020).live_data(best_limits=True)
     assert_live_data(d, best_limits=True, nav=True)
 
 
 @file('negin.txt')
 async def test_negin_instant():
-    d = await Instrument(10145129193828624).live_data()
+    with warns(DeprecationWarning):
+        d = await Instrument(10145129193828624).live_data()
     assert_live_data(d, nav=True)
 
 
 @file('fmelli.txt')
 async def test_fmelli_instant():
-    d = await Instrument(35425587644337450).live_data(best_limits=False)
+    with warns(DeprecationWarning):
+        d = await Instrument(35425587644337450).live_data(best_limits=False)
     assert_live_data(d, best_limits=False)
 
 
 @file('vskhooz_short_response.txt')
 async def test_vskhooz_short():
-    assert_live_data(await Instrument(5454781314262062).live_data())
+    with warns(DeprecationWarning):
+        assert_live_data(await Instrument(5454781314262062).live_data())
 
 
 @file('vskhooz_long_response.txt')
 async def test_vskhooz_long():
-    assert_live_data(await Instrument(5454781314262062).live_data())
+    with warns(DeprecationWarning):
+        assert_live_data(await Instrument(5454781314262062).live_data())
 
 
 @file('fmelli_trade_history_top2.txt')
@@ -169,7 +175,8 @@ async def test_trade_history():
 
 @file('vsadid.txt')
 async def test_vsadid():
-    d = await Instrument(41713045190742691).live_data()
+    with warns(DeprecationWarning):
+        d = await Instrument(41713045190742691).live_data()
     assert_live_data(d)
 
 

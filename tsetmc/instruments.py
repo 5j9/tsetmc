@@ -5,6 +5,7 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
 from re import fullmatch as _fullmatch
+from warnings import warn as _warn
 
 from pandas import (
     read_csv as _read_csv,
@@ -386,11 +387,16 @@ class Instrument:
         :keyword best_limits: parse best_limits and include related values.
         :keyword market_state: parse values related to market state.
 
-        Alternative methods from the new API:
-        - self.closing
-        - self.best_limits
-        - self.etf
+        Alternatives from the new API:
+        - `Instrument.closing_price_info`
+        - `Instrument.best_limits`
+        - `Instrument.etf`
+        - `general.market_overview`
         """
+        _warn(
+            '`Instrument.live_data()` is deprecated; see its doc-string for alternatives',
+            DeprecationWarning, stacklevel=2,
+        )
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
