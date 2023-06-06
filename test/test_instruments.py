@@ -227,7 +227,8 @@ async def test_identification():
 
 @file('opal_client_types.txt')
 async def test_client_type_history_old():
-    df = await Instrument(655060129740445).client_type_history_old()
+    with warns(DeprecationWarning):
+        df = await Instrument(655060129740445).client_type_history_old()
     assert [*df.dtypes.items()] == [
         ('n_buy_count', dtype('int64')),
         ('l_buy_count', dtype('int64')),

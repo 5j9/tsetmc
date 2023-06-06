@@ -2,7 +2,11 @@ Unreleased
 ----------
 * Added new async function: ``general.market_overview()``
 * Improved type annotations
-* Deprecated ``Instrument.live_data``. It relies on the old tsetmc site. See the docstring for alternatives.
+* Deprecated the following methods which rely on the old tsetmc site and have new alternatives:
+
+  * ``Instrument.live_data``. See the docstring for alternatives.
+  * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
+
 * Updated dataset
 
 v0.48.2

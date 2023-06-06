@@ -471,6 +471,10 @@ class Instrument:
         See also:
             :meth:`Instrument.client_type_history`
         """
+        _warn(
+            '`client_type_history_old()` is deprecated; use `client_type_history` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         return _csv2df(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}'))
             , names=(
