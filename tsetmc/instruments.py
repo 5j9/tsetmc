@@ -494,6 +494,8 @@ class Instrument:
             full history as a DataFrame. Otherwise, return the data for that
             specific date as a dict.
 
+        Legal persoans are indicated with `N`, natural persons with `I`.
+
         See also:
             :meth:`Instrument.client_type`
         """
