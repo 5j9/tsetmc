@@ -494,6 +494,9 @@ class Instrument:
             :meth:`Instrument.client_type`
         """
         if date is None:
+            # the following api call returns a result that is equivalent to
+            # j = (await _api(f'ClientType/GetClientType/{self.code}/1/0'))[
+            #     'clientType']
             j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
             return _DataFrame(j['clientType'], copy=False)
 
