@@ -11,6 +11,7 @@ from pytest import raises, warns
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
+    _ETF,
     Instrument,
     _ClosingPriceInfo,
     _LiveData,
@@ -571,11 +572,9 @@ async def test_client_type():
 
 
 @file('etf_karis.json')
-async def test_client_type():
+async def test_etf():
     d = await KARIS.etf()
-    assert d.keys() == {
-        'insCode', 'deven', 'hEven', 'pRedTran', 'pSubTran', 'iClose'
-    }
+    assert_dict_type(d, _ETF)
 
 
 @file('related_companies_karis.json')
