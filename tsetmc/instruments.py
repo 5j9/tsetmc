@@ -192,7 +192,7 @@ class _ClientType(_TypedDict):
 
 class Instrument:
 
-    __slots__ = 'code', '_l18', '_l30', '_cisin'
+    __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
     def __init__(self, code: int, l18: str = None, l30: str = None):
         self.code = code
@@ -248,6 +248,14 @@ class Instrument:
             await self.page_data()
         return self._cisin
 
+    @property
+    async def cs(self) -> str:
+        try:
+            return self._cs
+        except AttributeError:
+            await self.page_data()
+        return self._cs
+
     @staticmethod
     async def from_l18(l18: str, /) -> 'Instrument':
         try:
@@ -296,12 +304,11 @@ class Instrument:
         j = await _api(f'Fund/GetETFByInsCode/{self.code}')
         return j['etf']
 
-    async def related_companies(self, c_sec_val=None) -> dict[str, _DataFrame]:
-        if c_sec_val is None:
-            info = await self.info()
-            c_sec_val = info['sector']['cSecVal']
+    async def related_companies(self, cs=None) -> dict[str, _DataFrame]:
+        if cs is None:
+            cs = await self.cs
 
-        j = await _api(f'ClosingPrice/GetRelatedCompany/{c_sec_val}')
+        j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
 
         j['relatedCompany'] = _DataFrame(
             # flatten the records
@@ -348,10 +355,11 @@ class Instrument:
             l30 = self._l30 = title_match[1]
             l18 = self._l18 = m['LVal18AFC']
             cisin = self._cisin = m['CIsin']
+            cs = self._cs = m['CSecVal']
             result = {
                 'bvol': int(m['BaseVol']),
                 'cisin': cisin,
-                'cs': int(m['CSecVal']),
+                'cs': int(cs),
                 'eps': int(eps) if eps else None,
                 'sps': float(sps) if sps else None,
                 'flow': int(m['Flow']),

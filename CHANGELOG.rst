@@ -1,5 +1,7 @@
 Unreleased
 ----------
+* BREAKING CHANGE: renamed the ``c_sec_val`` parameter of ``Instrument.related_companies`` to ``cs``
+* Added new async property: ``Instrument.cs``
 * Added new async function: ``general.market_overview()``
 * Improved type annotations
 * Deprecated the following methods which rely on the old tsetmc site and have new alternatives:

@@ -578,7 +578,7 @@ async def test_etf():
 @file('related_companies_karis.json')
 async def test_related_companies():
     # await KARIS.info()['sector']['cSecVal'] == "68 "
-    d = await KARIS.related_companies(c_sec_val="68 ")
+    d = await KARIS.related_companies(cs="68 ")
     c = d['relatedCompany']
     h = d['relatedCompanyThirtyDayHistory']
 
