@@ -2,8 +2,9 @@ from test import assert_dict_type
 
 from aiohttp_test_utils import file
 from numpy import dtype
+from pytest import warns
 
-from tsetmc.instruments import Instrument, _ClosingPrice
+from tsetmc.instruments import Instrument, _ClientTypeOnDate, _ClosingPrice
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
@@ -114,3 +115,11 @@ async def test_intraday_holders():
         ('perOfShares', dtype('float64')),
         ('change', dtype('int64')),
         ('changeAmount', dtype('float64'))]
+
+@file('ondate_client_type.json')
+async def test_client_type():
+    d = await FARAZ_ON_DATE.client_type()
+    assert_dict_type(d, _ClientTypeOnDate)
+    with warns():
+        d2 = await FARAZ_ON_DATE.client_types()
+    assert d2 == d

@@ -13,6 +13,7 @@ from pytest import raises, warns
 from tsetmc.instruments import (
     _ETF,
     Instrument,
+    _ClientType,
     _ClosingPriceInfo,
     _LiveData,
     _parse_price_info,
@@ -565,11 +566,7 @@ async def test_best_limits():
 @file('client_type_karis.json')
 async def test_client_type():
     d = await KARIS.client_type()
-    assert d.keys() == {
-        'buy_I_Volume', 'buy_N_Volume', 'buy_DDD_Volume', 'buy_CountI',
-        'buy_CountN', 'buy_CountDDD', 'sell_I_Volume', 'sell_N_Volume',
-        'sell_CountI', 'sell_CountN',
-    }
+    assert_dict_type(d, _ClientType)
 
 
 @file('etf_karis.json')

@@ -177,6 +177,18 @@ class _ClosingPriceInfo(_TypedDict):
         qTotTran5J: float
         qTotCap: float
 
+class _ClientType(_TypedDict):
+    buy_I_Volume: float
+    buy_N_Volume: float
+    buy_DDD_Volume: float
+    buy_CountI: int
+    buy_CountN: int
+    buy_CountDDD: int
+    sell_I_Volume: float
+    sell_N_Volume: float
+    sell_CountI: int
+    sell_CountN: int
+
 
 class Instrument:
 
@@ -272,7 +284,7 @@ class Instrument:
         df = _DataFrame(j['bestLimits'], copy=False)
         return df
 
-    async def client_type(self) -> dict:
+    async def client_type(self) -> _ClientType:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
     
@@ -652,6 +664,23 @@ class _ClosingPrice(_TypedDict):
     qTotCap: float
 
 
+class _ClientTypeOnDate(_TypedDict):
+        recDate: int
+        insCode: str
+        buy_I_Volume: float
+        buy_N_Volume: float
+        buy_I_Value: float
+        buy_N_Value: float
+        buy_N_Count: int
+        sell_I_Volume: float
+        buy_I_Count: float
+        sell_N_Volume: float
+        sell_I_Value: float
+        sell_N_Value: float
+        sell_N_Count: int
+        sell_I_Count: int
+
+
 class InstrumentOnDate:
 
     __slots__ = 'date', 'code', 'inst'
@@ -696,8 +725,15 @@ class InstrumentOnDate:
         j = await _api(f'MarketData/GetInstrumentState/{self.code}/{self.date}')
         return _DataFrame(j['instrumentState'], copy=False)
 
-    async def client_types(self) -> dict:
+    async def client_type(self) -> _ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
+
+    async def client_types(self) -> dict:
+        _warn(
+            '`InstrumentOnDate.client_types()` is deprecated; use `client_type` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
+        return await self.client_type()
 
     async def holders(self) -> _DataFrame:
         """Return share/unit holders for a specific date and a day before that.

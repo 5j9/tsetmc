@@ -7,6 +7,7 @@ Unreleased
   * ``Instrument.live_data``. See the docstring for alternatives.
   * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
 
+* ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
 * Updated dataset
 
 v0.48.2
