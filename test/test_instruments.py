@@ -15,6 +15,7 @@ from tsetmc.instruments import (
     Instrument,
     _ClientType,
     _ClosingPriceInfo,
+    _Identity,
     _LiveData,
     _parse_price_info,
     price_adjustments,
@@ -212,7 +213,9 @@ async def test_equal():
 
 @file('vsadid_identification.html')
 async def test_identification():
-    assert await Instrument(41713045190742691).identification() == {
+    with warns(DeprecationWarning):
+        identification = await Instrument(41713045190742691).identification()
+    assert identification == {
         'بازار': 'بازار پایه زرد فرابورس',
         'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
         'نام شرکت': 'گروه\u200cصنعتی\u200cسدید',
@@ -321,7 +324,9 @@ async def test_holder():
 @file('vsadid_identification.html')
 async def test_holders_without_cisin():
     inst = Instrument(41713045190742691)
-    assert (await inst.identification())['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
+    with warns(DeprecationWarning):
+        d = await inst.identification()
+    assert d['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
     with patch.object(
         Instrument, 'info', side_effect=NotImplementedError
     ) as info:
@@ -645,3 +650,9 @@ async def test_related_companies():
     ]
 
     assert h.groupby('insCode')['insCode'].agg(len).mode()[0] == 29
+
+
+@file('test_identity.json')
+async def test_identity():
+    d = await KARIS.identity()
+    assert_dict_type(d, _Identity)

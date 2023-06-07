@@ -3,12 +3,14 @@ Unreleased
 * BREAKING CHANGE: renamed the ``c_sec_val`` parameter of ``Instrument.related_companies`` to ``cs``
 * Added new async property: ``Instrument.cs``
 * Added new async function: ``general.market_overview()``
+* Added new async method: ``Instrument.identity()``
 * Improved type annotations
 * Deprecated the following methods which rely on the old tsetmc site and have new alternatives:
 
   * ``Instrument.live_data``. See the docstring for alternatives.
   * ``Instrument.page_data``. See the docstring for alternatives.
   * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
+  * ``Instrument.identification``. Use ``identity`` instead.
 
 * ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
 * Updated dataset

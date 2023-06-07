@@ -1,13 +1,18 @@
-# generate TypedDict from dict in clipboard
+# generate TypedDict from dict or json in clipboard
 from pyperclip import paste
 
-d: dict = eval(paste())
+pst = paste()
+try:
+    d: dict = eval(pst)
+except NameError:  # name 'null' is not defined
+    import json
+    d = json.loads(pst)
 
 def print_types(d, name=None):
     if name is None:
-        print('class _ClassName(_TypedDict):')
+        string = '\nclass _ClassName(_TypedDict):\n'
     else:
-        print(f'\n\nclass {name}(_TypedDict):')
+        string = f'\nclass {name}(_TypedDict):\n'
 
     subs = []
     for k, v in d.items():
@@ -15,13 +20,15 @@ def print_types(d, name=None):
         if vt is dict:
             name = '_' + k[0].upper() + k[1:]
             subs.append((v, name))
-            print(f'    {k}: {name}')
+            string += f'    {k}: {name}\n'
         elif v is None:
-            print(f'    {k}: None')
+            string += f'    {k}: None\n'
         else:
-            print(f'    {k}: {type(v).__name__}')
+            string += f'    {k}: {type(v).__name__}\n'
 
     for d, name in subs:
         print_types(d, name=name)
+
+    print(string)
 
 print_types(d)

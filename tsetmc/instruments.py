@@ -152,30 +152,30 @@ class _InstrumentState(_TypedDict):
 
 
 class _ClosingPriceInfo(_TypedDict):
-        instrumentState: _InstrumentState
-        instrument: None
-        lastHEven: int
-        finalLastDate: int
-        nvt: float
-        mop: int
-        thirtyDayClosingHistory: None
-        priceChange: float
-        priceMin: float
-        priceMax: float
-        priceYesterday: float
-        priceFirst: float
-        last: bool
-        id: int
-        insCode: str
-        dEven: int
-        hEven: int
-        pClosing: float
-        iClose: bool
-        yClose: bool
-        pDrCotVal: float
-        zTotTran: float
-        qTotTran5J: float
-        qTotCap: float
+    instrumentState: _InstrumentState
+    instrument: None
+    lastHEven: int
+    finalLastDate: int
+    nvt: float
+    mop: int
+    thirtyDayClosingHistory: None
+    priceChange: float
+    priceMin: float
+    priceMax: float
+    priceYesterday: float
+    priceFirst: float
+    last: bool
+    id: int
+    insCode: str
+    dEven: int
+    hEven: int
+    pClosing: float
+    iClose: bool
+    yClose: bool
+    pDrCotVal: float
+    zTotTran: float
+    qTotTran5J: float
+    qTotCap: float
 
 class _ClientType(_TypedDict):
     buy_I_Volume: float
@@ -188,6 +188,44 @@ class _ClientType(_TypedDict):
     sell_N_Volume: float
     sell_CountI: int
     sell_CountN: int
+
+
+class _Sector(_TypedDict):
+    dEven: int
+    cSecVal: str
+    lSecVal: str
+
+
+class _SubSector(_TypedDict):
+    dEven: int
+    cSecVal: None
+    cSoSecVal: int
+    lSoSecVal: str
+
+
+class _Identity(_TypedDict):
+    sector: _Sector
+    subSector: _SubSector
+    cValMne: str
+    lVal18: str
+    cSocCSAC: str
+    lSoc30: str
+    yMarNSC: str
+    yVal: str
+    insCode: str
+    lVal30: str
+    lVal18AFC: str
+    flow: int
+    cIsin: str
+    zTitad: float
+    baseVol: int
+    instrumentID: str
+    cgrValCot: str
+    cComVal: str
+    lastDate: int
+    sourceID: int
+    flowTitle: str
+    cgrValCotTitle: str
 
 
 class Instrument:
@@ -543,10 +581,21 @@ class Instrument:
         Related API descriptions:
             https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
+
+        This method uses old.tsetmc.com.
+        For the new API use `Instrument.identity`.
         """
+        _warn(
+            '`InstrumentOnDate.identification()` is deprecated; use `identity` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         text = await _get_par_tree(f'15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
+
+    async def identity(self) -> _Identity:
+        j = await _api(f'Instrument/GetInstrumentIdentity/{self.code}', fa=True)
+        return j['instrumentIdentity']
 
     async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
