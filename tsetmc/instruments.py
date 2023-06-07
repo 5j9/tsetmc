@@ -730,20 +730,20 @@ class _ClosingPrice(_TypedDict):
 
 
 class _ClientTypeOnDate(_TypedDict):
-        recDate: int
-        insCode: str
-        buy_I_Volume: float
-        buy_N_Volume: float
-        buy_I_Value: float
-        buy_N_Value: float
-        buy_N_Count: int
-        sell_I_Volume: float
-        buy_I_Count: float
-        sell_N_Volume: float
-        sell_I_Value: float
-        sell_N_Value: float
-        sell_N_Count: int
-        sell_I_Count: int
+    recDate: int
+    insCode: str
+    buy_I_Volume: float
+    buy_N_Volume: float
+    buy_I_Value: float
+    buy_N_Value: float
+    buy_N_Count: int
+    sell_I_Volume: float
+    buy_I_Count: float
+    sell_N_Volume: float
+    sell_I_Value: float
+    sell_N_Value: float
+    sell_N_Count: int
+    sell_I_Count: int
 
 
 class InstrumentOnDate:
