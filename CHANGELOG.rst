@@ -7,6 +7,7 @@ Unreleased
 * Deprecated the following methods which rely on the old tsetmc site and have new alternatives:
 
   * ``Instrument.live_data``. See the docstring for alternatives.
+  * ``Instrument.page_data``. See the docstring for alternatives.
   * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
 
 * ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead

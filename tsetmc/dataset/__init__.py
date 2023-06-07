@@ -38,10 +38,10 @@ def _dump_l18s():
 async def add_instrument(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     code = inst.code
-    d = await inst.page_data()
+    info = await inst.info()
     # isin = df.at['کد 12 رقمی نماد', 1]
-    l18 = d['l18']
-    _L18S[l18] = code, l18, d['l30']
+    l18 = info['lVal18AFC']
+    _L18S[l18] = code, l18, info['lVal30']
     _dump_l18s()
 
 

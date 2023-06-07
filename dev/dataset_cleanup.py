@@ -21,11 +21,12 @@ CHECKED = {*()}
 async def check(l18: str):
     if l18 in CHECKED:
         return
-    page_data = await (await Instrument.from_l18(l18)).page_data()
+    inst = await Instrument.from_l18(l18)
+    info = await inst.info()
     if (
-        page_data['cs'] in _CS_EXCLUSIONS
-        or page_data['flow'] == 3
-        or page_data['flow_name'] == 'بازار اوراق بدهی'
+        inst.cs in _CS_EXCLUSIONS
+        or info['flow'] == 3
+        or info['flowTitle'] == 'بازار اوراق بدهی'
         or is_commodity_certificate_of_deposit(l18)
     ):
         RA(l18)

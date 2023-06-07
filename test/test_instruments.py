@@ -62,25 +62,29 @@ def assert_page_data(
 async def test_page_data():
     ins = Instrument(35425587644337450)
     assert ins._l18 is ins._l30 is None
-    d = await ins.page_data(True, True, True)
+    with warns(DeprecationWarning):
+        d = await ins.page_data(True, True, True)
     assert_page_data(d, True, True, True)
 
 
 @file('dey.html')
 async def test_page_data_no_free_float():
-    d = await Instrument(44818950263583523).page_data()
+    with warns(DeprecationWarning):
+        d = await Instrument(44818950263583523).page_data()
     assert_page_data(d)
 
 
 @file('kala.html')
 async def test_page_data_no_eps():
-    d = await Instrument(44549439964296944).page_data()
+    with warns(DeprecationWarning):
+        d = await Instrument(44549439964296944).page_data()
     assert_page_data(d)
 
 
 @file('khgostar.html')
 async def test_page_data_negative_sector_pe():
-    d = await Instrument(48990026850202503).page_data()
+    with warns(DeprecationWarning):
+        d = await Instrument(48990026850202503).page_data()
     assert_page_data(d)
 
 
@@ -319,11 +323,11 @@ async def test_holders_without_cisin():
     inst = Instrument(41713045190742691)
     assert (await inst.identification())['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
     with patch.object(
-        Instrument, 'page_data', side_effect=NotImplementedError
-    ) as page_data:
+        Instrument, 'info', side_effect=NotImplementedError
+    ) as info:
         with raises(NotImplementedError):
             await (inst.holders())
-    page_data.assert_called_once()
+    info.assert_called_once()
 
 
 @file('fmelli_price_adjustment.html')

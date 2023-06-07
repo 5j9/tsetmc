@@ -220,7 +220,7 @@ class Instrument:
         try:
             self._l18, self._l30 = _l18_l30(self.code)
         except KeyError:
-            await self.page_data()
+            await self.info()
         return self._l18
 
     @property
@@ -234,7 +234,7 @@ class Instrument:
         try:
             self._l18, self._l30 = _l18_l30(self.code)
         except KeyError:
-            await self.page_data()
+            await self.info()
         return self._l30
 
     @property
@@ -242,10 +242,7 @@ class Instrument:
         try:
             return self._cisin
         except AttributeError:
-            # can also be fetched using self.identification()
-            # but that won't load self._l18 since 'نماد فارسی'
-            # sometimes contains descriptions like "وسديد - لغو پذیرش شده".
-            await self.page_data()
+            await self.info()
         return self._cisin
 
     @property
@@ -253,7 +250,7 @@ class Instrument:
         try:
             return self._cs
         except AttributeError:
-            await self.page_data()
+            await self.info()
         return self._cs
 
     @staticmethod
@@ -266,6 +263,12 @@ class Instrument:
 
     async def info(self) -> dict:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
+        d = j['instrumentInfo']
+        # cache for properties
+        self._cs = d['sector']['cSecVal']
+        self._cisin = d['cIsin']
+        self._l18 = d['lVal18AFC']
+        self._l30 = d['lVal30']
         return j['instrumentInfo']
 
     async def trades(self) -> _DataFrame:
@@ -344,6 +347,11 @@ class Instrument:
         - self.related_companies
         - self.daily_closing_price
         """
+        _warn(
+            '`Instrument.page_data()` is deprecated; see its doc-string for alternatives',
+            DeprecationWarning, stacklevel=2,
+        )
+
         text = await _get_par_tree(f'151311&i={self.code}')
         if general:
             m = _PAGE_VARS(text)
