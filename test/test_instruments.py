@@ -15,6 +15,7 @@ from tsetmc.instruments import (
     Instrument,
     _ClientType,
     _ClosingPriceInfo,
+    _Codal,
     _Identity,
     _LiveData,
     _Message,
@@ -626,27 +627,9 @@ async def test_trades():
 
 @file('karis_codal.json')
 async def test_codal():
-    df = await KARIS.codal(n=3)
-    assert [*df.dtypes.items()] == [
-        ('id', dtype('int64')),
-        ('symbol', dtype('O')),
-        ('name', dtype('O')),
-        ('title', dtype('O')),
-        ('sentDateTime_Gregorian', dtype('O')),
-        ('publishDateTime_Gregorian', dtype('O')),
-        ('publishDateTime_DEven', dtype('int64')),
-        ('mainTableRowID', dtype('int64')),
-        ('hasHtmlReport', dtype('int64')),
-        ('hasExcelReport', dtype('int64')),
-        ('hasPDFReport', dtype('int64')),
-        ('hasXMLReport', dtype('int64')),
-        ('attachmentID', dtype('int64')),
-        ('contentType', dtype('int64')),
-        ('fileName', dtype('O')),
-        ('fileExtension', dtype('O')),
-        ('tracingNo', dtype('O'))
-    ]
-    assert len(df) == 3
+    d = await KARIS.codal(n=3)
+    assert len(d) == 3
+    assert_dict_type(d[0], _Codal)
 
 
 @file('daily_closing_price_karis.json')
@@ -661,8 +644,6 @@ async def test_daily_closing_price():
         ('last', dtype('bool')),
         ('id', dtype('int64')),
         ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
@@ -672,6 +653,7 @@ async def test_daily_closing_price():
         ('qTotCap', dtype('float64')),
     ]
     assert len(df) == 3
+    assert df.index.dtype == dtype('<M8[ns]')
 
 
 @file('closing_price_info_karis.json')

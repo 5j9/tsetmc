@@ -248,6 +248,26 @@ class _Message(_TypedDict):
     flow: int
 
 
+class _Codal(_TypedDict):
+    id: int
+    symbol: str
+    name: str
+    title: str
+    sentDateTime_Gregorian: str
+    publishDateTime_Gregorian: str
+    publishDateTime_DEven: int
+    mainTableRowID: int
+    hasHtmlReport: int
+    hasExcelReport: int
+    hasPDFReport: int
+    hasXMLReport: int
+    attachmentID: int
+    contentType: int
+    fileName: str
+    fileExtension: str
+    tracingNo: str
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
@@ -334,14 +354,17 @@ class Instrument:
         df = _DataFrame(j['trade'], copy=False)
         return df
 
-    async def codal(self, n=9) -> _DataFrame:
+    async def codal(self, n=9) -> list[_Codal]:
         j = await _api(f'Codal/GetPreparedDataByInsCode/{n}/{self.code}', fa=True)
-        df = _DataFrame(j['preparedData'], copy=False)
-        return df
+        return j['preparedData']
 
     async def daily_closing_price(self, n=9) -> _DataFrame:
         j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}')
         df = _DataFrame(j['closingPriceDaily'], copy=False)
+        df['date'] = _to_datetime(
+            df.pop('dEven').astype(str) + df.pop('hEven').astype(str)
+        )
+        df.set_index('date', inplace=True)
         return df
 
     async def closing_price_info(self) -> _ClosingPriceInfo:
