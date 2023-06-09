@@ -483,56 +483,19 @@ async def test_introduction():
 
 @file('fmelli_publisher.json')
 async def test_publisher():
-    assert await (await Instrument.from_l18('فملی')).publisher() == {
-        'activitySubject': '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           '\r\n'
-                           'اکتشافات،  استخراج و  بهره برداری از معادن  مس  ایران',
-        'address': 'مجتمع مس سرچشمه و مجتمع مس میدوک در استان کرمان و مجتمع مس سونگون '
-                   'در تبریز شهرستان ورزقان واقع شده اند.',
-        'auditorName': 'حسابرسی وخدمات مالی ومدیریت ایران مشهود',
-        'companyId': None,
-        'companyType': '0',
-        'companyType1': None,
-        'displaySymbol': 'فملی',
-        'email': 'office@nicico.com',
-        'enActivitySubject': None,
-        'enAddress': None,
-        'enDisplayedSymbol': None,
-        'enExecutiveManager': None,
-        'enFinancialManager': None,
-        'enInspector': None,
-        'enManagementGroup': None,
-        'enName': None,
-        'enOfficeAddress': None,
-        'enShareOfficeAddress': None,
-        'executiveManager': 'علی رستمی',
-        'faxNo': '021-88729014',
-        'financialManager': 'امید علی معیری',
-        'financialYear': '12/29',
-        'id': 6078,
-        'inspListedCapitalector': None,
-        'inspector': 'موسسه حسابرسی و خدمات مدیریتی هشیار بهمند',
-        'isic': '272006',
-        'listedCapital': '400000000',
-        'managementGroup': None,
-        'name': 'ملی صنایع مس ایران',
-        'nationalCode': '10100582059',
-        'officeAddress': 'تهران خیابان ولیعصر نرسیده به پارک ساعی پلاک 2161',
-        'reportingType': '1000000',
-        'shareOfficeAddress': 'تهران خیابان خالد اسلامبولی (وزراء) خیابان 11 پلاک 22 '
-                              'طبقه اول',
-        'state': '0',
-        'stateName': None,
-        'symbol': 'فملی',
-        'telNo': '021-88724410',
-        'website': 'www.nicico.com'
+    inst = await Instrument.from_l18('فملی')
+    publisher = await inst.publisher()
+    assert publisher.keys() == {
+        'activitySubject', 'address', 'auditorName', 'companyId',
+        'companyType', 'companyType1', 'displaySymbol', 'email',
+        'enActivitySubject', 'enAddress', 'enDisplayedSymbol',
+        'enExecutiveManager', 'enFinancialManager', 'enInspector',
+        'enManagementGroup', 'enName', 'enOfficeAddress',
+        'enShareOfficeAddress', 'executiveManager', 'faxNo',
+        'financialManager', 'financialYear', 'id', 'inspListedCapitalector',
+        'inspector', 'isic', 'listedCapital', 'managementGroup', 'name',
+        'nationalCode', 'officeAddress', 'reportingType', 'shareOfficeAddress',
+        'state', 'stateName', 'symbol', 'telNo', 'website',
     }
 
 

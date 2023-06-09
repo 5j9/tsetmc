@@ -97,6 +97,8 @@ async def test_intraday_states():
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('insCode', dtype('O')),
+        ('lVal18AFC', dtype('O')),
+        ('lVal30', dtype('O')),
         ('cEtaval', dtype('O')),
         ('realHeven', dtype('int64')),
         ('underSupervision', dtype('int64')),
