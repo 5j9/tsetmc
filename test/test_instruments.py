@@ -19,9 +19,12 @@ from tsetmc.instruments import (
     _LiveData,
     _parse_price_info,
     _Search,
+    _ShareHolder,
+    _ShareHolderCompany,
     old_search,
     price_adjustments,
     search,
+    share_holder_companies,
 )
 
 
@@ -288,7 +291,9 @@ async def test_client_type_history_no_date():
 
 @file('ava_holders.txt')
 async def test_holders_with_cisin():
-    holders = await Instrument(18007109712724189).holders(cisin='IRT3AVAF0003')
+    inst = Instrument(18007109712724189)
+    with warns(DeprecationWarning):
+        holders = await inst.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
         ('holder', dtype('O')),
         ('shares/units', dtype('O')),
@@ -297,9 +302,17 @@ async def test_holders_with_cisin():
         ('id_cisin', dtype('O'))]
 
 
+@file('ava_holders.json')
+async def test_share_holders():
+    holders = await Instrument(18007109712724189).share_holders()
+    assert_dict_type(holders[0], _ShareHolder)
+
+
 @file('ava_holders2.txt')
 async def test_holders_change_column_type():
-    holders = await Instrument(18007109712724189).holders(cisin='IRT3AVAF0003')
+    inst = Instrument(18007109712724189)
+    with warns(DeprecationWarning):
+        holders = await inst.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
         ('holder', dtype('O')),
         ('shares/units', dtype('O')),
@@ -311,18 +324,39 @@ async def test_holders_change_column_type():
 @file('ava_holder.txt')
 async def test_holder():
     inst = Instrument(18007109712724189)
-    # has no other holdings
-    hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
+    with warns(DeprecationWarning):
+        # has no other holdings
+        hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
     assert hist.to_csv(lineterminator='\n').startswith(
         'date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n'
     )
     assert oth.to_csv(lineterminator='\n') == 'ins_code,name,shares,percent\n'
-    hist = await inst.holder('69867,IRT3AVAF0003', True)
+    with warns(DeprecationWarning):
+        hist = await inst.holder('69867,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
-    oth = await inst.holder('69867,IRT3AVAF0003', False, True)
+    with warns(DeprecationWarning):
+        oth = await inst.holder('69867,IRT3AVAF0003', False, True)
     assert type(oth) is DataFrame
-    result = await inst.holder('69867,IRT3AVAF0003', False)
+    with warns(DeprecationWarning):
+        result = await inst.holder('69867,IRT3AVAF0003', False)
     assert oth.equals(result)
+
+
+@file('ava_share_holder_history.json')
+async def test_share_holder_history():
+    hist = await Instrument(18007109712724189).share_holder_history(
+        share_holder_id=21790,  # reserved code of ETFs
+        days=2,
+    )
+    assert len(hist) == 2
+    assert_dict_type(hist[0], _ShareHolder)
+
+
+@file('share_holder_companies.json')
+async def test_share_holder_companies():
+    companies = await share_holder_companies(share_holder_id=21790)
+    assert len(companies) > 50
+    assert_dict_type(companies[0], _ShareHolderCompany)
 
 
 @file('vsadid_identification.html')
@@ -334,8 +368,8 @@ async def test_holders_without_cisin():
     with patch.object(
         Instrument, 'info', side_effect=NotImplementedError
     ) as info:
-        with raises(NotImplementedError):
-            await (inst.holders())
+        with raises(NotImplementedError), warns(DeprecationWarning):
+            await inst.holders()
     info.assert_called_once()
 
 

@@ -7,6 +7,9 @@ Unreleased
 * Added new async method: ``Instrument.identity()``
 * Added new async method: ``Instrument.price_adjustments()``
 * Added new async method: ``Instrument.publisher()``
+* Added new async method: ``Instrument.share_holders()``
+* Added new async method: ``Instrument.share_holder_history()``
+* Added new async function: ``instruments.share_holder_companies()``
 * Improved type annotations
 * Deprecated the following methods which rely on the old tsetmc site and have new alternatives:
 
@@ -17,6 +20,8 @@ Unreleased
   * ``Insturment.trade_history``. Use ``daily_closing_price`` instead.
   * ``Insturment.adjustments``. Use ``price_adjustments`` instead.
   * ``Insturment.introduction``. Use ``publisher`` instead.
+  * ``Insturment.holders``. Use ``share_holders`` instead.
+  * ``Insturment.holder``. Use ``share_holder_history`` or ``share_holder_companies`` instead.
 
 * ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
 * Updated dataset

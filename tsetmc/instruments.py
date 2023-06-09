@@ -228,6 +228,17 @@ class _Identity(_TypedDict):
     cgrValCotTitle: str
 
 
+class _ShareHolder(_TypedDict):
+    shareHolderID: int
+    shareHolderName: str | None  # None: reserved code of ETFs
+    cIsin: str
+    dEven: int
+    numberOfShares: float
+    perOfShares: float
+    change: int
+    changeAmount: float
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
@@ -622,6 +633,27 @@ class Instrument:
         d =  (await search(s))[0]
         return Instrument(d['insCode'], d['lVal18AFC'], d['lVal30'])
 
+    async def share_holders(self) -> list[_ShareHolder]:
+        """Return a list of the current major holders of this instrument."""
+        j = await _api(f'Shareholder/GetInstrumentShareHolderLast/{self.code}', fa=True)
+        return j['shareHolder']
+
+    async def share_holder_history(
+        self, share_holder_id: int,
+        days: int=90,
+    ) -> list[_ShareHolder]:
+        """Return history of share changes of a particular holder.
+
+        Obtain `share_holder_id` from `self.share_holders`.
+        To get other companies of the same shareholder use the
+        `share_holder_companies` function.
+        """
+        j = await _api(
+            f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
+            fa=True
+        )
+        return j['shareHolder']
+
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.
 
@@ -630,6 +662,10 @@ class Instrument:
         See also:
             :meth:`Instrument.on_date(<date>).holders`
         """
+        _warn(
+            '`Instrumen.holders()` is deprecated; use `share_holders` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         if cisin is None:
             cisin = await self.cisin
         text = await _get_par_tree(f'15131T&c={cisin}')
@@ -653,6 +689,10 @@ class Instrument:
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
         """
+        _warn(
+            '`Instrumen.holder()` is deprecated; use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
@@ -918,6 +958,40 @@ class _Search(_TypedDict):
 async def search(s: str, /) -> list[_Search]:
     r = await _api(f'Instrument/GetInstrumentSearch/{s}', fa=True)
     return r['instrumentSearch']
+
+
+class _Instrument(_TypedDict, total=False):
+    cValMne: None
+    lVal18: None
+    cSocCSAC: None
+    lSoc30: None
+    yMarNSC: None
+    yVal: None
+    insCode: str
+    lVal30: str
+    lVal18AFC: str
+    flow: int
+    cIsin: None
+    zTitad: float
+    baseVol: int
+    instrumentID: None
+    cgrValCot: None
+    cComVal: None
+    lastDate: int
+    sourceID: int
+    flowTitle: None
+    cgrValCotTitle: None
+
+
+class _ShareHolderCompany(_TypedDict):
+    instrument: _Instrument
+    numberOfShares: int
+    perOfShares: float
+
+
+async def share_holder_companies(share_holder_id: int) -> list[_ShareHolderCompany]:
+    r = await _api(f'Shareholder/GetShareHolderCompanyList/{share_holder_id}', fa=True)
+    return r['shareHolderShare']
 
 
 def _parse_price_info(price_info):
