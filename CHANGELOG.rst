@@ -1,3 +1,7 @@
+Unreleased
+----------
+* BREAKING CHANGE: ``Instrument.share_holder_history`` now returns a ``DataFrame`` instead of a list.
+
 v0.49.0
 -------
 * BREAKING CHANGE: the output type of ``insturments.search`` function has changed from DataFrame to a list of dicts. Use ``old_search`` if you want to continue using the old format.

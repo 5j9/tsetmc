@@ -673,7 +673,7 @@ class Instrument:
     async def share_holder_history(
         self, share_holder_id: int,
         days: int=90,
-    ) -> list[_ShareHolder]:
+    ) -> _DataFrame:
         """Return history of share changes of a particular holder.
 
         Obtain `share_holder_id` from `self.share_holders`.
@@ -684,7 +684,10 @@ class Instrument:
             f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
             fa=True
         )
-        return j['shareHolder']
+        df = _DataFrame(j['shareHolder'], copy=False)
+        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
+        df.set_index('dEven', inplace=True)
+        return df
 
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.

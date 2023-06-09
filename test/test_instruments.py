@@ -346,12 +346,21 @@ async def test_holder():
 
 @file('ava_share_holder_history.json')
 async def test_share_holder_history():
-    hist = await Instrument(18007109712724189).share_holder_history(
+    df = await Instrument(18007109712724189).share_holder_history(
         share_holder_id=21790,  # reserved code of ETFs
         days=2,
     )
-    assert len(hist) == 2
-    assert_dict_type(hist[0], _ShareHolder)
+    assert len(df) == 2
+    assert [[*df.dtypes.items()]] == [
+        [('shareHolderID', dtype('int64')),
+        ('shareHolderName', dtype('O')),
+        ('cIsin', dtype('O')),
+        ('numberOfShares', dtype('float64')),
+        ('perOfShares', dtype('float64')),
+        ('change', dtype('int64')),
+        ('changeAmount', dtype('float64'))]
+    ]
+    assert df.index.dtype == dtype('<M8[ns]')
 
 
 @file('share_holder_companies.json')
