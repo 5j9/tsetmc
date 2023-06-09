@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.0
+-------
 * BREAKING CHANGE: the output type of ``insturments.search`` function has changed from DataFrame to a list of dicts. Use ``old_search`` if you want to continue using the old format.
 * BREAKING CHANGE: renamed the ``c_sec_val`` parameter of ``Instrument.related_companies`` to ``cs``.
 * BREAKING CHANGE: The DataFrame result of ``Instrument.daily_closing_price()`` now has datetime index instead of ``dEven`` and ``hEven`` columns.
