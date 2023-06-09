@@ -17,6 +17,7 @@ from tsetmc.instruments import (
     _ClosingPriceInfo,
     _Identity,
     _LiveData,
+    _Message,
     _parse_price_info,
     _Search,
     _ShareHolder,
@@ -536,7 +537,8 @@ async def test_publisher():
 
 @file('tajalli_ombud_messages.html')
 async def test_ombud_messages():
-    df = await Instrument(1301069819790264).ombud_messages()
+    with warns(DeprecationWarning):
+        df = await Instrument(1301069819790264).ombud_messages()
     assert [*df.dtypes.items()] == [
         ('header', 'string[python]'),
         ('date', dtype('O')),
@@ -544,8 +546,14 @@ async def test_ombud_messages():
     assert type(df.iat[0, 1]) is jdatetime
 
 
+@file('shetab_messages.json')
+async def test_messages():
+    messages = await Instrument(64216772923447100).messages()
+    assert_dict_type(messages[0], _Message)
+
+
 @file('fmelli_dps.txt')
-async def test_ombud_messages():
+async def test_dps_history():
     df = await Instrument(35425587644337450).dps_history()
     assert [*df.dtypes.items()] == [
         ('publish_date', dtype('O')),

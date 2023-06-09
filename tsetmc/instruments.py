@@ -239,6 +239,15 @@ class _ShareHolder(_TypedDict):
     changeAmount: float
 
 
+class _Message(_TypedDict):
+    tseMsgIdn: int
+    dEven: int
+    hEven: int
+    tseTitle: str
+    tseDesc: str
+    flow: int
+
+
 class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
@@ -736,7 +745,15 @@ class Instrument:
         df.set_index('dEven', inplace=True)
         return df
 
+    async def messages(self) -> list[_Message]:
+        j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
+        return j['msg']
+
     async def ombud_messages(self) -> _DataFrame:
+        _warn(
+            '`Instrument.ombud_messages()` is deprecated; use `messages` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         return _parse_ombud_messages(await _get_par_tree(f'15131W&i={self.code}'))
 
     async def dps_history(self) -> _DataFrame:
@@ -744,6 +761,8 @@ class Instrument:
 
         :raises pandas.errors.EmptyDataError: No columns to parse from file
         """
+        # Note: Currently does not have an _api equivalent. The DPS tab is
+        # non-functional in the new tsetmc website.
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
         df = _csv2df(
             _BytesIO(content),
