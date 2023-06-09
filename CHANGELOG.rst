@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.1
+-------
 * BREAKING CHANGE: ``Instrument.share_holder_history`` now returns a ``DataFrame`` instead of a list.
 
 v0.49.0
