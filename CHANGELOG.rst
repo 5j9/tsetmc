@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* BREAKING CHANGE: the output of ``insturments.search`` function has changed from DataFrame to a list of dicts. Use ``old_search`` if you want to continue using the old format.
+* BREAKING CHANGE: the output type of ``insturments.search`` function has changed from DataFrame to a list of dicts. Use ``old_search`` if you want to continue using the old format.
 * BREAKING CHANGE: renamed the ``c_sec_val`` parameter of ``Instrument.related_companies`` to ``cs``.
 * BREAKING CHANGE: The DataFrame result of ``Instrument.daily_closing_price()`` now has datetime index instead of ``dEven`` and ``hEven`` columns.
 * BREAKING CHANGE: ``Instrument.codal()`` now returns a list of dicts instead of a DataFrame.
@@ -18,16 +18,16 @@ Unreleased
 
   * ``Instrument.live_data``. See the docstring for alternatives.
   * ``Instrument.page_data``. See the docstring for alternatives.
-  * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
-  * ``Instrument.identification``. Use ``identity`` instead.
-  * ``Insturment.trade_history``. Use ``daily_closing_price`` instead.
-  * ``Insturment.adjustments``. Use ``price_adjustments`` instead.
-  * ``Insturment.introduction``. Use ``publisher`` instead.
-  * ``Insturment.holders``. Use ``share_holders`` instead.
-  * ``Insturment.holder``. Use ``share_holder_history`` or ``share_holder_companies`` instead.
-  * ``Insturment.ombud_messages``. Use ``messages`` instead.
+  * ``Instrument.client_type_history_old``. Use ``Instrument.client_type_history`` instead.
+  * ``Instrument.identification``. Use ``Instrument.identity`` instead.
+  * ``Insturment.trade_history``. Use ``Instrument.daily_closing_price`` instead.
+  * ``Insturment.adjustments``. Use ``Instrument.price_adjustments`` instead.
+  * ``Insturment.introduction``. Use ``Instrument.publisher`` instead.
+  * ``Insturment.holders``. Use ``Instrument.share_holders`` instead.
+  * ``Insturment.holder``. Use ``Instrument.share_holder_history`` or ``share_holder_companies`` instead.
+  * ``Insturment.ombud_messages``. Use ``Instrument.messages`` instead.
 
-* ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
+* ``InstrumentOnDate.client_types`` is deprecated, use ``Instrument.client_type`` instead
 * Updated dataset
 
 v0.48.2

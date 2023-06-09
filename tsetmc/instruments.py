@@ -429,7 +429,7 @@ class Instrument:
         - self.daily_closing_price
         """
         _warn(
-            '`Instrument.page_data()` is deprecated; see its doc-string for alternatives',
+            '`Instrument.page_data` is deprecated; see its doc-string for alternatives',
             DeprecationWarning, stacklevel=2,
         )
 
@@ -502,7 +502,7 @@ class Instrument:
         - `general.market_overview`
         """
         _warn(
-            '`Instrument.live_data()` is deprecated; see its doc-string for alternatives',
+            '`Instrument.live_data` is deprecated; see its doc-string for alternatives',
             DeprecationWarning, stacklevel=2,
         )
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
@@ -545,7 +545,7 @@ class Instrument:
         Use :meth:`Instrument.on_date(<date>).trades` for intraday trades.
         """
         _warn(
-            '`Instrument.trade_history()` is deprecated; use `daily_closing_price` instead.',
+            '`Instrument.trade_history` is deprecated; use `Instrument.daily_closing_price` instead.',
             DeprecationWarning, stacklevel=2,
         )
         content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
@@ -585,7 +585,7 @@ class Instrument:
             :meth:`Instrument.client_type_history`
         """
         _warn(
-            '`client_type_history_old()` is deprecated; use `client_type_history` instead.',
+            '`Instrument.client_type_history_old` is deprecated; use `Instrument.client_type_history` instead.',
             DeprecationWarning, stacklevel=2,
         )
         return _csv2df(
@@ -633,7 +633,7 @@ class Instrument:
         For the new API use `Instrument.identity`.
         """
         _warn(
-            '`InstrumentOnDate.identification()` is deprecated; use `identity` instead.',
+            '`Instrument.identification` is deprecated; use `Instrument.identity` instead.',
             DeprecationWarning, stacklevel=2,
         )
         text = await _get_par_tree(f'15131M&i={self.code}')
@@ -647,7 +647,7 @@ class Instrument:
     async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
         _warn(
-            '`InstrumentOnDate.introduction()` is deprecated; use `publisher` instead.',
+            '`Instrument.introduction` is deprecated; use `Instrument.publisher` instead.',
             DeprecationWarning, stacklevel=2,
         )
         text = await _get_par_tree(
@@ -695,7 +695,7 @@ class Instrument:
             :meth:`Instrument.on_date(<date>).holders`
         """
         _warn(
-            '`Instrumen.holders()` is deprecated; use `share_holders` instead.',
+            '`Instrument.holders` is deprecated; use `Instrument.share_holders` instead.',
             DeprecationWarning, stacklevel=2,
         )
         if cisin is None:
@@ -722,7 +722,7 @@ class Instrument:
         DataFrames will be returned.
         """
         _warn(
-            '`Instrumen.holder()` is deprecated; use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead.',
+            '`Instrument.holder` is deprecated; use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead.',
             DeprecationWarning, stacklevel=2,
         )
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
@@ -751,7 +751,7 @@ class Instrument:
 
     async def adjustments(self) -> _DataFrame:
         _warn(
-            '`Instrument.adjustments()` is deprecated; use `price_adjustments` instead.',
+            '`Instrument.adjustments` is deprecated; use `Instrument.price_adjustments` instead.',
             DeprecationWarning, stacklevel=2,
         )
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
@@ -774,7 +774,7 @@ class Instrument:
 
     async def ombud_messages(self) -> _DataFrame:
         _warn(
-            '`Instrument.ombud_messages()` is deprecated; use `messages` instead.',
+            '`Instrument.ombud_messages` is deprecated; use `Instrument.messages` instead.',
             DeprecationWarning, stacklevel=2,
         )
         return _parse_ombud_messages(await _get_par_tree(f'15131W&i={self.code}'))
@@ -901,7 +901,7 @@ class InstrumentOnDate:
 
     async def client_types(self) -> dict:
         _warn(
-            '`InstrumentOnDate.client_types()` is deprecated; use `client_type` instead.',
+            '`InstrumentOnDate.client_types` is deprecated; use `InstrumentOnDate.client_type` instead.',
             DeprecationWarning, stacklevel=2,
         )
         return await self.client_type()
