@@ -442,7 +442,6 @@ class Instrument:
             result['related_companies'] = [
                 Instrument(code, l18, l30) for (code, l18, l30) in
                 _literal_eval(_STR_TO_NUM(m[1]))]
-        # todo: add 'codal_data'
         return result
 
     async def live_data(
@@ -478,8 +477,7 @@ class Instrument:
         try:
             price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
         except ValueError:
-            # todo: fix not enough values to unpack
-            _warning(text)  # The service is unavailable.
+            _warning(text)  # usually means the service is unavailable
             raise
         if general:
             result = _parse_price_info(price_info)
