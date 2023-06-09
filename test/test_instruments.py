@@ -18,6 +18,8 @@ from tsetmc.instruments import (
     _Identity,
     _LiveData,
     _parse_price_info,
+    _Search,
+    old_search,
     price_adjustments,
     search,
 )
@@ -189,11 +191,11 @@ async def test_vsadid():
     assert_live_data(d)
 
 
-@file('search_firuze.txt')
+@file('search_firuze.json')
 async def test_from_search_with_numeric_description():
     # note the "30" in فيروزه - صندوق شاخص30 شركت فيروزه- سهام
     i = await Instrument.from_search('فیروزه')
-    assert i.code == 66036975502302203
+    assert i.code == '66036975502302203'
     assert await i.l18 == 'فیروزه'
 
 
@@ -390,8 +392,8 @@ async def test_adjusted_price_history():
 
 
 @file('search_mellat.txt')
-async def test_search():
-    df = await search('ملت')
+async def test_old_search():
+    df = await old_search('ملت')
     assert type(df) is DataFrame
     assert len(df) > 40
     assert [*df.dtypes.items()] == [
@@ -406,6 +408,13 @@ async def test_search():
         ('_unknown3', dtype('int64')),
         ('_unknown4', dtype('int64')),
         ('_unknown5', dtype('O'))]
+
+
+@file('search_atlas.txt')
+async def test_search():
+    r = await search('اطلس')
+    assert type(r) is list
+    assert_dict_type(r[0], _Search)
 
 
 async def test_l18_without_web_request():

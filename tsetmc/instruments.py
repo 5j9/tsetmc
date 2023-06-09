@@ -232,7 +232,7 @@ class Instrument:
 
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
-    def __init__(self, code: int, l18: str = None, l30: str = None):
+    def __init__(self, code: str | int, l18: str = None, l30: str = None):
         self.code = code
         self._l18 = l18
         self._l30 = l30
@@ -618,9 +618,9 @@ class Instrument:
 
     @staticmethod
     async def from_search(s: str) -> 'Instrument':
-        """`search(s)` and return the first result as Instrument."""
-        l18, l30, ins_code = (await search(s)).iloc[0][:3]
-        return Instrument(ins_code, l18, l30)
+        """`Search for `s` and return the first result as an Instrument."""
+        d =  (await search(s))[0]
+        return Instrument(d['insCode'], d['lVal18AFC'], d['lVal30'])
 
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.
@@ -879,7 +879,7 @@ async def price_adjustments(flow: int) -> _DataFrame:
     return df
 
 
-async def search(skey: str, /) -> _DataFrame:
+async def old_search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
     return _csv2df(
         _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
@@ -893,6 +893,31 @@ async def search(skey: str, /) -> _DataFrame:
         names=(
             'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
             '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'))
+
+
+class _Search(_TypedDict):
+    insCode2: str
+    insCode3: str
+    insCode4: str
+    insCode: str
+    lVal30: str
+    lVal18AFC: str
+    flow: int
+    cIsin: None
+    zTitad: float
+    baseVol: int
+    instrumentID: None
+    cgrValCot: str
+    cComVal: None
+    lastDate: int
+    sourceID: int
+    flowTitle: str
+    cgrValCotTitle: str
+
+
+async def search(s: str, /) -> list[_Search]:
+    r = await _api(f'Instrument/GetInstrumentSearch/{s}', fa=True)
+    return r['instrumentSearch']
 
 
 def _parse_price_info(price_info):

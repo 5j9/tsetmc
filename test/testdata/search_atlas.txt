@@ -1,0 +1,1 @@
+{"instrumentSearch":[{"insCode2":"69065132449283302","insCode3":"13447683042933751","insCode4":"28156249097145385","insCode":"11427939669935844","lVal30":"صندوق س.توسعه اطلس مفيد-س","lVal18AFC":"اطلس","flow":2,"cIsin":null,"zTitad":0.0,"baseVol":0,"instrumentID":null,"cgrValCot":"T1","cComVal":null,"lastDate":1,"sourceID":2,"flowTitle":"بازار فرابورس","cgrValCotTitle":""}]}
