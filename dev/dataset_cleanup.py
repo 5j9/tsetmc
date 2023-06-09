@@ -24,7 +24,7 @@ async def check(l18: str):
     inst = await Instrument.from_l18(l18)
     info = await inst.info()
     if (
-        inst.cs in _CS_EXCLUSIONS
+        (await inst.cs) in _CS_EXCLUSIONS
         or info['flow'] == 3
         or info['flowTitle'] == 'بازار اوراق بدهی'
         or is_commodity_certificate_of_deposit(l18)
