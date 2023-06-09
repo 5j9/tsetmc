@@ -339,13 +339,27 @@ async def test_holders_without_cisin():
 
 @file('fmelli_price_adjustment.html')
 async def test_adjustments():
-    df = await Instrument(35425587644337450).adjustments()
+    with warns(DeprecationWarning):
+        df = await Instrument(35425587644337450).adjustments()
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64'))]
     assert type(df.iat[0, 0]) is jdatetime
+
+
+@file('price_adjustment_api.json')
+async def test_price_adjustments_method():
+    df = await Instrument(35425587644337450).price_adjustments()
+    assert len(df) >= 18
+    assert [*df.dtypes.items()] == [
+        ('insCode', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('pClosingNotAdjusted', dtype('float64')),
+        ('corporateTypeCode', dtype('O')),
+        ('instrument', dtype('O'))]
+    assert df.index[-1] == datetime(2009, 7, 15)
 
 
 @file('adjustments_flow_7.html')

@@ -668,10 +668,22 @@ class Instrument:
             return other_holdings_df()
 
     async def adjustments(self) -> _DataFrame:
+        _warn(
+            '`Instrument.adjustments()` is deprecated; use `price_adjustments` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
+        return df
+
+
+    async def price_adjustments(self) -> _DataFrame:
+        j = await _api(f'ClosingPrice/GetPriceAdjustList/{self.code}')
+        df = _DataFrame(j['priceAdjust'], copy=False)
+        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
+        df.set_index('dEven', inplace=True)
         return df
 
     async def ombud_messages(self) -> _DataFrame:

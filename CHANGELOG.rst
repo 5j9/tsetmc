@@ -4,6 +4,7 @@ Unreleased
 * Added new async property: ``Instrument.cs``
 * Added new async function: ``general.market_overview()``
 * Added new async method: ``Instrument.identity()``
+* Added new async method: ``Instrument.price_adjustments()``
 * Improved type annotations
 * Deprecated the following methods which rely on the old tsetmc site and have new alternatives:
 
@@ -12,6 +13,7 @@ Unreleased
   * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
   * ``Instrument.identification``. Use ``identity`` instead.
   * ``Insturment.trade_history``. Use ``daily_closing_price`` instead.
+  * ``Insturment.adjustments``. Use ``price_adjustments`` instead.
 
 * ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
 * Updated dataset
