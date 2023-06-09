@@ -655,7 +655,7 @@ class Instrument:
         df = _read_html(text)[0]
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
-    async def publisher(self):
+    async def publisher(self) -> dict:
         j = await _api(f'Codal/GetCodalPublisherBySymbol/{await self._arabic_l18}', fa=True)
         return j['codalPublisher']
 
