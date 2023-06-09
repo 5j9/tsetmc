@@ -503,6 +503,10 @@ class Instrument:
 
         Use :meth:`Instrument.on_date(<date>).trades` for intraday trades.
         """
+        _warn(
+            '`Instrument.trade_history()` is deprecated; use `daily_closing_price` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
         df = _csv2df(
             _BytesIO(content)

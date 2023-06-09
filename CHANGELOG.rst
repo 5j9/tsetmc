@@ -11,6 +11,7 @@ Unreleased
   * ``Instrument.page_data``. See the docstring for alternatives.
   * ``Instrument.client_type_history_old``. Use ``client_type_history`` instead.
   * ``Instrument.identification``. Use ``identity`` instead.
+  * ``Insturment.trade_history``. Use ``daily_closing_price`` instead.
 
 * ``InstrumentOnDate.client_types()`` is deprecated, use ``client_type()`` instead
 * Updated dataset

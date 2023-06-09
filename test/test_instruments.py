@@ -163,7 +163,8 @@ async def test_vskhooz_long():
 
 @file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
-    df0 = await Instrument(35425587644337450).trade_history(2)
+    with warns(DeprecationWarning):
+        df0 = await Instrument(35425587644337450).trade_history(2)
     assert [*df0.dtypes.items()] == [
         ('pmax', dtype('float64')),
         ('pmin', dtype('float64')),
@@ -176,7 +177,8 @@ async def test_trade_history():
         ('tno', dtype('int64'))]
     assert df0.index.name == 'date'
     assert isinstance(df0.index, DatetimeIndex)
-    df1 = await Instrument(35425587644337450).trade_history(2, 1)
+    with warns(DeprecationWarning):
+        df1 = await Instrument(35425587644337450).trade_history(2, 1)
     assert len(df1) >= len(df0)
 
 
