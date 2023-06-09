@@ -515,6 +515,8 @@ class Instrument:
         return df
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
+        # As far as I can thell the new tsetmc site does not have any
+        # API for adjusted price history, but see self.price_adjustments.
         content = await _get(
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
         df = _csv2df(
@@ -601,10 +603,18 @@ class Instrument:
 
     async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
+        _warn(
+            '`InstrumentOnDate.introduction()` is deprecated; use `publisher` instead.',
+            DeprecationWarning, stacklevel=2,
+        )
         text = await _get_par_tree(
             f'15131V&s={await self._arabic_l18}')
         df = _read_html(text)[0]
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
+
+    async def publisher(self):
+        j = await _api(f'Codal/GetCodalPublisherBySymbol/{await self._arabic_l18}', fa=True)
+        return j['codalPublisher']
 
     @staticmethod
     async def from_search(s: str) -> 'Instrument':

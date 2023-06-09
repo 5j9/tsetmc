@@ -414,7 +414,9 @@ async def test_l18_without_web_request():
 
 @file('fmelli_introduction.html')
 async def test_introduction():
-    assert await (await Instrument.from_l18('فملی')).introduction() == {
+    with warns(DeprecationWarning):
+        d = await (await Instrument.from_l18('فملی')).introduction()
+    assert d == {
         'موضوع فعالیت': 'اکتشافات، استخراج و بهره برداری از معادن مس ایران',
         'مدیر عامل': 'علی رستمی',
         'نشانی': 'مجتمع مس سرچشمه و مجتمع مس میدوک در استان کرمان و مجتمع مس سونگون در تبریز شهرستان ورزقان واقع شده اند.',
@@ -431,6 +433,61 @@ async def test_introduction():
         'شناسه ملی': '10100582059',
         'شرکت مدیریت فناوری بورس تهران فقط گردآورنده ی اطلاعات برای معرفی شرکت های پذیرفته شده در بورس و فرابورس است. این شرکت نظارت،مسئولیت یا آگاهی در باره ی چگونگی ارائه خدمات اداره سهام شرکت ها، توزیع سود، وضعیت افزایش سرمایه آنها و موارد مشابه دیگر ندارد و مرجع رسیدگی به شکایات یا رفع کاستی های شرکت ها نمی باشد.': 'شرکت مدیریت فناوری بورس تهران فقط گردآورنده ی اطلاعات برای معرفی شرکت های پذیرفته شده در بورس و فرابورس است. این شرکت نظارت،مسئولیت یا آگاهی در باره ی چگونگی ارائه خدمات اداره سهام شرکت ها، توزیع سود، وضعیت افزایش سرمایه آنها و موارد مشابه دیگر ندارد و مرجع رسیدگی به شکایات یا رفع کاستی های شرکت ها نمی باشد.',
         'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.': 'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.'
+    }
+
+
+@file('fmelli_publisher.json')
+async def test_publisher():
+    assert await (await Instrument.from_l18('فملی')).publisher() == {
+        'activitySubject': '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           '\r\n'
+                           'اکتشافات،  استخراج و  بهره برداری از معادن  مس  ایران',
+        'address': 'مجتمع مس سرچشمه و مجتمع مس میدوک در استان کرمان و مجتمع مس سونگون '
+                   'در تبریز شهرستان ورزقان واقع شده اند.',
+        'auditorName': 'حسابرسی وخدمات مالی ومدیریت ایران مشهود',
+        'companyId': None,
+        'companyType': '0',
+        'companyType1': None,
+        'displaySymbol': 'فملی',
+        'email': 'office@nicico.com',
+        'enActivitySubject': None,
+        'enAddress': None,
+        'enDisplayedSymbol': None,
+        'enExecutiveManager': None,
+        'enFinancialManager': None,
+        'enInspector': None,
+        'enManagementGroup': None,
+        'enName': None,
+        'enOfficeAddress': None,
+        'enShareOfficeAddress': None,
+        'executiveManager': 'علی رستمی',
+        'faxNo': '021-88729014',
+        'financialManager': 'امید علی معیری',
+        'financialYear': '12/29',
+        'id': 6078,
+        'inspListedCapitalector': None,
+        'inspector': 'موسسه حسابرسی و خدمات مدیریتی هشیار بهمند',
+        'isic': '272006',
+        'listedCapital': '400000000',
+        'managementGroup': None,
+        'name': 'ملی صنایع مس ایران',
+        'nationalCode': '10100582059',
+        'officeAddress': 'تهران خیابان ولیعصر نرسیده به پارک ساعی پلاک 2161',
+        'reportingType': '1000000',
+        'shareOfficeAddress': 'تهران خیابان خالد اسلامبولی (وزراء) خیابان 11 پلاک 22 '
+                              'طبقه اول',
+        'state': '0',
+        'stateName': None,
+        'symbol': 'فملی',
+        'telNo': '021-88724410',
+        'website': 'www.nicico.com'
     }
 
 
