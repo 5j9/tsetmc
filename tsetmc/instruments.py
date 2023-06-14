@@ -361,10 +361,13 @@ class Instrument:
     async def daily_closing_price(self, n=9) -> _DataFrame:
         j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}')
         df = _DataFrame(j['closingPriceDaily'], copy=False)
-        df['date'] = _to_datetime(
-            df.pop('dEven').astype(str) + df.pop('hEven').astype(str)
+        date = _to_datetime(
+            df.pop('dEven').astype(str)
+            + df.pop('hEven').astype(str).str.rjust(6, '0')
         )
-        df.set_index('date', inplace=True)
+        # https://youtrack.jetbrains.com/issue/PY-60985
+        # noinspection PyTypeChecker
+        df.set_index(date, inplace=True)
         return df
 
     async def closing_price_info(self) -> _ClosingPriceInfo:
