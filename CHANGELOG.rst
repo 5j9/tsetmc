@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Added new function: ``general.related_companies``
+
 v0.49.1
 -------
 * BREAKING CHANGE: ``Instrument.share_holder_history`` now returns a ``DataFrame`` instead of a list.

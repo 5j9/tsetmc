@@ -392,20 +392,8 @@ class Instrument:
         if cs is None:
             cs = await self.cs
 
-        j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
-
-        j['relatedCompany'] = _DataFrame(
-            # flatten the records
-            [c.pop('instrument') | c for c in j.pop('relatedCompany')],
-            copy=False,
-        )
-
-        j['relatedCompanyThirtyDayHistory'] = _DataFrame(
-            j.pop('relatedCompanyThirtyDayHistory'),
-            copy=False,
-        )
-
-        return j
+        from tsetmc.general import related_companies
+        return await related_companies(cs)
 
 
     async def page_data(

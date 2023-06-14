@@ -1,4 +1,3 @@
-from io import StringIO as _StringIO
 from typing import TypedDict as _TypedDict
 
 from bs4 import BeautifulSoup as _BeautifulSoup
@@ -127,3 +126,20 @@ async def market_overview(n=1) -> _MarketOverview:
     """
     j = await _api(f'MarketData/GetMarketOverview/{n}')
     return j['marketOverview']
+
+
+async def related_companies(cs: str) -> dict[str, _DataFrame]:
+    j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
+
+    j['relatedCompany'] = _DataFrame(
+        # flatten the records
+        [c.pop('instrument') | c for c in j.pop('relatedCompany')],
+        copy=False,
+    )
+
+    j['relatedCompanyThirtyDayHistory'] = _DataFrame(
+        j.pop('relatedCompanyThirtyDayHistory'),
+        copy=False,
+    )
+
+    return j
