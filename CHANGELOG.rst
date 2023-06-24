@@ -1,6 +1,8 @@
 Unreleased
 ----------
 * Added new function: ``general.related_companies``
+* Add type hints for ``Instrument.info``
+* Updated dataset
 
 v0.49.1
 -------

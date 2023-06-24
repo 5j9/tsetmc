@@ -40,6 +40,65 @@ class _MarketState(_TypedDict, total=False):
     derivatives_status: int
 
 
+class _Eps(_TypedDict):
+    epsValue: None
+    estimatedEPS: str | None
+    sectorPE: float
+    psr: float
+
+
+class _Sector(_TypedDict):
+    dEven: int
+    cSecVal: str
+    lSecVal: str
+
+
+class _StaticThreshold(_TypedDict):
+    insCode: None
+    dEven: int
+    hEven: int
+    psGelStaMax: float
+    psGelStaMin: float
+
+
+class _InstrumentInfo(_TypedDict):
+    eps: _Eps
+    sector: _Sector
+    staticThreshold: _StaticThreshold
+    minWeek: float
+    maxWeek: float
+    minYear: float
+    maxYear: float
+    qTotTran5JAvg: float
+    kAjCapValCpsIdx: str
+    dEven: int
+    topInst: int
+    faraDesc: str
+    contractSize: int
+    nav: float
+    underSupervision: int
+    cValMne: None
+    lVal18: str
+    cSocCSAC: None
+    lSoc30: None
+    yMarNSC: None
+    yVal: str
+    insCode: str
+    lVal30: str
+    lVal18AFC: str
+    flow: int
+    cIsin: str
+    zTitad: float
+    baseVol: int
+    instrumentID: str
+    cgrValCot: str
+    cComVal: str
+    lastDate: int
+    sourceID: int
+    flowTitle: str
+    cgrValCotTitle: str
+
+
 def _parse_market_state(s: str) -> _MarketState:
     datetime, tse_status, tse_index, tse_index_change \
         , tse_value, tse_tvol, tse_tval, tse_tno \

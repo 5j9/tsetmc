@@ -9,6 +9,8 @@ from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises, warns
 
+from tsetmc import _InstrumentInfo
+
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
     _ETF,
@@ -149,10 +151,13 @@ async def test_negin_instant():
     assert_live_data(d, nav=True)
 
 
+FMELLI = Instrument(35425587644337450)
+
+
 @file('fmelli.txt')
 async def test_fmelli_instant():
     with warns(DeprecationWarning):
-        d = await Instrument(35425587644337450).live_data(best_limits=False)
+        d = await FMELLI.live_data(best_limits=False)
     assert_live_data(d, best_limits=False)
 
 
@@ -171,7 +176,7 @@ async def test_vskhooz_long():
 @file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
     with warns(DeprecationWarning):
-        df0 = await Instrument(35425587644337450).trade_history(2)
+        df0 = await FMELLI.trade_history(2)
     assert [*df0.dtypes.items()] == [
         ('pmax', dtype('float64')),
         ('pmin', dtype('float64')),
@@ -185,7 +190,7 @@ async def test_trade_history():
     assert df0.index.name == 'date'
     assert isinstance(df0.index, DatetimeIndex)
     with warns(DeprecationWarning):
-        df1 = await Instrument(35425587644337450).trade_history(2, 1)
+        df1 = await FMELLI.trade_history(2, 1)
     assert len(df1) >= len(df0)
 
 
@@ -387,7 +392,7 @@ async def test_holders_without_cisin():
 @file('fmelli_price_adjustment.html')
 async def test_adjustments():
     with warns(DeprecationWarning):
-        df = await Instrument(35425587644337450).adjustments()
+        df = await FMELLI.adjustments()
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
         ('date', dtype('O')),
@@ -398,7 +403,7 @@ async def test_adjustments():
 
 @file('price_adjustment_api.json')
 async def test_price_adjustments_method():
-    df = await Instrument(35425587644337450).price_adjustments()
+    df = await FMELLI.price_adjustments()
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
         ('insCode', dtype('int64')),
@@ -527,7 +532,7 @@ async def test_messages():
 
 @file('fmelli_dps.txt')
 async def test_dps_history():
-    df = await Instrument(35425587644337450).dps_history()
+    df = await FMELLI.dps_history()
     assert [*df.dtypes.items()] == [
         ('publish_date', dtype('O')),
         ('meeting_date', dtype('O')),
@@ -564,17 +569,15 @@ KARIS = Instrument(69067576215760005)
 
 
 @file('karis_info.json')
-async def test_info():
+async def test_info_on_etf():
     info = await KARIS.info()
-    assert info.keys() == {
-        'baseVol', 'cComVal', 'cIsin', 'cSocCSAC', 'cValMne',
-        'cgrValCot', 'cgrValCotTitle', 'contractSize', 'dEven', 'eps',
-        'faraDesc', 'flow', 'flowTitle', 'insCode', 'instrumentID',
-        'kAjCapValCpsIdx', 'lSoc30', 'lVal18', 'lVal18AFC', 'lVal30',
-        'lastDate', 'maxWeek', 'maxYear', 'minWeek', 'minYear', 'nav',
-        'qTotTran5JAvg', 'sector', 'sourceID', 'staticThreshold', 'topInst',
-        'underSupervision', 'yMarNSC', 'yVal', 'zTitad'
-    }
+    assert_dict_type(info, _InstrumentInfo)
+
+
+@file('fmelli_info.json')
+async def test_info_on_fmelli():
+    info = await FMELLI.info()
+    assert_dict_type(info, _InstrumentInfo)
 
 
 @file('karis_trades.json')

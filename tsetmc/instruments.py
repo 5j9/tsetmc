@@ -23,6 +23,7 @@ from . import (
     _get,
     _get_data,
     _get_par_tree,
+    _InstrumentInfo,
     _jdatetime,
     _jstrptime,
     _MarketState,
@@ -339,7 +340,7 @@ class Instrument:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
-    async def info(self) -> dict:
+    async def info(self) -> _InstrumentInfo:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
         d = j['instrumentInfo']
         # cache for properties
