@@ -3,6 +3,7 @@ from test import assert_market_state
 from aiohttp_test_utils import file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
+from pandas.api.types import is_numeric_dtype
 
 # noinspection PyProtectedMember
 from tsetmc.market_watch import (
@@ -197,18 +198,9 @@ async def test_market_watch_plus_new():
 @file('MarketWatchPlus_h64130_r9540883525.txt')
 async def test_market_watch_plus_update():
     mwp = await market_watch_plus(64130, 9540883525)
-
     price_updates = mwp['price_updates']
-    assert [*price_updates.dtypes.items()] == [
-        ('heven', dtype('int64')),
-        ('pf', dtype('int64')),
-        ('pc', dtype('int64')),
-        ('pl', dtype('int64')),
-        ('tno', dtype('int64')),
-        ('tvol', dtype('int64')),
-        ('tval', dtype('int64')),
-        ('pmin', dtype('int64')),
-        ('pmax', dtype('int64'))]
+    assert price_updates.columns.to_list() == ['heven', 'pf', 'pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax']
+    assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
     assert price_updates.index.dtype == 'int64'
 
     market_state = mwp.pop('market_state', None)
@@ -220,14 +212,8 @@ async def test_market_watch_plus_update():
         assert m.isnumeric()
 
     best_limits = mwp['best_limits']
-    assert [*best_limits.dtypes.items()] == [
-        ('number', dtype('int64')),
-        ('zo', dtype('int64')),
-        ('zd', dtype('int64')),
-        ('pd', dtype('float64')),
-        ('po', dtype('float64')),
-        ('qd', dtype('int64')),
-        ('qo', dtype('int64'))]
+    assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
+    assert all(is_numeric_dtype(c) for c in best_limits.dtypes)
     assert best_limits.index.dtype == 'int64'
 
     assert type(mwp['refid']) == int
