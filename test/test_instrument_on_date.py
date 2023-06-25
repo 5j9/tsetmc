@@ -116,7 +116,9 @@ async def test_intraday_holders():
         ('numberOfShares', dtype('float64')),
         ('perOfShares', dtype('float64')),
         ('change', dtype('int64')),
-        ('changeAmount', dtype('float64'))]
+        ('changeAmount', dtype('float64')),
+        ('shareHolderShareID', dtype('int64')),
+    ]
 
 @file('ondate_client_type.json')
 async def test_client_type():
