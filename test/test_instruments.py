@@ -296,11 +296,13 @@ async def test_client_type_history_no_date():
         ('sell_I_Count', dtype('int64'))]
 
 
+AVA = Instrument(18007109712724189)
+
+
 @file('ava_holders.txt')
 async def test_holders_with_cisin():
-    inst = Instrument(18007109712724189)
     with warns(DeprecationWarning):
-        holders = await inst.holders(cisin='IRT3AVAF0003')
+        holders = await AVA.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
         ('holder', dtype('O')),
         ('shares/units', dtype('O')),
@@ -311,15 +313,14 @@ async def test_holders_with_cisin():
 
 @file('ava_holders.json')
 async def test_share_holders():
-    holders = await Instrument(18007109712724189).share_holders()
+    holders = await AVA.share_holders()
     assert_dict_type(holders[0], _ShareHolder)
 
 
 @file('ava_holders2.txt')
 async def test_holders_change_column_type():
-    inst = Instrument(18007109712724189)
     with warns(DeprecationWarning):
-        holders = await inst.holders(cisin='IRT3AVAF0003')
+        holders = await AVA.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
         ('holder', dtype('O')),
         ('shares/units', dtype('O')),
@@ -330,7 +331,7 @@ async def test_holders_change_column_type():
 
 @file('ava_holder.txt')
 async def test_holder():
-    inst = Instrument(18007109712724189)
+    inst = AVA
     with warns(DeprecationWarning):
         # has no other holdings
         hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
@@ -351,7 +352,7 @@ async def test_holder():
 
 @file('ava_share_holder_history.json')
 async def test_share_holder_history():
-    df = await Instrument(18007109712724189).share_holder_history(
+    df = await AVA.share_holder_history(
         share_holder_id=21790,  # reserved code of ETFs
         days=2,
     )
