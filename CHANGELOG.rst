@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.50.0
+-------
 * BREAKING CHANGE: ``Instrument.related_companies`` now adds an ``instrument.`` prefix to instrument related column names.
 * Added new function: ``general.related_companies``
 * Added a new module: ``indices``
