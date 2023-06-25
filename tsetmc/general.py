@@ -1,7 +1,12 @@
 from typing import TypedDict as _TypedDict
 
 from bs4 import BeautifulSoup as _BeautifulSoup
-from pandas import NA as _NA, concat as _concat, read_html as _read_html
+from pandas import (
+    NA as _NA,
+    concat as _concat,
+    json_normalize as _json_normalize,
+    read_html as _read_html,
+)
 
 from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
 
@@ -131,11 +136,7 @@ async def market_overview(n=1) -> _MarketOverview:
 async def related_companies(cs: str) -> dict[str, _DataFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
 
-    j['relatedCompany'] = _DataFrame(
-        # flatten the records
-        [c.pop('instrument') | c for c in j.pop('relatedCompany')],
-        copy=False,
-    )
+    j['relatedCompany'] = _json_normalize(j['relatedCompany'])
 
     j['relatedCompanyThirtyDayHistory'] = _DataFrame(
         j.pop('relatedCompanyThirtyDayHistory'),
