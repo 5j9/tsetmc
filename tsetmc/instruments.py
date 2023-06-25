@@ -238,6 +238,7 @@ class _ShareHolder(_TypedDict):
     perOfShares: float
     change: int
     changeAmount: float
+    shareHolderShareID: int
 
 
 class _Message(_TypedDict):
@@ -1026,7 +1027,7 @@ class _ShareHolderCompany(_TypedDict):
     perOfShares: float
 
 
-async def share_holder_companies(share_holder_id: int) -> list[_ShareHolderCompany]:
+async def   share_holder_companies(share_holder_id: int | str) -> list[_ShareHolderCompany]:
     r = await _api(f'Shareholder/GetShareHolderCompanyList/{share_holder_id}', fa=True)
     return r['shareHolderShare']
 

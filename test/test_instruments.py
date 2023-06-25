@@ -334,44 +334,45 @@ async def test_holder():
     inst = AVA
     with warns(DeprecationWarning):
         # has no other holdings
-        hist, oth = await inst.holder('69867,IRT3AVAF0003', True, True)
-    assert hist.to_csv(lineterminator='\n').startswith(
-        'date,shares\n2021-03-01,6600001\n2021-03-02,6603001\n'
-    )
-    assert oth.to_csv(lineterminator='\n') == 'ins_code,name,shares,percent\n'
+        hist, oth = await inst.holder('43789,IRT3AVAF0003', True, True)  # reverved code of ETFs
+    assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
+    assert hist.index.dtype.kind == 'M'
+    assert [*oth.dtypes.items()] == [('name', dtype('O')), ('shares', dtype('int64')), ('percent', dtype('float64'))]
+    assert oth.index.name == 'ins_code'
     with warns(DeprecationWarning):
-        hist = await inst.holder('69867,IRT3AVAF0003', True)
+        hist = await inst.holder('43789,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
     with warns(DeprecationWarning):
-        oth = await inst.holder('69867,IRT3AVAF0003', False, True)
+        oth = await inst.holder('43789,IRT3AVAF0003', False, True)
     assert type(oth) is DataFrame
     with warns(DeprecationWarning):
-        result = await inst.holder('69867,IRT3AVAF0003', False)
+        result = await inst.holder('43789,IRT3AVAF0003', False)
     assert oth.equals(result)
 
 
 @file('ava_share_holder_history.json')
 async def test_share_holder_history():
     df = await AVA.share_holder_history(
-        share_holder_id=21790,  # reserved code of ETFs
+        share_holder_id=18252629,  # reserved code of ETFs
         days=2,
     )
     assert len(df) == 2
-    assert [[*df.dtypes.items()]] == [
-        [('shareHolderID', dtype('int64')),
+    assert [*df.dtypes.items()] == [
+        ('shareHolderID', dtype('int64')),
         ('shareHolderName', dtype('O')),
         ('cIsin', dtype('O')),
         ('numberOfShares', dtype('float64')),
         ('perOfShares', dtype('float64')),
         ('change', dtype('int64')),
-        ('changeAmount', dtype('float64'))]
+        ('changeAmount', dtype('float64')),
+        ('shareHolderShareID', dtype('int64')),
     ]
     assert df.index.dtype == dtype('<M8[ns]')
 
 
 @file('share_holder_companies.json')
 async def test_share_holder_companies():
-    companies = await share_holder_companies(share_holder_id=21790)
+    companies = await share_holder_companies(share_holder_id=18252629)
     assert len(companies) > 50
     assert_dict_type(companies[0], _ShareHolderCompany)
 
