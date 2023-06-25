@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Added a new module: ``indices``
 * Added new function: ``general.related_companies``
 * Add type hints for ``Instrument.info``
 * Updated dataset
