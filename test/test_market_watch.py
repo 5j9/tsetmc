@@ -26,7 +26,8 @@ async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', dtype('int64')), ('number', dtype('int64'))]
+        ('ins_code', 'string[python]'), ('number', dtype('int64'))
+    ]
     assert 'market_state' not in mwi
 
     mwi = await market_watch_init(market_state=True)
@@ -67,7 +68,7 @@ async def test_market_watch_init():
         * PRICE_DTYPES_ITEMS]
 
     assert [*prices.index.dtypes.items()] == [
-        ('ins_code', dtype('O')),
+        ('ins_code', 'string[python]'),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
@@ -75,7 +76,7 @@ async def test_market_watch_init():
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', dtype('int64')), ('number', dtype('int64'))]
+        ('ins_code', 'string[python]'), ('number', dtype('int64'))]
 
 
 @file('ClosingPriceAll.aspx')

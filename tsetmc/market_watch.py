@@ -1,7 +1,8 @@
 from asyncio import sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from typing import Any
+from logging import error as _erorr
+from typing import Any as _Any
 
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
@@ -89,7 +90,8 @@ async def market_watch_init(
     if best_limits:
         result['best_limits'] = best_limits_df = _csv2df(
             _StringIO(price_rows), names=_BEST_LIMITS_NAMES,
-            dtype='int64', index_col=('ins_code', 'number'))
+            dtype={'ins_code': 'string'}, index_col=('ins_code', 'number')
+        )
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
@@ -125,7 +127,11 @@ async def market_watch_plus(
         f'MarketWatchPlus.aspx?h={5 * (heven // 5)}&r={25 * (refid // 25)}',
         fa=True
     )
-    handle_msg, update_fast_view, inst_price, best_limit, refid = text.split('@')
+    try:
+        handle_msg, update_fast_view, inst_price, best_limit, refid = text.split('@')
+    except ValueError:
+        _erorr(f'{text = }')
+        raise
     result = {}
     if messages:
         # whenever a new id appears, users should try to fetch new messages
@@ -274,8 +280,8 @@ class MarketWatch:
         self, *,
         init_kwargs: dict=None,
         plus_kwargs: dict=None,
-        init_callback: _Callable[[_MarketWatchInit], Any],
-        plus_callback: _Callable[[_MarketWatchPlus], Any],
+        init_callback: _Callable[[_MarketWatchInit], _Any],
+        plus_callback: _Callable[[_MarketWatchPlus], _Any],
         interval=1,
     ):
         """Create an object that helps with watching the market watch.
