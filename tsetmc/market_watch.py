@@ -2,6 +2,7 @@ from asyncio import sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 
+from typing import Any
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
 
@@ -273,8 +274,8 @@ class MarketWatch:
         self, *,
         init_kwargs: dict=None,
         plus_kwargs: dict=None,
-        init_callback: _Callable,
-        plus_callback: _Callable,
+        init_callback: _Callable[[_MarketWatchInit], Any],
+        plus_callback: _Callable[[_MarketWatchPlus], Any],
         interval=1,
     ):
         """Create an object that helps with watching the market watch.
