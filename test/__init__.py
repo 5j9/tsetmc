@@ -1,6 +1,5 @@
 from aiohttp_test_utils import init_tests
 from jdatetime import datetime as jdatetime
-from pydantic import create_model_from_typeddict
 
 # noinspection PyProtectedMember
 from tsetmc import _MarketState
@@ -23,5 +22,11 @@ def assert_market_state(market_state: _MarketState):
     assert all(type(v) is float for v in market_state.values())
 
 
-def assert_dict_type(d: dict, t: callable):
-    assert d == create_model_from_typeddict(t)(**d)
+def assert_dict_type(d: dict, td: callable):
+    assert td.__optional_keys__ == (d.keys() - td.__required_keys__)
+    for k, t in td.__annotations__.items():
+        v = d[k]
+        if isinstance(v, dict):
+            assert_dict_type(v, t)
+            continue
+        assert isinstance(v, t), f'{td=} {k=} {v=} {t=}'

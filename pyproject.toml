@@ -44,7 +44,6 @@ Homepage = "https://github.com/5j9/tsetmc"
 [project.optional-dependencies]
 test = [
     "aiohttp_test_utils>=0.4.0",
-    "pydantic",
 ]
 
 [tool.setuptools]

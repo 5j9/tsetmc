@@ -67,7 +67,7 @@ async def test_market_watch_init():
         * PRICE_DTYPES_ITEMS]
 
     assert [*prices.index.dtypes.items()] == [
-        ('ins_code', dtype('int64')),
+        ('ins_code', dtype('O')),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
@@ -183,7 +183,7 @@ async def test_market_watch_plus_new():
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', dtype('int64')),
+        ('ins_code', 'string[python]'),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]
@@ -221,7 +221,7 @@ async def test_market_watch_plus_update():
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', dtype('int64')),
+        ('ins_code', 'string[python]'),
         ('isin', 'string[python]'),
         ('l18', 'string[python]'),
         ('l30', 'string[python]')]

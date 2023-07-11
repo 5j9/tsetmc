@@ -1,8 +1,8 @@
 from asyncio import sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-
 from typing import Any
+
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
 
@@ -21,7 +21,7 @@ from . import (
 _PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
 _PRICE_DTYPES = {
-    'ins_code': 'int64',
+    'ins_code': 'string',
     'isin': 'string',
     'l18': 'string',
     'l30': 'string',

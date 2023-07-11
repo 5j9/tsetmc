@@ -136,8 +136,8 @@ class _ETF(_TypedDict):
     insCode: str
     deven: int
     hEven: int
-    pRedTran: int
-    pSubTran: int
+    pRedTran: float
+    pSubTran: float
     iClose: int
 
 
@@ -1023,7 +1023,7 @@ class _Instrument(_TypedDict, total=False):
 
 class _ShareHolderCompany(_TypedDict):
     instrument: _Instrument
-    numberOfShares: int
+    numberOfShares: float
     perOfShares: float
 
 
