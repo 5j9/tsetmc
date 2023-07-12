@@ -156,13 +156,17 @@ async def market_watch_plus(
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
             df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
-            df = df.astype('int64', False)
+            df.ins_code = df.ins_code.astype('string')
             df.set_index('ins_code', inplace=True)
+            df = df.astype('int64', False)
             result['price_updates'] = df
     if best_limits:
         result['best_limits'] = _csv2df(
-            _StringIO(best_limit), index_col='ins_code',
-            names=_BEST_LIMITS_NAMES)
+            _StringIO(best_limit),
+            index_col='ins_code',
+            names=_BEST_LIMITS_NAMES,
+            dtype={'ins_code': 'string'}
+        )
     result['refid'] = int(refid)
     return result
 
@@ -192,9 +196,17 @@ async def closing_price_all() -> _DataFrame:
     """
     content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
-    df = _DataFrame(data, columns=(
-        'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval'
-        , 'pmin', 'pmax', 'py', 'pf'), copy=False).astype('int64')
+    columns = [
+        'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval',
+        'pmin', 'pmax', 'py', 'pf',
+    ]
+    df = _DataFrame(
+        data,
+        columns=columns,
+        copy=False,
+    )
+    df[columns[1:]] = df[columns[1:]].apply(_to_numeric)
+    df.ins_code = df.ins_code.astype('string')
     df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
@@ -206,10 +218,15 @@ async def client_type_all() -> _DataFrame:
     """
     content = await _get_data('ClientTypeAll.aspx')
     df = _csv2df(
-        _BytesIO(content), names=(
-            'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
-            , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume')
-        , dtype='int64', index_col='ins_code')
+        _BytesIO(content),
+        names=(
+            'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume',
+            'l_buy_volume', 'n_sell_count', 'l_sell_count', 'n_sell_volume',
+            'l_sell_volume'
+        ),
+        index_col='ins_code',
+        dtype={'ins_code': 'string'},
+    )
     return df
 
 
@@ -223,9 +240,9 @@ async def key_stats() -> _DataFrame:
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
     df = _DataFrame(data, columns=('ins_code', 'n', 'value'), copy=False)
-    # noinspection PyTypeChecker
+    df.set_index(df.pop('ins_code').astype('string'), inplace=True)
     df = df.apply(_to_numeric)
-    df = df.pivot(index='ins_code', columns='n', values='value')
+    df = df.pivot(columns='n', values='value')
     df.columns = [f'is{c}' for c in df.columns]
     return df
 
@@ -314,7 +331,12 @@ class MarketWatch:
         refid = mwi['refid']
 
         while True:
-            mwp = await market_watch_plus(refid=refid, heven=heven, **self.plus_kwargs)
+            await _sleep(self.interval)
+            try:
+                mwp = await market_watch_plus(refid=refid, heven=heven, **self.plus_kwargs)
+            except Exception as e:
+                _erorr(f'Exception awaiting market_watch_plus: %s', e)
+                continue  # _sleep and retry
             if not self.plus_callback(mwp):
                 return
             refid = mwp['refid']
@@ -322,5 +344,3 @@ class MarketWatch:
                 mwp['price_updates'].heven.max(),
                 mwp['new_prices'].heven.max(),
             )
-            print(refid, heven)
-            await _sleep(self.interval)

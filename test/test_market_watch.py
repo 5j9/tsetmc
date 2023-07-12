@@ -84,10 +84,9 @@ async def test_closing_price_all():
     df = await closing_price_all()
     assert all(t == 'int64' for t in df.dtypes)
     assert df.columns.to_list() == ['pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'pf']
-    index = df.index
-    assert index.names == ['ins_code', 'n']
-    assert index.dtype == 'O'
-    assert all(t == 'int64' for t in index.dtypes)
+    assert [*df.index.dtypes.items()] == [
+        ('ins_code', 'string[python]'), ('n', dtype('int64'))
+    ]
 
 
 @file('ClientTypeAll.aspx')
@@ -98,6 +97,7 @@ async def test_client_type_all():
         , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
     assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'ins_code'
+    assert df.index.dtype == 'string[python]'
 
 
 @file('InstValue.aspx')
@@ -106,7 +106,7 @@ async def test_key_stats():
     assert all(df.columns.str.startswith('is'))
     assert all(t == 'float64' for t in df.dtypes)
     assert df.index.name == 'ins_code'
-    assert df.index.dtype == 'int64'
+    assert df.index.dtype == 'string[python]'
 
 
 def test_parse_index():
@@ -191,7 +191,9 @@ async def test_market_watch_plus_new():
     best_limits = mwp['best_limits']
     assert all(t == 'int64' for t in best_limits.dtypes)
     assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
-    assert best_limits.index.dtype == dtype('int64')  # ins_code
+    index = best_limits.index
+    assert index.name == 'ins_code'
+    assert index.dtype == 'string[python]'
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
 
@@ -202,7 +204,7 @@ async def test_market_watch_plus_update():
     price_updates = mwp['price_updates']
     assert price_updates.columns.to_list() == ['heven', 'pf', 'pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax']
     assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
-    assert price_updates.index.dtype == 'int64'
+    assert price_updates.index.dtype == 'string[python]'
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
@@ -215,7 +217,8 @@ async def test_market_watch_plus_update():
     best_limits = mwp['best_limits']
     assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
     assert all(is_numeric_dtype(c) for c in best_limits.dtypes)
-    assert best_limits.index.dtype == 'int64'
+    assert best_limits.index.name == 'ins_code'
+    assert best_limits.index.dtype == 'string[python]'
 
     assert type(mwp['refid']) == int
 
