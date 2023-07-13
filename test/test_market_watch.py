@@ -18,7 +18,7 @@ from tsetmc.market_watch import (
     status_changes,
 )
 
-PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][4:]
+PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][1:]
 
 
 @file('MarketWatchInit.aspx')
@@ -65,13 +65,12 @@ async def test_market_watch_init():
         ('qo5', dtype('int64')),
         ('zd5', dtype('int64')),
         ('zo5', dtype('int64')),
-        * PRICE_DTYPES_ITEMS]
+        * PRICE_DTYPES_ITEMS
+    ]
 
-    assert [*prices.index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
-        ('isin', 'string[python]'),
-        ('l18', 'string[python]'),
-        ('l30', 'string[python]')]
+    i = prices.index
+    assert i.name == 'ins_code'
+    assert i.dtype == 'string[python]'
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
@@ -112,21 +111,24 @@ async def test_key_stats():
 def test_parse_index():
     # no tse_value
     assert _parse_market_state("00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,") == {
+        'datetime': jdatetime(1400, 1, 14, 6, 40, 12),
         'derivatives_status': 'C',
         'derivatives_tno': 0,
         'derivatives_tval': 0.0,
         'derivatives_tvol': 0.0,
-        'datetime': jdatetime(1400, 1, 14, 6, 40, 12),
         'fb_status': 'C',
         'fb_tno': 0,
         'fb_tval': 0.0,
         'fb_tvol': 0.0,
         'tse_index': 1294521.64,
         'tse_index_change': -8671.45,
+        'tse_index_change_percent': None,
         'tse_status': 'F',
         'tse_tno': 0.0,
         'tse_tval': 0.0,
-        'tse_tvol': 0.0}
+        'tse_tvol': 0.0,
+        'tse_value': None,
+    }
 
     assert {
         'derivatives_status': 'N',
@@ -183,11 +185,9 @@ async def test_market_watch_plus_new():
     mwp = await market_watch_plus(0, 0, messages=False, market_state=False)
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
-        ('isin', 'string[python]'),
-        ('l18', 'string[python]'),
-        ('l30', 'string[python]')]
+    i = new_prices.index
+    assert i.name == 'ins_code'
+    assert i.dtype == 'string[python]'
     best_limits = mwp['best_limits']
     assert all(t == 'int64' for t in best_limits.dtypes)
     assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
@@ -224,11 +224,9 @@ async def test_market_watch_plus_update():
 
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    assert [*new_prices.index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
-        ('isin', 'string[python]'),
-        ('l18', 'string[python]'),
-        ('l30', 'string[python]')]
+    i = new_prices.index
+    assert i.name == 'ins_code'
+    assert i.dtype == 'string[python]'
 
 
 @file('status_changes.html')

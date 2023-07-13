@@ -105,10 +105,17 @@ def _parse_market_state(s: str) -> _MarketState:
         , fb_status, fb_tvol, fb_tval, fb_tno \
         , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
         , _ = s.split(',')
-    index_change_match = _INDEX_CHANGE_MATCH(tse_index_change)
-    tse_index_change = float(index_change_match[2])
-    if index_change_match[1] is not None:  # negative value
-        tse_index_change *= -1
+    if tse_index_change:  # can be '' before market start
+        index_change_match = _INDEX_CHANGE_MATCH(tse_index_change)
+        tse_index_change = float(index_change_match[2])
+        if index_change_match[1] is not None:  # negative value
+            tse_index_change *= -1
+        if (m3 := index_change_match[3]) is not None:
+            tse_index_change_percent  = float(m3)
+        else:
+            tse_index_change_percent = None
+    else:
+        tse_index_change_percent = None
     timestamp_match = _INDEX_TIMESTAMP_MATCH(datetime)
     result = {
         'datetime': _jdatetime(
@@ -128,11 +135,10 @@ def _parse_market_state(s: str) -> _MarketState:
         , 'derivatives_status': derivatives_status
         , 'derivatives_tvol': float(derivatives_tvol)
         , 'derivatives_tval': float(derivatives_tval)
-        , 'derivatives_tno': int(derivatives_tno)}
-    if tse_value:
-        result['tse_value'] = float(tse_value)
-    if (m3 := index_change_match[3]) is not None:
-        result['tse_index_change_percent'] = float(m3)
+        , 'derivatives_tno': int(derivatives_tno)
+        , 'tse_index_change_percent': tse_index_change_percent
+        , 'tse_value': float(tse_value) if tse_value else None
+    }
     return result
 
 

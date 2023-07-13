@@ -51,10 +51,9 @@ async def update() -> None:
     df = mwi['prices']
     # flow == 3: futures market
     df = df.query('flow != 3 and cs not in @_CS_EXCLUSIONS and yval not in @_YVAL_EXCLUSIONS')
-    glv = df.index.get_level_values
-    codes = glv('ins_code')
-    l18s = glv('l18')
-    l30s = glv('l30')
+    codes = df.index.values
+    l18s = df['l18']
+    l30s = df['l30']
     # zip create an iterator which will be consumed on the first run
     values = *zip(codes, l18s, l30s),
     old_len = len(_L18S)

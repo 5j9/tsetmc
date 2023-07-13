@@ -19,7 +19,6 @@ from . import (
     _TypedDict,
 )
 
-_PRICE_INDEX_COLS = ['ins_code', 'isin', 'l18', 'l30']
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
 _PRICE_DTYPES = {
     'ins_code': 'string',
@@ -86,7 +85,7 @@ async def market_watch_init(
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
             names=_PRICE_COLUMNS,
-            index_col=_PRICE_INDEX_COLS, dtype=_PRICE_DTYPES)
+            index_col='ins_code', dtype=_PRICE_DTYPES)
     if best_limits:
         result['best_limits'] = best_limits_df = _csv2df(
             _StringIO(price_rows), names=_BEST_LIMITS_NAMES,
@@ -151,7 +150,7 @@ async def market_watch_plus(
             df['predtran'].replace('', _nan, inplace=True)
             df['buyop'].replace('', _nan, inplace=True)
             df = df.astype(_PRICE_DTYPES, False)
-            df.set_index(_PRICE_INDEX_COLS, inplace=True)
+            df.set_index('ins_code', inplace=True)
             result['new_prices'] = df
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
