@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.51.0
+-------
 * BREAKING CHANGE: ``market_watch`` will now use ``string`` as the dtype for ``ins_code`` index.
 * BREAKING CHANGE: ``market_state`` dict will now always include ``tse_value`` and ``tse_index_change_percent`` keys. The value will be ``None`` if not available.
 * BREAKING CHANGE: Use ``ins_code`` as the index for ``price`` and ``new_prices`` DataFrames in ``market_watch_init`` and ``market_watch_plus``. Previously, the index was a MultiIndex of ``['ins_code', 'isin', 'l18', 'l30']``.
