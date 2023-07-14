@@ -1,9 +1,9 @@
-from test import assert_market_state
-
 from aiohttp_test_utils import file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
 from pandas.api.types import is_numeric_dtype
+
+from tests import assert_market_state
 
 # noinspection PyProtectedMember
 from tsetmc.market_watch import (
@@ -26,7 +26,8 @@ async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', 'string[python]'), ('number', dtype('int64'))
+        ('ins_code', 'string[python]'),
+        ('number', dtype('int64')),
     ]
     assert 'market_state' not in mwi
 
@@ -65,7 +66,7 @@ async def test_market_watch_init():
         ('qo5', dtype('int64')),
         ('zd5', dtype('int64')),
         ('zo5', dtype('int64')),
-        * PRICE_DTYPES_ITEMS
+        *PRICE_DTYPES_ITEMS,
     ]
 
     i = prices.index
@@ -75,25 +76,48 @@ async def test_market_watch_init():
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', 'string[python]'), ('number', dtype('int64'))]
+        ('ins_code', 'string[python]'),
+        ('number', dtype('int64')),
+    ]
 
 
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
     df = await closing_price_all()
     assert all(t == 'int64' for t in df.dtypes)
-    assert df.columns.to_list() == ['pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax', 'py', 'pf']
+    assert df.columns.to_list() == [
+        'pc',
+        'pl',
+        'tno',
+        'tvol',
+        'tval',
+        'pmin',
+        'pmax',
+        'py',
+        'pf',
+    ]
     assert [*df.index.dtypes.items()] == [
-        ('ins_code', 'string[python]'), ('n', dtype('int64'))
+        ('ins_code', 'string[python]'),
+        ('n', dtype('int64')),
     ]
 
 
 @file('ClientTypeAll.aspx')
 async def test_client_type_all():
     df = await client_type_all()
-    assert all(df.columns == [
-        'n_buy_count', 'l_buy_count', 'n_buy_volume', 'l_buy_volume'
-        , 'n_sell_count', 'l_sell_count', 'n_sell_volume', 'l_sell_volume'])
+    assert all(
+        df.columns
+        == [
+            'n_buy_count',
+            'l_buy_count',
+            'n_buy_volume',
+            'l_buy_volume',
+            'n_sell_count',
+            'l_sell_count',
+            'n_sell_volume',
+            'l_sell_volume',
+        ]
+    )
     assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'ins_code'
     assert df.index.dtype == 'string[python]'
@@ -110,7 +134,9 @@ async def test_key_stats():
 
 def test_parse_index():
     # no tse_value
-    assert _parse_market_state("00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,") == {
+    assert _parse_market_state(
+        "00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,"
+    ) == {
         'datetime': jdatetime(1400, 1, 14, 6, 40, 12),
         'derivatives_status': 'C',
         'derivatives_tno': 0,
@@ -147,9 +173,10 @@ def test_parse_index():
         'tse_tno': 34288551133025.0,
         'tse_tval': 34288551133025.0,
         'tse_tvol': 3055466451.0,
-        'tse_value': 4.674381234630472e+16
+        'tse_value': 4.674381234630472e16,
     } == _parse_market_state(
-        "00/12/16 15:45:46,F,1169760.86,<div class='mn'>(8155.90)</div> -0.69%,46743812346304720.00,3055466451.00,34288551133025.00,428601,N,1057924358.00,163701347122693.00,342228,N,101096.00,31470939000.00,2621,")
+        "00/12/16 15:45:46,F,1169760.86,<div class='mn'>(8155.90)</div> -0.69%,46743812346304720.00,3055466451.00,34288551133025.00,428601,N,1057924358.00,163701347122693.00,342228,N,101096.00,31470939000.00,2621,"
+    )
 
     assert {
         'derivatives_status': 'F',
@@ -168,8 +195,10 @@ def test_parse_index():
         'tse_tno': 75828635544957.0,
         'tse_tval': 75828635544957.0,
         'tse_tvol': 9682732949.0,
-        'tse_value': 4.973605456635374e+16} == _parse_market_state(
-        "00/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,")
+        'tse_value': 4.973605456635374e16,
+    } == _parse_market_state(
+        "00/12/24 14:39:40,F,1245186.04,<div class='pn'>15808.56</div> 1.29%,49736054566353740.00,9682732949.00,75828635544957.00,830860,F,1577202926.00,128484547655014.00,544617,F,225866.00,57759844000.00,5796,"
+    )
 
 
 @file('MarketWatchInit2.aspx')
@@ -190,7 +219,15 @@ async def test_market_watch_plus_new():
     assert i.dtype == 'string[python]'
     best_limits = mwp['best_limits']
     assert all(t == 'int64' for t in best_limits.dtypes)
-    assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
+    assert best_limits.columns.to_list() == [
+        'number',
+        'zo',
+        'zd',
+        'pd',
+        'po',
+        'qd',
+        'qo',
+    ]
     index = best_limits.index
     assert index.name == 'ins_code'
     assert index.dtype == 'string[python]'
@@ -202,7 +239,17 @@ async def test_market_watch_plus_new():
 async def test_market_watch_plus_update():
     mwp = await market_watch_plus(64130, 9540883525)
     price_updates = mwp['price_updates']
-    assert price_updates.columns.to_list() == ['heven', 'pf', 'pc', 'pl', 'tno', 'tvol', 'tval', 'pmin', 'pmax']
+    assert price_updates.columns.to_list() == [
+        'heven',
+        'pf',
+        'pc',
+        'pl',
+        'tno',
+        'tvol',
+        'tval',
+        'pmin',
+        'pmax',
+    ]
     assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
     assert price_updates.index.dtype == 'string[python]'
 
@@ -215,7 +262,15 @@ async def test_market_watch_plus_update():
         assert m.isnumeric()
 
     best_limits = mwp['best_limits']
-    assert best_limits.columns.to_list() == ['number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo']
+    assert best_limits.columns.to_list() == [
+        'number',
+        'zo',
+        'zd',
+        'pd',
+        'po',
+        'qd',
+        'qo',
+    ]
     assert all(is_numeric_dtype(c) for c in best_limits.dtypes)
     assert best_limits.index.name == 'ins_code'
     assert best_limits.index.dtype == 'string[python]'
@@ -237,7 +292,8 @@ async def test_status_changes():
         ('نماد', dtype('O')),
         ('نام', dtype('O')),
         ('وضعیت جدید', dtype('O')),
-        ('date', dtype('O')),)
+        ('date', dtype('O')),
+    )
     assert type(df.iat[0, 3]) is jdatetime
 
 
@@ -248,7 +304,8 @@ async def test_ombud_messages():
     assert (*df.dtypes.items(),) == (
         ('header', 'string[python]'),
         ('date', dtype('O')),
-        ('description', 'string[python]'))
+        ('description', 'string[python]'),
+    )
     assert type(df.iat[0, 1]) is jdatetime
 
 
@@ -260,4 +317,5 @@ async def test_ombud_messages_empty():
     assert (*df.dtypes.items(),) == (
         ('header', 'string[python]'),
         ('date', dtype('O')),
-        ('description', 'string[python]'))
+        ('description', 'string[python]'),
+    )

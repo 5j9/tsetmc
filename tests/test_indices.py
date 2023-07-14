@@ -1,8 +1,7 @@
-from test import assert_dict_type
-
 from aiohttp_test_utils import file
 from numpy import dtype
 
+from tests import assert_dict_type
 from tsetmc import _InstrumentInfo
 from tsetmc.indices import Index, last_state
 

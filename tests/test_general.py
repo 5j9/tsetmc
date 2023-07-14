@@ -1,8 +1,7 @@
-from test import assert_dict_type
-
 from aiohttp_test_utils import file
 from numpy import dtype
 
+from tests import assert_dict_type
 from tsetmc.general import (
     _MarketOverview,
     boards,
@@ -25,7 +24,8 @@ async def test_boards():
         6: 'تابلو شاخص',
         7: 'فهرست مشروط',
         8: 'ابزار مشتقه',
-        9: 'بازار اوراق بدهی'}
+        9: 'بازار اوراق بدهی',
+    }
 
 
 @file('cs_codes.html')
@@ -97,7 +97,8 @@ async def test_cs_codes():
         '90': 'فعالیت های هنری، سرگرمی و خلاقانه',
         '93': 'فعالیتهای فرهنگی و ورزشی',
         '98': 'گروه اوراق غیرفعال',
-        'X1': 'شاخص'}
+        'X1': 'شاخص',
+    }
 
 
 @file('industrial_groups_overview.html')
@@ -108,7 +109,8 @@ async def test_industrial_groups_overview():
         (':-2', dtype('int64')),
         ('-2:0', dtype('int64')),
         ('0:2', dtype('int64')),
-        ('2:', dtype('int64'))]
+        ('2:', dtype('int64')),
+    ]
     assert len(df) > 40
 
 
@@ -147,7 +149,8 @@ async def test_major_holders_activity():
     assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
         ('l30', dtype('O')),
-        ('holder', dtype('O'))]
+        ('holder', dtype('O')),
+    ]
     for _, t in dtypes[3:]:
         assert dtype(t) == dtype('float64')
 
@@ -160,7 +163,8 @@ async def test_top_industry_groups():
         ('mv', dtype('float64')),
         ('tno', dtype('int64')),
         ('tvol', dtype('float64')),
-        ('tval', dtype('float64'))]
+        ('tval', dtype('float64')),
+    ]
 
 
 @file('market_overview.json')

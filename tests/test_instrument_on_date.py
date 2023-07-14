@@ -1,9 +1,8 @@
-from test import assert_dict_type
-
 from aiohttp_test_utils import file
 from numpy import dtype
 from pytest import warns
 
+from tests import assert_dict_type
 from tsetmc.instruments import Instrument, _ClientTypeOnDate, _ClosingPrice
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
@@ -23,7 +22,8 @@ async def test_intraday_closing_price():
         ('pDrCotVal', dtype('float64')),
         ('zTotTran', dtype('float64')),
         ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64'))]
+        ('qTotCap', dtype('float64')),
+    ]
 
 
 @file('faraz_GetStaticThreshold_20220222.json')
@@ -34,7 +34,8 @@ async def test_static_thresholds():
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('psGelStaMax', dtype('float64')),
-        ('psGelStaMin', dtype('float64'))]
+        ('psGelStaMin', dtype('float64')),
+    ]
 
 
 @file('faraz_BestLimits_20220222.json')
@@ -52,7 +53,8 @@ async def test_intraday_best_limits():
         ('pMeOf', dtype('float64')),
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
-        ('insCode', dtype('O'))]
+        ('insCode', dtype('O')),
+    ]
 
 
 @file('faraz_GetTradeHistory_20220222.json')
@@ -71,16 +73,29 @@ async def test_intraday_trades():
         ('pPbSeaCotJ', dtype('float64')),
         ('iAnuTran', dtype('int64')),
         ('xqVarPJDrPRf', dtype('float64')),
-        ('canceled', dtype('int64'))]
+        ('canceled', dtype('int64')),
+    ]
 
 
 @file('faraz_GetInstrumentHistory_20220222.json')
 async def test_historic_data():
     d = await FARAZ_ON_DATE.data()
     assert d.keys() == {
-        'insCode', 'lVal30', 'lVal18AFC', 'flow', 'cIsin', 'zTitad', 'baseVol',
-        'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
-        'flowTitle', 'cgrValCotTitle'}
+        'insCode',
+        'lVal30',
+        'lVal18AFC',
+        'flow',
+        'cIsin',
+        'zTitad',
+        'baseVol',
+        'instrumentID',
+        'cgrValCot',
+        'cComVal',
+        'lastDate',
+        'sourceID',
+        'flowTitle',
+        'cgrValCotTitle',
+    }
 
 
 @file('faraz_GetClosingPriceDaily_20220222.json')
@@ -102,7 +117,8 @@ async def test_intraday_states():
         ('cEtaval', dtype('O')),
         ('realHeven', dtype('int64')),
         ('underSupervision', dtype('int64')),
-        ('cEtavalTitle', dtype('O'))]
+        ('cEtavalTitle', dtype('O')),
+    ]
 
 
 @file('faraz_Shareholder_20220222.json')
@@ -119,6 +135,7 @@ async def test_intraday_holders():
         ('changeAmount', dtype('float64')),
         ('shareHolderShareID', dtype('int64')),
     ]
+
 
 @file('ondate_client_type.json')
 async def test_client_type():

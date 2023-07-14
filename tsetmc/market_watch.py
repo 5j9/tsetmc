@@ -7,7 +7,7 @@ from typing import Any as _Any
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
 
-from . import (
+from tsetmc import (
     _csv2df,
     _DataFrame,
     _get_data,
@@ -165,7 +165,8 @@ async def market_watch_plus(
             try:
                 df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             except ValueError as e:
-                _erorr(f'{e}')
+                _erorr(f'{lst[0] = }')
+                raise e
             df['eps'].replace('', _nan, inplace=True)
             df['predtran'].replace('', _nan, inplace=True)
             df['buyop'].replace('', _nan, inplace=True)

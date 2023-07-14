@@ -1,5 +1,4 @@
 from datetime import datetime
-from test import assert_dict_type, assert_market_state
 from types import NoneType
 from unittest.mock import patch
 
@@ -9,6 +8,7 @@ from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
 from pytest import raises, warns
 
+from tests import assert_dict_type, assert_market_state
 from tsetmc import _InstrumentInfo
 
 # noinspection PyProtectedMember
