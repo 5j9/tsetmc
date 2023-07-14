@@ -44,7 +44,8 @@ def assert_page_data(
             ('pmax', dtype('float64')),
             ('tno', dtype('int64')),
             ('tvol', dtype('int64')),
-            ('tval', dtype('float64'))]
+            ('tval', dtype('float64')),
+        ]
         assert trade_history.index.dtype == dtype('<M8[ns]')
         assert trade_history.index.name == 'date'
 
@@ -60,11 +61,24 @@ def assert_page_data(
         for k in ('bvol', 'cs', 'flow', 'month_average_volume', 'z'):
             assert type(d.pop(k)) is int
         for k in (
-            'sector_pe', 'tmax', 'tmin', 'week_max', 'week_min', 'year_max',
-            'year_min'):
+            'sector_pe',
+            'tmax',
+            'tmin',
+            'week_max',
+            'week_min',
+            'year_max',
+            'year_min',
+        ):
             assert type(d.pop(k)) is float
-        assert d.keys() == {'cisin', 'flow_name', 'isin', 'group_code', 'l18',
-            'l30', 'sector_name'}
+        assert d.keys() == {
+            'cisin',
+            'flow_name',
+            'isin',
+            'group_code',
+            'l18',
+            'l30',
+            'sector_name',
+        }
         assert all(type(v) is str for v in d.values())
 
 
@@ -109,7 +123,8 @@ def assert_live_data(
             ('pd', dtype('int64')),
             ('po', dtype('int64')),
             ('qo', dtype('int64')),
-            ('zo', dtype('int64'))]
+            ('zo', dtype('int64')),
+        ]
 
     if market_state:
         market_state = d.pop('market_state', None)
@@ -124,7 +139,16 @@ def assert_live_data(
     for k in ('timestamp', 'status'):
         assert type(d.pop(k)) is str
     assert [*d.keys()] == [
-        'pl', 'pc', 'pf', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval']
+        'pl',
+        'pc',
+        'pf',
+        'py',
+        'pmin',
+        'pmax',
+        'tno',
+        'tvol',
+        'tval',
+    ]
     assert all(type(v) is int for v in d.values())
 
 
@@ -186,7 +210,8 @@ async def test_trade_history():
         ('py', dtype('float64')),
         ('tval', dtype('float64')),
         ('tvol', dtype('int64')),
-        ('tno', dtype('int64'))]
+        ('tno', dtype('int64')),
+    ]
     assert df0.index.name == 'date'
     assert isinstance(df0.index, DatetimeIndex)
     with warns(DeprecationWarning):
@@ -211,14 +236,16 @@ async def test_from_search_with_numeric_description():
 
 async def test_repr():
     # known l18
-    assert repr(
-        await Instrument.from_l18('فملی')
-    ) == \
-           "Instrument(35425587644337450, 'فملی')"
+    assert (
+        repr(await Instrument.from_l18('فملی'))
+        == "Instrument(35425587644337450, 'فملی')"
+    )
     # unknown l18
     assert repr(Instrument(1)) == "Instrument(1)"
-    assert repr(Instrument(1, l30='مجتمع جهان فولاد سيرجان')) == \
-           "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
+    assert (
+        repr(Instrument(1, l30='مجتمع جهان فولاد سيرجان'))
+        == "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
+    )
 
 
 async def test_equal():
@@ -263,17 +290,29 @@ async def test_client_type_history_old():
         ('n_buy_value', dtype('int64')),
         ('l_buy_value', dtype('int64')),
         ('n_sell_value', dtype('int64')),
-        ('l_sell_value', dtype('int64'))]
+        ('l_sell_value', dtype('int64')),
+    ]
 
 
 @file('faraz_GetClientTypeHistory_20220222.json')
 async def test_client_type_history():
     d = await Instrument(13666407494621646).client_type_history(20220222)
     assert d.keys() == {
-        'recDate', 'insCode', 'buy_I_Volume', 'buy_N_Volume', 'buy_I_Value',
-        'buy_N_Value', 'buy_N_Count', 'sell_I_Volume', 'buy_I_Count',
-        'sell_N_Volume', 'sell_I_Value', 'sell_N_Value', 'sell_N_Count',
-        'sell_I_Count'}
+        'recDate',
+        'insCode',
+        'buy_I_Volume',
+        'buy_N_Volume',
+        'buy_I_Value',
+        'buy_N_Value',
+        'buy_N_Count',
+        'sell_I_Volume',
+        'buy_I_Count',
+        'sell_N_Volume',
+        'sell_I_Value',
+        'sell_N_Value',
+        'sell_N_Count',
+        'sell_I_Count',
+    }
 
 
 @file('fzar_GetClientTypeHistory_all.json')
@@ -293,7 +332,8 @@ async def test_client_type_history_no_date():
         ('sell_I_Value', dtype('float64')),
         ('sell_N_Value', dtype('float64')),
         ('sell_N_Count', dtype('int64')),
-        ('sell_I_Count', dtype('int64'))]
+        ('sell_I_Count', dtype('int64')),
+    ]
 
 
 AVA = Instrument(18007109712724189)
@@ -308,7 +348,8 @@ async def test_holders_with_cisin():
         ('shares/units', dtype('O')),
         ('%', dtype('float64')),
         ('change', dtype('int64')),
-        ('id_cisin', dtype('O'))]
+        ('id_cisin', dtype('O')),
+    ]
 
 
 @file('ava_holders.json')
@@ -326,7 +367,8 @@ async def test_holders_change_column_type():
         ('shares/units', dtype('O')),
         ('%', dtype('float64')),
         ('change', dtype('int64')),
-        ('id_cisin', dtype('O'))]
+        ('id_cisin', dtype('O')),
+    ]
 
 
 @file('ava_holder.txt')
@@ -334,10 +376,16 @@ async def test_holder():
     inst = AVA
     with warns(DeprecationWarning):
         # has no other holdings
-        hist, oth = await inst.holder('43789,IRT3AVAF0003', True, True)  # reverved code of ETFs
+        hist, oth = await inst.holder(
+            '43789,IRT3AVAF0003', True, True
+        )  # reserved code of ETFs
     assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
     assert hist.index.dtype.kind == 'M'
-    assert [*oth.dtypes.items()] == [('name', dtype('O')), ('shares', dtype('int64')), ('percent', dtype('float64'))]
+    assert [*oth.dtypes.items()] == [
+        ('name', dtype('O')),
+        ('shares', dtype('int64')),
+        ('percent', dtype('float64')),
+    ]
     assert oth.index.name == 'ins_code'
     with warns(DeprecationWarning):
         hist = await inst.holder('43789,IRT3AVAF0003', True)
@@ -399,7 +447,8 @@ async def test_adjustments():
     assert [*df.dtypes.items()] == [
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64'))]
+        ('pc', dtype('int64')),
+    ]
     assert type(df.iat[0, 0]) is jdatetime
 
 
@@ -412,7 +461,8 @@ async def test_price_adjustments_method():
         ('pClosing', dtype('float64')),
         ('pClosingNotAdjusted', dtype('float64')),
         ('corporateTypeCode', dtype('O')),
-        ('instrument', dtype('O'))]
+        ('instrument', dtype('O')),
+    ]
     assert df.index[-1] == datetime(2009, 7, 15)
 
 
@@ -424,7 +474,8 @@ async def test_price_adjustments():
         ('l30', dtype('O')),
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64'))]
+        ('pc', dtype('int64')),
+    ]
     assert len(df) == 6
     assert df.iat[-1, -1] == 1000
 
@@ -440,7 +491,8 @@ async def test_adjusted_price_history():
         ('pf', dtype('int64')),
         ('pl', dtype('int64')),
         ('tvol', dtype('int64')),
-        ('pc', dtype('int64'))]
+        ('pc', dtype('int64')),
+    ]
 
 
 @file('search_mellat.txt')
@@ -459,7 +511,8 @@ async def test_old_search():
         ('_unknown2', dtype('int64')),
         ('_unknown3', dtype('int64')),
         ('_unknown4', dtype('int64')),
-        ('_unknown5', dtype('O'))]
+        ('_unknown5', dtype('O')),
+    ]
 
 
 @file('search_atlas.txt')
@@ -493,7 +546,7 @@ async def test_introduction():
         'مدیر مالی': 'امید علی معیری',
         'شناسه ملی': '10100582059',
         'شرکت مدیریت فناوری بورس تهران فقط گردآورنده ی اطلاعات برای معرفی شرکت های پذیرفته شده در بورس و فرابورس است. این شرکت نظارت،مسئولیت یا آگاهی در باره ی چگونگی ارائه خدمات اداره سهام شرکت ها، توزیع سود، وضعیت افزایش سرمایه آنها و موارد مشابه دیگر ندارد و مرجع رسیدگی به شکایات یا رفع کاستی های شرکت ها نمی باشد.': 'شرکت مدیریت فناوری بورس تهران فقط گردآورنده ی اطلاعات برای معرفی شرکت های پذیرفته شده در بورس و فرابورس است. این شرکت نظارت،مسئولیت یا آگاهی در باره ی چگونگی ارائه خدمات اداره سهام شرکت ها، توزیع سود، وضعیت افزایش سرمایه آنها و موارد مشابه دیگر ندارد و مرجع رسیدگی به شکایات یا رفع کاستی های شرکت ها نمی باشد.',
-        'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.': 'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.'
+        'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.': 'برای مشاهده اطلاعات دقیق به کدال مراجعه کنید.',
     }
 
 
@@ -502,16 +555,44 @@ async def test_publisher():
     inst = await Instrument.from_l18('فملی')
     publisher = await inst.publisher()
     assert publisher.keys() == {
-        'activitySubject', 'address', 'auditorName', 'companyId',
-        'companyType', 'companyType1', 'displaySymbol', 'email',
-        'enActivitySubject', 'enAddress', 'enDisplayedSymbol',
-        'enExecutiveManager', 'enFinancialManager', 'enInspector',
-        'enManagementGroup', 'enName', 'enOfficeAddress',
-        'enShareOfficeAddress', 'executiveManager', 'faxNo',
-        'financialManager', 'financialYear', 'id', 'inspListedCapitalector',
-        'inspector', 'isic', 'listedCapital', 'managementGroup', 'name',
-        'nationalCode', 'officeAddress', 'reportingType', 'shareOfficeAddress',
-        'state', 'stateName', 'symbol', 'telNo', 'website',
+        'activitySubject',
+        'address',
+        'auditorName',
+        'companyId',
+        'companyType',
+        'companyType1',
+        'displaySymbol',
+        'email',
+        'enActivitySubject',
+        'enAddress',
+        'enDisplayedSymbol',
+        'enExecutiveManager',
+        'enFinancialManager',
+        'enInspector',
+        'enManagementGroup',
+        'enName',
+        'enOfficeAddress',
+        'enShareOfficeAddress',
+        'executiveManager',
+        'faxNo',
+        'financialManager',
+        'financialYear',
+        'id',
+        'inspListedCapitalector',
+        'inspector',
+        'isic',
+        'listedCapital',
+        'managementGroup',
+        'name',
+        'nationalCode',
+        'officeAddress',
+        'reportingType',
+        'shareOfficeAddress',
+        'state',
+        'stateName',
+        'symbol',
+        'telNo',
+        'website',
     }
 
 
@@ -522,7 +603,8 @@ async def test_ombud_messages():
     assert [*df.dtypes.items()] == [
         ('header', 'string[python]'),
         ('date', dtype('O')),
-        ('description', 'string[python]')]
+        ('description', 'string[python]'),
+    ]
     assert type(df.iat[0, 1]) is jdatetime
 
 
@@ -542,7 +624,8 @@ async def test_dps_history():
         ('profit_or_loss_after_tax', dtype('float64')),
         ('distributable_profit', dtype('float64')),
         ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
-        ('cash_earnings_per_share', dtype('float64'))]
+        ('cash_earnings_per_share', dtype('float64')),
+    ]
     assert type(df.iat[0, 0]) is jdatetime
     assert type(df.iat[0, 1]) is jdatetime
     assert type(df.iat[0, 2]) is jdatetime
@@ -562,9 +645,12 @@ def test_parse_price_info():
 
 def test_parse_price_info_bad_date():
     # 1400/12/30 is not a valid date
-    assert _parse_price_info(
-        '12:19:35,A ,63070,64270,62540,63550,64300,62540,30,7973,512457280,1,20220813,121935,1400/12/30 16:30:00,63354'
-    )['nav_datetime'] == '1400/12/30 16:30:00'
+    assert (
+        _parse_price_info(
+            '12:19:35,A ,63070,64270,62540,63550,64300,62540,30,7973,512457280,1,20220813,121935,1400/12/30 16:30:00,63354'
+        )['nav_datetime']
+        == '1400/12/30 16:30:00'
+    )
 
 
 KARIS = Instrument(69067576215760005)
@@ -730,7 +816,7 @@ async def test_related_companies():
         ('pDrCotVal', dtype('float64')),
         ('zTotTran', dtype('float64')),
         ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64'))
+        ('qTotCap', dtype('float64')),
     ]
 
     assert h.groupby('insCode')['insCode'].agg(len).mode()[0] == 29
