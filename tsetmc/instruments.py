@@ -13,7 +13,7 @@ from pandas import (
     to_datetime as _to_datetime,
 )
 
-from . import (
+from tsetmc import (
     _F,
     _FARSI_NORM,
     _api,
@@ -36,7 +36,6 @@ from . import (
 
 _strptime = _datetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
-_DS_PATH = Path(__file__).parent / 'dataset/dataset.csv'
 
 
 _FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}
@@ -86,18 +85,49 @@ _TRADE_HISTORY = _rc(r"var TradeHistory=(\[.*\]);").search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
-_DS = _read_csv(_DS_PATH, low_memory=False, lineterminator='\n')
-_L18S = {k: v for k, (*v,) in zip(_DS['l18'], _DS.itertuples(index=False))}
-del _DS  # don't need this anymore
+class ClassProperty:
+    def __init__(self, method):
+        self.method = method
 
-_CODE_TO_L18 = None
+    def __get__(self, owner_self, owner_cls):
+        return self.method(owner_cls)
 
 
-def _l18_l30(code: int) -> tuple:
-    global _CODE_TO_L18
-    if _CODE_TO_L18 is None:
-        _CODE_TO_L18 = {v[0]: k for k, v in _L18S.items()}
-    return _L18S[_CODE_TO_L18[code]][1:]
+class _LazyDS:
+    l18s_to_l30_code: dict[str, tuple[str, str]] = None
+    l30s_to_l18_code: dict[str, tuple[str, str]] = None
+    cached_df: _DataFrame = None
+    path = Path(__file__).parent / 'dataset/dataset.csv'
+
+    @ClassProperty
+    def df(cls) -> _DataFrame:
+        if cls.cached_df is None:
+            cls.cached_df = _read_csv(
+                cls.path,
+                low_memory=False,
+                lineterminator='\n',
+                dtype='string',
+                encoding='utf-8-sig',
+            )
+        return cls.cached_df
+
+    @classmethod
+    def l30_code(cls, l18: str) -> tuple[str, str]:
+        df = cls.df
+        d = cls.l18s_to_l30_code = dict(
+            zip(df['l18'], [*zip(df['l30'], df['code'])])
+        )
+        g = cls.l30_code = d.get
+        return g(l18)
+
+    @classmethod
+    def l18_l130(cls, code: str) -> tuple[str, str]:
+        df = cls.df
+        d = cls.l30s_to_l18_code = dict(
+            zip(df['code'], [*zip(df['l18'], df['l30'])])
+        )
+        g = cls.l18_code = d.get
+        return g(code)
 
 
 class _IntraDay(_TypedDict, total=False):
@@ -177,6 +207,7 @@ class _ClosingPriceInfo(_TypedDict):
     zTotTran: float
     qTotTran5J: float
     qTotCap: float
+
 
 class _ClientType(_TypedDict):
     buy_I_Volume: float
@@ -271,11 +302,10 @@ class _Codal(_TypedDict):
 
 
 class Instrument:
-
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
     def __init__(self, code: str | int, l18: str = None, l30: str = None):
-        self.code = code
+        self.code = f'{code}'
         self._l18 = l18
         self._l30 = l30
 
@@ -298,8 +328,8 @@ class Instrument:
         if (l18 := self._l18) is not None:
             return l18
         try:
-            self._l18, self._l30 = _l18_l30(self.code)
-        except KeyError:
+            self._l18, self._l30 = _LazyDS.l18_l130(self.code)
+        except TypeError:  # cannot unpack non-iterable NoneType object
             await self.info()
         return self._l18
 
@@ -312,8 +342,8 @@ class Instrument:
         if (l30 := self._l30) is not None:
             return l30
         try:
-            self._l18, self._l30 = _l18_l30(self.code)
-        except KeyError:
+            self._l18, self._l30 = _LazyDS.l18_l130(self.code)
+        except TypeError:  # cannot unpack non-iterable NoneType object
             await self.info()
         return self._l30
 
@@ -336,8 +366,8 @@ class Instrument:
     @staticmethod
     async def from_l18(l18: str, /) -> 'Instrument':
         try:
-            ins_code, _, l30 = _L18S[l18]
-        except KeyError:
+            l30, ins_code = _LazyDS.l30_code(l18)
+        except TypeError:  # cannot unpack non-iterable NoneType object
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
@@ -357,11 +387,15 @@ class Instrument:
         return df
 
     async def codal(self, n=9) -> list[_Codal]:
-        j = await _api(f'Codal/GetPreparedDataByInsCode/{n}/{self.code}', fa=True)
+        j = await _api(
+            f'Codal/GetPreparedDataByInsCode/{n}/{self.code}', fa=True
+        )
         return j['preparedData']
 
     async def daily_closing_price(self, n=9) -> _DataFrame:
-        j = await _api(f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}')
+        j = await _api(
+            f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
+        )
         df = _DataFrame(j['closingPriceDaily'], copy=False)
         date = _to_datetime(
             df.pop('dEven').astype(str)
@@ -373,7 +407,9 @@ class Instrument:
         return df
 
     async def closing_price_info(self) -> _ClosingPriceInfo:
-        j = await _api(f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True)
+        j = await _api(
+            f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True
+        )
         return j['closingPriceInfo']
 
     async def best_limits(self) -> _DataFrame:
@@ -384,7 +420,7 @@ class Instrument:
     async def client_type(self) -> _ClientType:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
-    
+
     async def etf(self) -> _ETF:
         """Return ETF data. (Includes redemption NAV and datetime of it).
 
@@ -398,8 +434,8 @@ class Instrument:
             cs = await self.cs
 
         from tsetmc.general import related_companies
-        return await related_companies(cs)
 
+        return await related_companies(cs)
 
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
@@ -423,7 +459,8 @@ class Instrument:
         """
         _warn(
             '`Instrument.page_data` is deprecated; see its doc-string for alternatives',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
 
         text = await _get_par_tree(f'151311&i={self.code}')
@@ -460,24 +497,37 @@ class Instrument:
                 'week_min': float(m['MinWeek']),
                 'year_max': float(m['MaxYear']),
                 'year_min': float(m['MinYear']),
-                'z': int(m['ZTitad'])}
+                'z': int(m['ZTitad']),
+            }
         else:
             result = {}
             m = None
         if trade_history:
             m = _TRADE_HISTORY(text, m.end())
             th = _literal_eval(_STR_TO_NUM(m[1]))
-            th = _DataFrame(th, copy=False, columns=(
-                'date', 'pc', 'py', 'pmin', 'pmax', 'tno', 'tvol', 'tval'
-            ))
+            th = _DataFrame(
+                th,
+                copy=False,
+                columns=(
+                    'date',
+                    'pc',
+                    'py',
+                    'pmin',
+                    'pmax',
+                    'tno',
+                    'tvol',
+                    'tval',
+                ),
+            )
             th['date'] = _to_datetime(th['date'], format='%Y%m%d')
             th.set_index('date', inplace=True)
             result['trade_history'] = th
         if related_companies:
             m = _RELATED_COMPANIES(text, m.end())
             result['related_companies'] = [
-                Instrument(code, l18, l30) for (code, l18, l30) in
-                _literal_eval(_STR_TO_NUM(m[1]))]
+                Instrument(code, l18, l30)
+                for (code, l18, l30) in _literal_eval(_STR_TO_NUM(m[1]))
+            ]
         return result
 
     async def live_data(
@@ -496,22 +546,35 @@ class Instrument:
         """
         _warn(
             '`Instrument.live_data` is deprecated; see its doc-string for alternatives',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
         text = await _get_data(
             'instinfodata.aspx'
-            # &e=1 parameter is required to get cancel NAV for ETFs but it 
+            # &e=1 parameter is required to get cancel NAV for ETFs but it
             # seems to be ignored if no NAV is defined for the instrument.
             # &c= is normally set to CSecVal, but does not seem to be required.
             # CSecVal is industry group code:
             # http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111B&LnkIdn=107
-            f'?i={self.code}&c=&e=1', fa=True)
+            f'?i={self.code}&c=&e=1',
+            fa=True,
+        )
         # the _s are unknown
         try:
-            price_info, index_info, orders_info, _, _, _, group_info, _, _ = text.split(';')
+            (
+                price_info,
+                index_info,
+                orders_info,
+                _,
+                _,
+                _,
+                group_info,
+                _,
+                _,
+            ) = text.split(';')
         except ValueError:
             _warning(text)  # usually means the service is unavailable
             raise
@@ -524,9 +587,11 @@ class Instrument:
                 result['market_state'] = _parse_market_state(index_info)
         if best_limits:
             result['best_limits'] = _csv2df(
-                _StringIO(orders_info), sep='@',
+                _StringIO(orders_info),
+                sep='@',
                 names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
-                lineterminator=',')
+                lineterminator=',',
+            )
         return result
 
     async def trade_history(self, top: int, all_=False) -> _DataFrame:
@@ -539,28 +604,45 @@ class Instrument:
         """
         _warn(
             '`Instrument.trade_history` is deprecated; use `Instrument.daily_closing_price` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
-        content = await _get_data(f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}')
+        content = await _get_data(
+            f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}'
+        )
         df = _csv2df(
-            _BytesIO(content)
-            , sep='@'
-            , names=('date', 'pmax', 'pmin', 'pc', 'pl', 'pf', 'py', 'tval', 'tvol', 'tno')
-            , index_col='date'
-            , parse_dates=True)
+            _BytesIO(content),
+            sep='@',
+            names=(
+                'date',
+                'pmax',
+                'pmin',
+                'pc',
+                'pl',
+                'pf',
+                'py',
+                'tval',
+                'tvol',
+                'tno',
+            ),
+            index_col='date',
+            parse_dates=True,
+        )
         return df
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
         # As far as I can thell the new tsetmc site does not have any
         # API for adjusted price history, but see self.price_adjustments.
         content = await _get(
-            f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}')
+            f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'
+        )
         df = _csv2df(
-            _BytesIO(content)
-            , names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc')
-            , index_col='date', parse_dates=True)
+            _BytesIO(content),
+            names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'),
+            index_col='date',
+            parse_dates=True,
+        )
         return df
-
 
     async def client_type_history_old(self) -> _DataFrame:
         """Get daily natural/legal history.
@@ -579,17 +661,30 @@ class Instrument:
         """
         _warn(
             '`Instrument.client_type_history_old` is deprecated; use `Instrument.client_type_history` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         return _csv2df(
-            _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}'))
-            , names=(
-                'date'
-                , 'n_buy_count', 'l_buy_count', 'n_sell_count', 'l_sell_count'
-                , 'n_buy_volume', 'l_buy_volume', 'n_sell_volume', 'l_sell_volume'
-                , 'n_buy_value', 'l_buy_value', 'n_sell_value', 'l_sell_value')
-            , index_col='date', parse_dates=True , dtype='int64')
-
+            _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}')),
+            names=(
+                'date',
+                'n_buy_count',
+                'l_buy_count',
+                'n_sell_count',
+                'l_sell_count',
+                'n_buy_volume',
+                'l_buy_volume',
+                'n_sell_volume',
+                'l_sell_volume',
+                'n_buy_value',
+                'l_buy_value',
+                'n_sell_value',
+                'l_sell_value',
+            ),
+            index_col='date',
+            parse_dates=True,
+            dtype='int64',
+        )
 
     async def client_type_history(
         self, date: int | str = None
@@ -627,45 +722,54 @@ class Instrument:
         """
         _warn(
             '`Instrument.identification` is deprecated; use `Instrument.identity` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         text = await _get_par_tree(f'15131M&i={self.code}')
         df = _read_html(text)[0]
         return dict(zip(df[0], df[1]))
 
     async def identity(self) -> _Identity:
-        j = await _api(f'Instrument/GetInstrumentIdentity/{self.code}', fa=True)
+        j = await _api(
+            f'Instrument/GetInstrumentIdentity/{self.code}', fa=True
+        )
         return j['instrumentIdentity']
 
     async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
         _warn(
             '`Instrument.introduction` is deprecated; use `Instrument.publisher` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
-        text = await _get_par_tree(
-            f'15131V&s={await self._arabic_l18}')
+        text = await _get_par_tree(f'15131V&s={await self._arabic_l18}')
         df = _read_html(text)[0]
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
     async def publisher(self) -> dict:
-        j = await _api(f'Codal/GetCodalPublisherBySymbol/{await self._arabic_l18}', fa=True)
+        j = await _api(
+            f'Codal/GetCodalPublisherBySymbol/{await self._arabic_l18}',
+            fa=True,
+        )
         return j['codalPublisher']
 
     @staticmethod
     async def from_search(s: str) -> 'Instrument':
         """`Search for `s` and return the first result as an Instrument."""
-        d =  (await search(s))[0]
+        d = (await search(s))[0]
         return Instrument(d['insCode'], d['lVal18AFC'], d['lVal30'])
 
     async def share_holders(self) -> list[_ShareHolder]:
         """Return a list of the current major holders of this instrument."""
-        j = await _api(f'Shareholder/GetInstrumentShareHolderLast/{self.code}', fa=True)
+        j = await _api(
+            f'Shareholder/GetInstrumentShareHolderLast/{self.code}', fa=True
+        )
         return j['shareHolder']
 
     async def share_holder_history(
-        self, share_holder_id: int,
-        days: int=90,
+        self,
+        share_holder_id: int,
+        days: int = 90,
     ) -> _DataFrame:
         """Return history of share changes of a particular holder.
 
@@ -675,7 +779,7 @@ class Instrument:
         """
         j = await _api(
             f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
-            fa=True
+            fa=True,
         )
         df = _DataFrame(j['shareHolder'], copy=False)
         df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
@@ -692,7 +796,8 @@ class Instrument:
         """
         _warn(
             '`Instrument.holders` is deprecated; use `Instrument.share_holders` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         if cisin is None:
             cisin = await self.cisin
@@ -719,7 +824,8 @@ class Instrument:
         """
         _warn(
             '`Instrument.holder` is deprecated; use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
@@ -730,13 +836,15 @@ class Instrument:
                 names=('date', 'shares'),
                 dtype='int64',
                 index_col='date',
-                parse_dates=True)
+                parse_dates=True,
+            )
 
         def other_holdings_df() -> _DataFrame:
             return _csv2df(
                 _StringIO(oth),
                 names=('ins_code', 'name', 'shares', 'percent'),
-                index_col='ins_code')
+                index_col='ins_code',
+            )
 
         if history and other_holdings:
             return history_df(), other_holdings_df()
@@ -748,14 +856,14 @@ class Instrument:
     async def adjustments(self) -> _DataFrame:
         _warn(
             '`Instrument.adjustments` is deprecated; use `Instrument.price_adjustments` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _read_html(text)[0]
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
         return df
-
 
     async def price_adjustments(self) -> _DataFrame:
         j = await _api(f'ClosingPrice/GetPriceAdjustList/{self.code}')
@@ -771,9 +879,12 @@ class Instrument:
     async def ombud_messages(self) -> _DataFrame:
         _warn(
             '`Instrument.ombud_messages` is deprecated; use `Instrument.messages` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
-        return _parse_ombud_messages(await _get_par_tree(f'15131W&i={self.code}'))
+        return _parse_ombud_messages(
+            await _get_par_tree(f'15131W&i={self.code}')
+        )
 
     async def dps_history(self) -> _DataFrame:
         """Get DPS history.
@@ -795,9 +906,11 @@ class Instrument:
             'profit_or_loss_after_tax',
             'distributable_profit',
             'accumulated_profit_at_the_end_of_the_period',
-            'cash_earnings_per_share']
+            'cash_earnings_per_share',
+        ]
         df.iloc[:, :3] = df.iloc[:, :3].apply(
-            lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col])
+            lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col]
+        )
         return df
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
@@ -849,7 +962,6 @@ class _ClientTypeOnDate(_TypedDict):
 
 
 class InstrumentOnDate:
-
     __slots__ = 'date', 'code', 'inst'
 
     def __init__(self, /, *, _inst: Instrument, _date: int | str):
@@ -876,12 +988,16 @@ class InstrumentOnDate:
         'last', 'id', 'insCode', 'dEven', 'hEven', 'pClosing', 'iClose',
         'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap'}
         """
-        j = await _api(f'ClosingPrice/GetClosingPriceDaily/{self.code}/{self.date}')
+        j = await _api(
+            f'ClosingPrice/GetClosingPriceDaily/{self.code}/{self.date}'
+        )
         return j['closingPriceDaily']
 
     async def closing_price_history(self) -> _DataFrame:
         """Get intraday closing price history."""
-        j = await _api(f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}')
+        j = await _api(
+            f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}'
+        )
         return _DataFrame(j['closingPriceHistory'], copy=False)
 
     async def states(self) -> _DataFrame:
@@ -889,7 +1005,9 @@ class InstrumentOnDate:
 
         http://www.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833
         """
-        j = await _api(f'MarketData/GetInstrumentState/{self.code}/{self.date}')
+        j = await _api(
+            f'MarketData/GetInstrumentState/{self.code}/{self.date}'
+        )
         return _DataFrame(j['instrumentState'], copy=False)
 
     async def client_type(self) -> _ClientTypeOnDate:
@@ -898,7 +1016,8 @@ class InstrumentOnDate:
     async def client_types(self) -> dict:
         _warn(
             '`InstrumentOnDate.client_types` is deprecated; use `InstrumentOnDate.client_type` instead.',
-            DeprecationWarning, stacklevel=2,
+            DeprecationWarning,
+            stacklevel=2,
         )
         return await self.client_type()
 
@@ -920,8 +1039,8 @@ class InstrumentOnDate:
     async def trades(self) -> _DataFrame:
         """Get intraday trades.
 
-         See also:
-            :meth:`Instrument.trade_history`
+        See also:
+           :meth:`Instrument.trade_history`
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
@@ -929,7 +1048,9 @@ class InstrumentOnDate:
 
     async def static_thresholds(self) -> _DataFrame:
         """Get intraday static thresholds."""
-        j = await _api(f'MarketData/GetStaticThreshold/{self.code}/{self.date}')
+        j = await _api(
+            f'MarketData/GetStaticThreshold/{self.code}/{self.date}'
+        )
         return _DataFrame(j['staticThreshold'], copy=False)
 
     async def data(self) -> dict:
@@ -940,7 +1061,9 @@ class InstrumentOnDate:
         'instrumentID', 'cgrValCot', 'cComVal', 'lastDate', 'sourceID',
         'flowTitle', 'cgrValCotTitle'}
         """
-        j = await _api(f'Instrument/GetInstrumentHistory/{self.code}/{self.date}')
+        j = await _api(
+            f'Instrument/GetInstrumentHistory/{self.code}/{self.date}'
+        )
         return j['instrumentHistory']
 
 
@@ -969,8 +1092,19 @@ async def old_search(skey: str, /) -> _DataFrame:
         #   wholesale: block,
         # } see: https://www.sena.ir/news/77488/
         names=(
-            'l18', 'l30', 'ins_code', 'retail', 'compensation', 'wholesale',
-            '_unknown1', '_unknown2', '_unknown3', '_unknown4', '_unknown5'))
+            'l18',
+            'l30',
+            'ins_code',
+            'retail',
+            'compensation',
+            'wholesale',
+            '_unknown1',
+            '_unknown2',
+            '_unknown3',
+            '_unknown4',
+            '_unknown5',
+        ),
+    )
 
 
 class _Search(_TypedDict):
@@ -1027,8 +1161,12 @@ class _ShareHolderCompany(_TypedDict):
     perOfShares: float
 
 
-async def   share_holder_companies(share_holder_id: int | str) -> list[_ShareHolderCompany]:
-    r = await _api(f'Shareholder/GetShareHolderCompanyList/{share_holder_id}', fa=True)
+async def share_holder_companies(
+    share_holder_id: int | str,
+) -> list[_ShareHolderCompany]:
+    r = await _api(
+        f'Shareholder/GetShareHolderCompanyList/{share_holder_id}', fa=True
+    )
     return r['shareHolderShare']
 
 
@@ -1056,23 +1194,34 @@ def _parse_price_info(price_info):
         info_datetime_date,  # 12
         last_info_time,  # 13
         nav_datetime,  # 14
-        nav  # 15
+        nav,  # 15
     ) = price_parts
 
     result = {
-        'timestamp': timestamp, 'status': status
-        , 'datetime': _strptime(
-            info_datetime_date + last_info_time, '%Y%m%d%H%M%S')
-        , 'pl': int(pl), 'pc': int(pc), 'pf': int(pf), 'py': int(py)
-        , 'pmin': int(pmin), 'pmax': int(pmax)
-        , 'tno': int(tno), 'tvol': int(tvol), 'tval': int(tval)}
+        'timestamp': timestamp,
+        'status': status,
+        'datetime': _strptime(
+            info_datetime_date + last_info_time, '%Y%m%d%H%M%S'
+        ),
+        'pl': int(pl),
+        'pc': int(pc),
+        'pf': int(pf),
+        'py': int(py),
+        'pmin': int(pmin),
+        'pmax': int(pmax),
+        'tno': int(tno),
+        'tvol': int(tvol),
+        'tval': int(tval),
+    }
 
     if nav:
         result['nav'] = int(nav)
         try:
             _jdatetime(1400, 12, 1, 16, 30, 0)
             _fullmatch(r'(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)', nav_datetime)
-            result['nav_datetime'] = _jstrptime(nav_datetime, '%Y/%m/%d %H:%M:%S')
+            result['nav_datetime'] = _jstrptime(
+                nav_datetime, '%Y/%m/%d %H:%M:%S'
+            )
         except ValueError:  # could be invalid day of the month
             result['nav_datetime'] = nav_datetime
 
