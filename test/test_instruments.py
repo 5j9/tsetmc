@@ -342,8 +342,14 @@ async def test_client_type_history_no_date():
 AVA = Instrument('18007109712724189')
 
 
-@file('ava_holders.txt')
-async def test_holders_with_cisin():
+@files(  # id_cisin may change from time to time
+    'ava_holders.txt',
+    'ava_holder.txt',
+    'ava_holder.txt',
+    'ava_holder.txt',
+    'ava_holder.txt',
+)
+async def test_holders_holder():
     with warns(DeprecationWarning):
         holders = await AVA.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
@@ -354,15 +360,10 @@ async def test_holders_with_cisin():
         ('id_cisin', dtype('O')),
     ]
 
+    id_cisin = holders.at[0, 'id_cisin']
 
-@file('ava_holder.txt')
-async def test_holder_and_holders():
-    inst = AVA
     with warns(DeprecationWarning):
-        # has no other holdings
-        hist, oth = await inst.holder(
-            '23965,IRT3AVAF0003', True, True
-        )  # reserved code of ETFs
+        hist, oth = await AVA.holder(id_cisin, True, True)
     assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
     assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
@@ -372,13 +373,13 @@ async def test_holder_and_holders():
         ('percent', dtype('float64')),
     ]
     with warns(DeprecationWarning):
-        hist = await inst.holder('43789,IRT3AVAF0003', True)
+        hist = await AVA.holder('43789,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
     with warns(DeprecationWarning):
-        oth = await inst.holder('43789,IRT3AVAF0003', False, True)
+        oth = await AVA.holder('43789,IRT3AVAF0003', False, True)
     assert type(oth) is DataFrame
     with warns(DeprecationWarning):
-        result = await inst.holder('43789,IRT3AVAF0003', False)
+        result = await AVA.holder('43789,IRT3AVAF0003', False)
     assert oth.equals(result)
 
 
