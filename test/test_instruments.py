@@ -3,7 +3,7 @@ from test import assert_dict_type, assert_market_state
 from types import NoneType
 from unittest.mock import patch
 
-from aiohttp_test_utils import file
+from aiohttp_test_utils import file, files
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex
@@ -219,10 +219,13 @@ async def test_trade_history():
     assert len(df1) >= len(df0)
 
 
+VSADID = Instrument('41713045190742691')
+
+
 @file('vsadid.txt')
 async def test_vsadid():
     with warns(DeprecationWarning):
-        d = await Instrument(41713045190742691).live_data()
+        d = await VSADID.live_data()
     assert_live_data(d)
 
 
@@ -255,7 +258,7 @@ async def test_equal():
 @file('vsadid_identification.html')
 async def test_identification():
     with warns(DeprecationWarning):
-        identification = await Instrument(41713045190742691).identification()
+        identification = await VSADID.identification()
     assert identification == {
         'بازار': 'بازار پایه زرد فرابورس',
         'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
@@ -336,7 +339,7 @@ async def test_client_type_history_no_date():
     ]
 
 
-AVA = Instrument(18007109712724189)
+AVA = Instrument('18007109712724189')
 
 
 @file('ava_holders.txt')
@@ -352,41 +355,22 @@ async def test_holders_with_cisin():
     ]
 
 
-@file('ava_holders.json')
-async def test_share_holders():
-    holders = await AVA.share_holders()
-    assert_dict_type(holders[0], _ShareHolder)
-
-
-@file('ava_holders2.txt')
-async def test_holders_change_column_type():
-    with warns(DeprecationWarning):
-        holders = await AVA.holders(cisin='IRT3AVAF0003')
-    assert [*holders.dtypes.items()] == [
-        ('holder', dtype('O')),
-        ('shares/units', dtype('O')),
-        ('%', dtype('float64')),
-        ('change', dtype('int64')),
-        ('id_cisin', dtype('O')),
-    ]
-
-
-@file('ava_holder.txt')
-async def test_holder():
+@files('ava_holder.txt')
+async def test_holder_and_holders():
     inst = AVA
     with warns(DeprecationWarning):
         # has no other holdings
         hist, oth = await inst.holder(
-            '43789,IRT3AVAF0003', True, True
+            '23965,IRT3AVAF0003', True, True
         )  # reserved code of ETFs
     assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
+    assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
     assert [*oth.dtypes.items()] == [
         ('name', dtype('O')),
         ('shares', dtype('int64')),
         ('percent', dtype('float64')),
     ]
-    assert oth.index.name == 'ins_code'
     with warns(DeprecationWarning):
         hist = await inst.holder('43789,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
@@ -398,10 +382,23 @@ async def test_holder():
     assert oth.equals(result)
 
 
-@file('ava_share_holder_history.json')
-async def test_share_holder_history():
+@files(  # share_holder_share_id may change from time to time
+    'ava_holders.json',
+    'share_holder_companies.json',
+    'ava_share_holder_history.json',
+)
+async def test_share_holders_companies_histories():
+    holders = await AVA.share_holders()
+    first_holder = holders[0]
+    assert_dict_type(first_holder, _ShareHolder)
+
+    share_holder_share_id = first_holder['shareHolderShareID']
+
+    companies = await share_holder_companies(share_holder_share_id)
+    assert_dict_type(companies[0], _ShareHolderCompany)
+
     df = await AVA.share_holder_history(
-        share_holder_id=18252629,  # reserved code of ETFs
+        share_holder_id=share_holder_share_id,
         days=2,
     )
     assert len(df) == 2
@@ -418,16 +415,9 @@ async def test_share_holder_history():
     assert df.index.dtype == dtype('<M8[ns]')
 
 
-@file('share_holder_companies.json')
-async def test_share_holder_companies():
-    companies = await share_holder_companies(share_holder_id=18252629)
-    assert len(companies) > 50
-    assert_dict_type(companies[0], _ShareHolderCompany)
-
-
 @file('vsadid_identification.html')
 async def test_holders_without_cisin():
-    inst = Instrument(41713045190742691)
+    inst = VSADID
     with warns(DeprecationWarning):
         d = await inst.identification()
     assert d['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'

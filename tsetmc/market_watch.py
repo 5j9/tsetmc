@@ -85,17 +85,23 @@ async def market_watch_init(
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
             names=_PRICE_COLUMNS,
-            index_col='ins_code', dtype=_PRICE_DTYPES)
+            index_col='ins_code',
+            dtype=_PRICE_DTYPES,
+        )
     if best_limits:
         result['best_limits'] = best_limits_df = _csv2df(
-            _StringIO(price_rows), names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'}, index_col=('ins_code', 'number')
+            _StringIO(price_rows),
+            names=_BEST_LIMITS_NAMES,
+            dtype={'ins_code': 'string'},
+            index_col=('ins_code', 'number'),
         )
     if join and prices and best_limits:
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
         # noinspection PyUnboundLocalVariable
-        best_limits_df = best_limits_df.unstack(fill_value=0).sort_index(axis=1, level=1)
+        best_limits_df = best_limits_df.unstack(fill_value=0).sort_index(
+            axis=1, level=1
+        )
         best_limits_df.columns = [f'{c}{i}' for c, i in best_limits_df.columns]
         # noinspection PyUnboundLocalVariable
         joined = best_limits_df.join(price_df)
@@ -116,18 +122,29 @@ class _MarketWatchPlus(_TypedDict, total=False):
 
 
 async def market_watch_plus(
-    heven: int, refid: int,
-    *, messages=True, market_state=True,
-    new_prices=True, price_updates=True, best_limits=True,
+    heven: int,
+    refid: int,
+    *,
+    messages=True,
+    market_state=True,
+    new_prices=True,
+    price_updates=True,
+    best_limits=True,
 ) -> _MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
     text = await _get_data(
         f'MarketWatchPlus.aspx?h={5 * (heven // 5)}&r={25 * (refid // 25)}',
-        fa=True
+        fa=True,
     )
     try:
-        handle_msg, update_fast_view, inst_price, best_limit, refid = text.split('@')
+        (
+            handle_msg,
+            update_fast_view,
+            inst_price,
+            best_limit,
+            refid,
+        ) = text.split('@')
     except ValueError:
         _erorr(f'{text = }')
         raise
@@ -145,7 +162,10 @@ async def market_watch_plus(
         inst_prices = [ip.split(',') for ip in inst_price.split(';')]
         if new_prices:
             lst = [ip for ip in inst_prices if len(ip) != 10]
-            df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
+            try:
+                df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
+            except ValueError as e:
+                _erorr(f'{e}')
             df['eps'].replace('', _nan, inplace=True)
             df['predtran'].replace('', _nan, inplace=True)
             df['buyop'].replace('', _nan, inplace=True)
@@ -164,7 +184,7 @@ async def market_watch_plus(
             _StringIO(best_limit),
             index_col='ins_code',
             names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'}
+            dtype={'ins_code': 'string'},
         )
     result['refid'] = int(refid)
     return result
@@ -196,8 +216,17 @@ async def closing_price_all() -> _DataFrame:
     content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
     columns = [
-        'ins_code', 'n', 'pc', 'pl', 'tno', 'tvol', 'tval',
-        'pmin', 'pmax', 'py', 'pf',
+        'ins_code',
+        'n',
+        'pc',
+        'pl',
+        'tno',
+        'tvol',
+        'tval',
+        'pmin',
+        'pmax',
+        'py',
+        'pf',
     ]
     df = _DataFrame(
         data,
@@ -219,9 +248,15 @@ async def client_type_all() -> _DataFrame:
     df = _csv2df(
         _BytesIO(content),
         names=(
-            'ins_code', 'n_buy_count', 'l_buy_count', 'n_buy_volume',
-            'l_buy_volume', 'n_sell_count', 'l_sell_count', 'n_sell_volume',
-            'l_sell_volume'
+            'ins_code',
+            'n_buy_count',
+            'l_buy_count',
+            'n_buy_volume',
+            'l_buy_volume',
+            'n_sell_count',
+            'l_sell_count',
+            'n_sell_volume',
+            'l_sell_volume',
         ),
         index_col='ins_code',
         dtype={'ins_code': 'string'},
@@ -247,8 +282,11 @@ async def key_stats() -> _DataFrame:
 
 
 async def ombud_messages(
-    *, top: int | str = None, flow: int | str = None,
-    containing: str = None, sh_date: str = None,
+    *,
+    top: int | str = None,
+    flow: int | str = None,
+    containing: str = None,
+    sh_date: str = None,
 ) -> _DataFrame:
     """Return ombud messages as a dataframe.
 
@@ -275,13 +313,13 @@ async def status_changes(top: int | str) -> _DataFrame:
     text = await _get_par_tree(f'15131L&top={top}')
     df = _read_html(text)[0]
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
-        _jstrptime, format='%Y/%m/%d %H:%M:%S')
+        _jstrptime, format='%Y/%m/%d %H:%M:%S'
+    )
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df
 
 
 class MarketWatch:
-
     __slots__ = (
         'interval',
         'init_callback',
@@ -293,9 +331,10 @@ class MarketWatch:
     )
 
     def __init__(
-        self, *,
-        init_kwargs: dict=None,
-        plus_kwargs: dict=None,
+        self,
+        *,
+        init_kwargs: dict = None,
+        plus_kwargs: dict = None,
         init_callback: _Callable[[_MarketWatchInit], _Any],
         plus_callback: _Callable[[_MarketWatchPlus], _Any],
         interval=1,
@@ -320,7 +359,6 @@ class MarketWatch:
         self.plus_kwargs: dict = {} if plus_kwargs is None else plus_callback
         self.plus_callback = plus_callback
 
-
     async def start(self):
         mwi = await market_watch_init(**self.init_kwargs)
         if not self.init_callback(mwi):
@@ -332,7 +370,9 @@ class MarketWatch:
         while True:
             await _sleep(self.interval)
             try:
-                mwp = await market_watch_plus(refid=refid, heven=heven, **self.plus_kwargs)
+                mwp = await market_watch_plus(
+                    refid=refid, heven=heven, **self.plus_kwargs
+                )
             except Exception as e:
                 _erorr(f'Exception awaiting market_watch_plus: %s', e)
                 continue  # _sleep and retry

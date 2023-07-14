@@ -813,7 +813,7 @@ class Instrument:
 
     @staticmethod
     async def holder(
-        id_cisin=None, history=True, other_holdings=False
+        id_cisin, history=True, other_holdings=False
     ) -> _DataFrame | tuple[_DataFrame, _DataFrame]:
         """Return history/other holdings for the given holder id_cisin.
 
@@ -1162,10 +1162,11 @@ class _ShareHolderCompany(_TypedDict):
 
 
 async def share_holder_companies(
-    share_holder_id: int | str,
+    share_holder_share_id: int | str, /
 ) -> list[_ShareHolderCompany]:
     r = await _api(
-        f'Shareholder/GetShareHolderCompanyList/{share_holder_id}', fa=True
+        f'Shareholder/GetShareHolderCompanyList/{share_holder_share_id}',
+        fa=True,
     )
     return r['shareHolderShare']
 
