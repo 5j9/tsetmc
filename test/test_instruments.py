@@ -355,7 +355,7 @@ async def test_holders_with_cisin():
     ]
 
 
-@files('ava_holder.txt')
+@file('ava_holder.txt')
 async def test_holder_and_holders():
     inst = AVA
     with warns(DeprecationWarning):
