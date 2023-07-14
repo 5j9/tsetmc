@@ -1,7 +1,7 @@
 from asyncio import sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from logging import error as _erorr
+from logging import error as _error
 from typing import Any as _Any
 
 from numpy import nan as _nan
@@ -146,7 +146,7 @@ async def market_watch_plus(
             refid,
         ) = text.split('@')
     except ValueError:
-        _erorr(f'{text = }')
+        _error(f'{text = }')
         raise
     result = {}
     if messages:
@@ -165,7 +165,7 @@ async def market_watch_plus(
             try:
                 df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             except ValueError as e:
-                _erorr(f'{lst[0] = }')
+                _error(f'{lst[0] = }')
                 raise e
             df['eps'].replace('', _nan, inplace=True)
             df['predtran'].replace('', _nan, inplace=True)
@@ -375,7 +375,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _erorr(f'Exception awaiting market_watch_plus: %s', e)
+                _error(f'Exception awaiting market_watch_plus: %s', e)
                 continue  # _sleep and retry
             if not self.plus_callback(mwp):
                 return
