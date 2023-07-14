@@ -100,18 +100,32 @@ class _InstrumentInfo(_TypedDict):
 
 
 def _parse_market_state(s: str) -> _MarketState:
-    datetime, tse_status, tse_index, tse_index_change \
-        , tse_value, tse_tvol, tse_tval, tse_tno \
-        , fb_status, fb_tvol, fb_tval, fb_tno \
-        , derivatives_status, derivatives_tvol, derivatives_tval, derivatives_tno \
-        , _ = s.split(',')
+    (
+        datetime,
+        tse_status,
+        tse_index,
+        tse_index_change,
+        tse_value,
+        tse_tvol,
+        tse_tval,
+        tse_tno,
+        fb_status,
+        fb_tvol,
+        fb_tval,
+        fb_tno,
+        derivatives_status,
+        derivatives_tvol,
+        derivatives_tval,
+        derivatives_tno,
+        _,
+    ) = s.split(',')
     if tse_index_change:  # can be '' before market start
         index_change_match = _INDEX_CHANGE_MATCH(tse_index_change)
         tse_index_change = float(index_change_match[2])
         if index_change_match[1] is not None:  # negative value
             tse_index_change *= -1
         if (m3 := index_change_match[3]) is not None:
-            tse_index_change_percent  = float(m3)
+            tse_index_change_percent = float(m3)
         else:
             tse_index_change_percent = None
     else:
@@ -119,25 +133,29 @@ def _parse_market_state(s: str) -> _MarketState:
     timestamp_match = _INDEX_TIMESTAMP_MATCH(datetime)
     result = {
         'datetime': _jdatetime(
-            1400 + int(timestamp_match[1]), int(timestamp_match[2])
-            , int(timestamp_match[3]), int(timestamp_match[4])
-            , int(timestamp_match[5]), int(timestamp_match[6]))
-        , 'tse_status': tse_status
-        , 'tse_index': float(tse_index)
-        , 'tse_index_change': tse_index_change
-        , 'tse_tvol': float(tse_tvol)
-        , 'tse_tval': float(tse_tval)
-        , 'tse_tno': float(tse_tval)
-        , 'fb_status': fb_status
-        , 'fb_tvol': float(fb_tvol)
-        , 'fb_tval': float(fb_tval)
-        , 'fb_tno': int(fb_tno)
-        , 'derivatives_status': derivatives_status
-        , 'derivatives_tvol': float(derivatives_tvol)
-        , 'derivatives_tval': float(derivatives_tval)
-        , 'derivatives_tno': int(derivatives_tno)
-        , 'tse_index_change_percent': tse_index_change_percent
-        , 'tse_value': float(tse_value) if tse_value else None
+            1400 + int(timestamp_match[1]),
+            int(timestamp_match[2]),
+            int(timestamp_match[3]),
+            int(timestamp_match[4]),
+            int(timestamp_match[5]),
+            int(timestamp_match[6]),
+        ),
+        'tse_status': tse_status,
+        'tse_index': float(tse_index),
+        'tse_index_change': tse_index_change,
+        'tse_tvol': float(tse_tvol),
+        'tse_tval': float(tse_tval),
+        'tse_tno': float(tse_tval),
+        'fb_status': fb_status,
+        'fb_tvol': float(fb_tvol),
+        'fb_tval': float(fb_tval),
+        'fb_tno': int(fb_tno),
+        'derivatives_status': derivatives_status,
+        'derivatives_tvol': float(derivatives_tvol),
+        'derivatives_tval': float(derivatives_tval),
+        'derivatives_tno': int(derivatives_tno),
+        'tse_index_change_percent': tse_index_change_percent,
+        'tse_value': float(tse_value) if tse_value else None,
     }
     return result
 
@@ -146,18 +164,21 @@ def _parse_ombud_messages(text) -> _DataFrame:
     headers = _findall(r'<th>(.+?)</th>', text)
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
-    df = _DataFrame({
-        'header': headers, 'date': dates, 'description': descriptions
-    }, dtype='string', copy=False)
+    df = _DataFrame(
+        {'header': headers, 'date': dates, 'description': descriptions},
+        dtype='string',
+        copy=False,
+    )
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
         df['date'] = ('14' + df['date']).apply(
-            _jstrptime, format='%Y/%m/%d %H:%M')
+            _jstrptime, format='%Y/%m/%d %H:%M'
+        )
     else:
         df['date'] = df['date'].astype(object)
     return df
 
 
-SESSION : _ClientSession | None = None
+SESSION: _ClientSession | None = None
 
 
 class Session:
@@ -171,7 +192,9 @@ class Session:
     def __new__(cls, *args, **kwargs) -> _ClientSession:
         global SESSION
         if 'timeout' not in kwargs:
-            kwargs['timeout'] = _ClientTimeout(total=30., sock_connect=30., sock_read=30.)
+            kwargs['timeout'] = _ClientTimeout(
+                total=30.0, sock_connect=30.0, sock_read=30.0
+            )
         SESSION = _ClientSession(**kwargs)
         return SESSION
 
@@ -219,7 +242,9 @@ async def _api(path: str, *, fa=False):
         raise
 
 
-def _numerize(df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False):
+def _numerize(
+    df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False
+):
     for col in cols:
         c = df[col]
         if comma is True:
@@ -228,5 +253,5 @@ def _numerize(df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False):
         df[col] = (
             c.replace(r' [KMB]$', '', regex=True).astype(astype)
         ) * c.str.extract(r'[\d\.]+([KMBT]+)', expand=False).fillna(1).replace(
-            ['K', 'M', 'B', 'T'], [10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12]
+            ['K', 'M', 'B', 'T'], [10**3, 10**6, 10**9, 10**12]
         )
