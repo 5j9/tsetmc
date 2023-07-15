@@ -1,6 +1,5 @@
-from logging import info, warning
+from logging import info as _info, warning as _warning
 
-from tsetmc import _DataFrame
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
@@ -24,7 +23,7 @@ _YVAL_EXCLUSIONS = {
 def _dump(df):
     if not df['code'].is_unique:
         dups = df['code'].duplicated(keep='last')
-        warning('%d non-unique code were found', len(dups))
+        _warning('%d non-unique code were found', len(dups))
         # Some of the newly added codes are not unique, remove old duplicates.
         df = df[~dups]
 
@@ -44,7 +43,7 @@ async def add_instrument(inst: _Instrument) -> None:
     l18, l30 = info['lVal18AFC'], info['lVal30']
     if (l1830 := _LazyDS.l18_l130(code)) is not None:
         if l1830 == (l18, l30):
-            warning(f'{l18 = } already exists in dataset')
+            _warning(f'{l18 = } already exists in dataset')
             return
     df.loc[len(df)] = [code, l18, l30]
     _dump(df)
@@ -66,6 +65,6 @@ async def update() -> None:
     diff = len(merged) - len(ds)
     if diff:
         _dump(merged)
-        info(f'{diff} new entries were added by market watch.')
+        _info(f'{diff} new entries were added by market watch.')
     else:
-        info('No new entries were added by market watch.')
+        _info('No new entries were added by market watch.')

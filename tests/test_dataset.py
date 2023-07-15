@@ -4,7 +4,7 @@ from tsetmc.dataset import add_instrument
 from tsetmc.instruments import Instrument
 
 
-async def test_adding_existing_insturment(caplog):
+async def test_adding_existing_insturment():
     fmelli = Instrument(35425587644337450)
     i = {
         'lVal18AFC': 'فملی',
@@ -13,11 +13,9 @@ async def test_adding_existing_insturment(caplog):
     with (
         patch.object(Instrument, 'info', return_value=i) as info,
         patch('tsetmc.dataset._dump') as dump,
+        patch('tsetmc.dataset._warning') as warning,
     ):
         await add_instrument(fmelli)
     info.assert_awaited_once()
     dump.assert_not_called()
-    assert len(records := caplog.records) == 1
-    r = records[0]
-    assert r.message == "l18 = 'فملی' already exists in dataset"
-    assert r.levelname == 'WARNING'
+    warning.assert_called_once_with("l18 = 'فملی' already exists in dataset")
