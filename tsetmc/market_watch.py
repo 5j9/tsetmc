@@ -165,7 +165,7 @@ async def market_watch_plus(
             try:
                 df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             except ValueError as e:
-                _error(f'{lst[0] = }')
+                _error(f'{text = }')
                 raise e
             df['eps'].replace('', _nan, inplace=True)
             df['predtran'].replace('', _nan, inplace=True)
