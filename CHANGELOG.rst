@@ -1,3 +1,7 @@
+Unreleased
+----------
+* ``MarketWatch.start`` will now retry ``market_watch_init`` upon failure.
+
 v0.51.0
 -------
 * BREAKING CHANGE: ``market_watch`` will now use ``string`` as the dtype for ``ins_code`` index.

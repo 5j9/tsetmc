@@ -361,7 +361,15 @@ class MarketWatch:
         self.plus_callback = plus_callback
 
     async def start(self):
-        mwi = await market_watch_init(**self.init_kwargs)
+        while True:
+            try:
+                mwi = await market_watch_init(**self.init_kwargs)
+            except Exception as e:
+                _error(f'Exception awaiting market_watch_init: %s', e)
+                await _sleep(self.interval)
+                continue
+            break
+
         if not self.init_callback(mwi):
             return
 
