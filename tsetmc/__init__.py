@@ -213,10 +213,15 @@ async def _session_get(url: str) -> bytes:
     return await r.read()
 
 
+_LAST_GET: str | None = None
+
+
 async def _get(url: str, *, fa=False) -> str | bytes:
+    global _LAST_GET
     content = await _session_get(url)
     if fa is True:
-        return content.decode().translate(_FARSI_NORM)
+        content = content.decode().translate(_FARSI_NORM)
+    _LAST_GET = content
     return content
 
 

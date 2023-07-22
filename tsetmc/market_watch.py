@@ -7,6 +7,7 @@ from typing import Any as _Any
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
 
+import tsetmc as _tsetmc
 from tsetmc import (
     _csv2df,
     _DataFrame,
@@ -77,7 +78,6 @@ async def market_watch_init(
         `tsetmc.docs.instrument`.
         `heven` is the time of the last transaction in HHMMSS format.
     """
-    # todo: use content?
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
     _, market_state_str, states, price_rows, refid = text.split('@')
     result = {'refid': int(refid)}
@@ -365,11 +365,15 @@ class MarketWatch:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
-                _error(f'Exception awaiting market_watch_init: %s', e)
+                _error(
+                    f'Exception awaiting market_watch_init: {e = }'
+                    f'\n{_tsetmc._LAST_GET = }'
+                )
                 await _sleep(self.interval)
                 continue
             break
 
+        # noinspection PyUnboundLocalVariable
         if not self.init_callback(mwi):
             return
 
@@ -383,7 +387,10 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _error(f'Exception awaiting market_watch_plus: %s', e)
+                _error(
+                    f'Exception awaiting market_watch_plus: {e = }'
+                    f'\n{_tsetmc._LAST_GET = }'
+                )
                 continue  # _sleep and retry
             if not self.plus_callback(mwp):
                 return
