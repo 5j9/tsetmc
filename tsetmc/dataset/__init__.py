@@ -1,6 +1,6 @@
 from logging import info as _info, warning as _warning
 
-from tsetmc.instruments import Instrument as _Instrument, _LazyDS
+from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 # cs == 69: اوراق تامين مالي
@@ -31,7 +31,7 @@ def _dump(df):
 
     df.sort_values('l18', inplace=True)
     df.to_csv(
-        _LazyDS.path, index=False, encoding='utf-8-sig', lineterminator='\n'
+        LazyDS.path, index=False, encoding='utf-8-sig', lineterminator='\n'
     )
 
 
@@ -39,9 +39,9 @@ async def add_instrument(inst: _Instrument) -> None:
     # usually used in conjunction with Instrument.from_search
     code = inst.code
     info = await inst.info()
-    df = _LazyDS.df
+    df = LazyDS.df
     l18, l30 = info['lVal18AFC'], info['lVal30']
-    if (l1830 := _LazyDS.l18_l130(code)) is not None:
+    if (l1830 := LazyDS.l18_l130(code)) is not None:
         if l1830 == (l18, l30):
             _warning(f'{l18 = } already exists in dataset')
             return
@@ -58,8 +58,8 @@ async def update() -> None:
         'and cs not in @_CS_EXCLUSIONS '
         'and yval not in @_YVAL_EXCLUSIONS'
     )
-    ds = _LazyDS.df
-    merged = _LazyDS._df = ds.merge(
+    ds = LazyDS.df
+    merged = LazyDS.cached_df = ds.merge(
         prices[['l18', 'l30']], how='left', copy=False
     )
     diff = len(merged) - len(ds)

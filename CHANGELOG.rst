@@ -1,6 +1,8 @@
 Unreleased
 ----------
 * ``MarketWatch.start`` will now retry ``market_watch_init`` upon failure.
+* New public class: ``tsetmc.dataset.LazyDS``.
+
 
 v0.51.0
 -------
