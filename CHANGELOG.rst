@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* BREAKING CHANGE: Create and close session internally. There is no need to manually create a session anymore. ``tsetmc.Session`` and ``tsetmc.SESSION`` have been removed.
+* BREAKING CHANGE: ``tsetmc`` will now manage the session internally. There is no need to manually create a session anymore. ``tsetmc.Session`` and ``tsetmc.SESSION`` have been removed.
 
 v0.52.0
 -------
