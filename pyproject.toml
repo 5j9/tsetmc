@@ -26,7 +26,7 @@ dependencies = [
     "numpy",
     "beautifulsoup4",
     "lxml",
-    "aiohutils>=0.7.1",
+    "aiohutils>=0.8.0",
 ]
 dynamic = [
     "version",
