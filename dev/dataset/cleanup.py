@@ -3,7 +3,7 @@ from logging import basicConfig, info
 from re import compile as rc
 
 # noinspection PyProtectedMember
-from tsetmc import Session, _DataFrame
+from tsetmc import _DataFrame
 
 # noinspection PyProtectedMember
 from tsetmc.dataset import _CS_EXCLUSIONS, _dump
@@ -36,12 +36,11 @@ async def check(l18: str):
 
 async def main():
     df = _LazyDS.df
-    async with Session():
-        for coro in as_completed([check(l18) for l18 in df['l18']]):
-            await coro
-        info(f'{len(TO_BE_REMOVED) = }')
-        df = df[~df['l18'].isin(TO_BE_REMOVED)]
-        _dump(df)
+    for coro in as_completed([check(l18) for l18 in df['l18']]):
+        await coro
+    info(f'{len(TO_BE_REMOVED) = }')
+    df = df[~df['l18'].isin(TO_BE_REMOVED)]
+    _dump(df)
 
 
 run(main())
