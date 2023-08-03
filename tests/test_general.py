@@ -1,4 +1,4 @@
-from aiohttp_test_utils import file
+from aiohutils.tests import file
 from numpy import dtype
 
 from tests import assert_dict_type

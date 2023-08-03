@@ -10,51 +10,34 @@ Requires latest stable Python version.
 
 Overview
 --------
-
-First things first. ``tsetmc`` relies on `aiohttp`_ .
-If you are not familiar with aiohttp, all you need to know is that any ``async`` network operation needs to be run inside an async session context.
-You may create the session using ``tsetmc.Session`` class. Here is a complete working script:
+Let's start with a simple script:
 
 .. code-block:: python
 
     import asyncio
 
-    import tsetmc
     from tsetmc.instruments import Instrument
 
+
     async def main():
-        async with tsetmc.Session():
-            inst = await Instrument.from_l18('فملی')
-            info = await inst.info()
+        inst = await Instrument.from_l18('فملی')
+        info = await inst.info()
         print(info)
 
-   asyncio.run(main())
 
-Alternatively, you may directly use an ``aiohttp.ClientSession`` object: (useful if you want to use an already existing session and share it with other parts of your code)
+    asyncio.run(main())
 
-.. code-block:: python
-
-    import aiohttp
-
-    async def main():
-        async with aiohttp.ClientSession() as tsetmc.SESSION:
-            ...
-
-Ideally, `the session object should only be instantiated once`_.
 
 The ``Instrument`` class provides many methods for getting information about an instrument.
-The following code blocks try to demonstrate its capabilities.
+The following code blocks try to demonstrate some of its capabilities.
 
-You need an asyncio capable REPL, like ``python -m asyncio`` or `IPython`_, to run these code samples.
+Note: You need an asyncio capable REPL, like ``python -m asyncio`` or `IPython`_, to run the following code samples, otherwise you'll have to run them inside an async function like the sample code above.
 
 .. code-block:: python
 
-    >>> from tsetmc import Session
     >>> from tsetmc.instruments import Instrument
     >>> inst = await Instrument.from_l18('فملی')
-    >>> async with Session():
-    ...     i = await inst.info()
-    >>> i
+    >>> await inst.info()
     {'eps': {'epsValue': None,
       'estimatedEPS': '721',
       'sectorPE': 12.02,
@@ -103,9 +86,7 @@ Getting the latest price information:
 
 .. code-block:: python
 
-    >>> async with Session():
-    ...     i = await inst.closing_price_info()
-    >>> i
+    >>> await inst.closing_price_info()
     {'instrumentState': {'idn': 0,
       'dEven': 0,
       'hEven': 0,
@@ -143,9 +124,7 @@ Getting the daily trade history for the last n days: (as a DataFrame)
 
 .. code-block:: python
 
-    >>> async with Session():
-    ...     dcp = await inst.daily_closing_price(n=2)
-    >>> dcp
+    >>> await inst.daily_closing_price(n=2)
        priceChange  priceMin  priceMax  ...  zTotTran  qTotTran5J       qTotCap
     0         30.0    7490.0    7600.0  ...    4555.0  75649965.0  5.689944e+11
     1         10.0    7500.0    7590.0  ...    4614.0  83570336.0  6.276337e+11
@@ -156,9 +135,7 @@ Getting adjusted daily prices:
 
 .. code-block:: python
 
-    >>> async with Session():
-    ...     h = await inst.price_history(adjusted=True)
-    >>> h
+    >>> await inst.price_history(adjusted=True)
                  pmax   pmin     pf     pl       tvol     pc
     date
     2007-02-04     45     41     45     42  172898994     42
@@ -179,9 +156,7 @@ Getting intraday data for a specific date:
 
 .. code-block:: python
 
-    >>> async with Session():
-    ...     states = await inst.on_date(20210704).states()
-    >>> states  # a dataframe
+    >>> await inst.on_date(20210704).states()  # a dataframe:
        idn  dEven  hEven insCode cEtaval  realHeven  underSupervision cEtavalTitle
     0    0      0      1       0      A       94838                 0         None
 
@@ -190,9 +165,7 @@ Searching for an instrument:
 
 .. code-block:: python
 
-    >>> async with Session():
-    ...     r = await Instrument.from_search('چادرملو')
-    >>> r
+    >>> await Instrument.from_search('چادرملو')
     Instrument(18027801615184692, 'کچاد')
 
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.

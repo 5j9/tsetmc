@@ -5,12 +5,8 @@ from json import JSONDecodeError, loads
 from logging import error
 from re import compile as _rc, findall as _findall
 from typing import TypedDict as _TypedDict
-from warnings import warn as _warn
 
-from aiohttp import (
-    ClientSession as _ClientSession,
-    ClientTimeout as _ClientTimeout,
-)
+from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
 from pandas import DataFrame as _DataFrame, read_csv as _read_csv
 
@@ -178,25 +174,7 @@ def _parse_ombud_messages(text) -> _DataFrame:
     return df
 
 
-SESSION: _ClientSession | None = None
-
-
-class Session:
-    """Create and return a ClientSession object.
-
-    Use
-    ``ClientTimeout(total=30., sock_connect=5., sock_read=5.)``
-    as the default timeout.
-    """
-
-    def __new__(cls, *args, **kwargs) -> _ClientSession:
-        global SESSION
-        if 'timeout' not in kwargs:
-            kwargs['timeout'] = _ClientTimeout(
-                total=30.0, sock_connect=30.0, sock_read=30.0
-            )
-        SESSION = _ClientSession(**kwargs)
-        return SESSION
+session_manager = SessionManager()
 
 
 _FARSI_NORM = ''.maketrans('يك', 'یک')
@@ -207,9 +185,7 @@ _HEADERS = {
 
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
-    r = await SESSION.get(url, headers=_HEADERS)
-    if r.history:
-        _warn(f'r.history is not empty (possible redirection): {r.history}')
+    r = await session_manager.get(url, headers=_HEADERS)
     return await r.read()
 
 

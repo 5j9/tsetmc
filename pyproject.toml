@@ -26,6 +26,7 @@ dependencies = [
     "numpy",
     "beautifulsoup4",
     "lxml",
+    "aiohutils>=0.7.1",
 ]
 dynamic = [
     "version",
@@ -40,11 +41,6 @@ content-type = "text/x-rst"
 
 [project.urls]
 Homepage = "https://github.com/5j9/tsetmc"
-
-[project.optional-dependencies]
-test = [
-    "aiohttp_test_utils>=0.4.0",
-]
 
 [tool.setuptools]
 zip-safe = false

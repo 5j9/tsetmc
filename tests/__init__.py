@@ -1,4 +1,4 @@
-from aiohttp_test_utils import init_tests
+from aiohutils.tests import init_tests
 from jdatetime import datetime as jdatetime
 
 # noinspection PyProtectedMember
@@ -16,9 +16,17 @@ def assert_market_state(market_state: _MarketState):
     # tse_value is optional
     assert type(market_state.pop('tse_value', 0.0)) is float
     assert market_state.keys() == {
-        'tse_index', 'tse_index_change', 'tse_tvol', 'tse_tval', 'tse_tno',
-        'fb_tvol', 'fb_tval', 'derivatives_tvol', 'derivatives_tval',
-        'tse_index_change_percent'}
+        'tse_index',
+        'tse_index_change',
+        'tse_tvol',
+        'tse_tval',
+        'tse_tno',
+        'fb_tvol',
+        'fb_tval',
+        'derivatives_tvol',
+        'derivatives_tval',
+        'tse_index_change_percent',
+    }
     assert all(type(v) is float for v in market_state.values())
 
 

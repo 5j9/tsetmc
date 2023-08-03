@@ -2,7 +2,7 @@ from datetime import datetime
 from types import NoneType
 from unittest.mock import patch
 
-from aiohttp_test_utils import file, files
+from aiohutils.tests import file, files
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex

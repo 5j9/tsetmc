@@ -1,4 +1,4 @@
-from aiohttp_test_utils import file
+from aiohutils.tests import file
 from numpy import dtype
 
 from tsetmc.docs import (
@@ -19,7 +19,8 @@ async def test_client_type():
     assert [*out.dtypes.items()] == [
         ('InsCode', dtype('O')),
         ('کد داخلی نماد', dtype('O')),
-        ('Instrument Unique Key', dtype('O'))]
+        ('Instrument Unique Key', dtype('O')),
+    ]
 
 
 @file('instrument_filter_by_date.html')

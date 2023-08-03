@@ -1,3 +1,7 @@
+Unreleased
+----------
+* BREAKING CHANGE: Create and close session internally. There is no need to manually create a session anymore. ``tsetmc.Session`` and ``tsetmc.SESSION`` have been removed.
+
 v0.52.0
 -------
 * ``MarketWatch.start`` will now retry ``market_watch_init`` upon failure.
