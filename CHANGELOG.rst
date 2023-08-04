@@ -1,3 +1,7 @@
+Unreleased
+----------
+* BREAKING CHANGE: Pandas v2.0+ is required and ``pd.options.mode.copy_on_write`` is set to true.
+
 v0.53.0
 -------
 * BREAKING CHANGE: ``tsetmc`` will now manage the session internally. There is no need to manually create a session anymore. ``tsetmc.Session`` and ``tsetmc.SESSION`` have been removed.
