@@ -397,13 +397,11 @@ class Instrument:
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
         df = _DataFrame(j['closingPriceDaily'], copy=False)
-        date = _to_datetime(
+        datetime = df['datetime'] = _to_datetime(
             df.pop('dEven').astype(str)
             + df.pop('hEven').astype(str).str.rjust(6, '0')
         )
-        # https://youtrack.jetbrains.com/issue/PY-60985
-        # noinspection PyTypeChecker
-        df.set_index(date, inplace=True)
+        df.set_index(datetime.dt.normalize(), inplace=True)
         return df
 
     async def closing_price_info(self) -> _ClosingPriceInfo:

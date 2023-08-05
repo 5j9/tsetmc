@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * BREAKING CHANGE: Pandas v2.0+ is required and ``pd.options.mode.copy_on_write`` is set to true.
+* BREAKING CHANGE: Index of ``daily_closing_price`` is now set to normalized form of datetime (not including time, just date). A ``datetime`` column added which includes the last transaction time.
 
 v0.53.0
 -------
