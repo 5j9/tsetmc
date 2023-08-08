@@ -705,6 +705,7 @@ async def test_daily_closing_price():
         ('zTotTran', dtype('float64')),
         ('qTotTran5J', dtype('float64')),
         ('qTotCap', dtype('float64')),
+        ('datetime', dtype('<M8[ns]')),
     ]
     assert len(df) == 3
     assert df.index.dtype == dtype('<M8[ns]')

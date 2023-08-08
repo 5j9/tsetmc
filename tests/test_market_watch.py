@@ -1,4 +1,4 @@
-from aiohutils.tests import file
+from aiohutils.tests import OFFLINE_MODE, file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
 from pandas.api.types import is_numeric_dtype
@@ -319,3 +319,11 @@ async def test_ombud_messages_empty():
         ('date', dtype('O')),
         ('description', 'string[python]'),
     )
+
+
+@file('empty_eps_in_mwp.txt')
+async def test_mwp_with_empty_eps():
+    if not OFFLINE_MODE:
+        return
+    # used to raise error due to COW setting
+    await market_watch_plus(0, 0)

@@ -167,9 +167,9 @@ async def market_watch_plus(
             except ValueError as e:
                 _error(f'{text = }')
                 raise e
-            df['eps'].replace('', _nan, inplace=True)
-            df['predtran'].replace('', _nan, inplace=True)
-            df['buyop'].replace('', _nan, inplace=True)
+            df['eps'] = df['eps'].replace('', _nan)
+            df['predtran'] = df['predtran'].replace('', _nan)
+            df['buyop'] = df['buyop'].replace('', _nan)
             df = df.astype(_PRICE_DTYPES, False)
             df.set_index('ins_code', inplace=True)
             result['new_prices'] = df

@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Fixed occasional type-casting bug in ``market_watch_plus``.
+
 v0.54.0
 -------
 * BREAKING CHANGE: Pandas v2.0+ is required and ``pd.options.mode.copy_on_write`` is set to true.
