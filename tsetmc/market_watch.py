@@ -89,7 +89,7 @@ async def market_watch_init(
             dtype=_PRICE_DTYPES,
         )
     if best_limits:
-        result['best_limits'] = best_limits_df = _csv2df(
+        result['best_limits'] = bl = _csv2df(
             _StringIO(price_rows),
             names=_BEST_LIMITS_NAMES,
             dtype={'ins_code': 'string'},
@@ -99,12 +99,10 @@ async def market_watch_init(
         # merge multiple rows sharing the same `row` number into one row.
         # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
         # noinspection PyUnboundLocalVariable
-        best_limits_df = best_limits_df.unstack(fill_value=0).sort_index(
-            axis=1, level=1
-        )
-        best_limits_df.columns = [f'{c}{i}' for c, i in best_limits_df.columns]
+        bl = bl.unstack(fill_value=0).sort_index(axis=1, level=1)
+        bl.columns = [f'{c}{i}' for c, i in bl.columns]
         # noinspection PyUnboundLocalVariable
-        joined = best_limits_df.join(price_df)
+        joined = bl.join(price_df)
         # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
         result['prices'] = joined
     if market_state:
@@ -130,6 +128,7 @@ async def market_watch_plus(
     new_prices=True,
     price_updates=True,
     best_limits=True,
+    best_limits_prepare_join=True,
 ) -> _MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
@@ -181,12 +180,16 @@ async def market_watch_plus(
             df = df.astype('int64', False)
             result['price_updates'] = df
     if best_limits:
-        result['best_limits'] = _csv2df(
+        bl = _csv2df(
             _StringIO(best_limit),
-            index_col='ins_code',
+            index_col=('ins_code', 'number'),
             names=_BEST_LIMITS_NAMES,
             dtype={'ins_code': 'string'},
         )
+        if best_limits_prepare_join:
+            bl.unstack(fill_value=0).sort_index(axis=1, level=1)
+            bl.columns = [f'{c}{i}' for c, i in bl.columns]
+        result['best_limits'] = bl
     result['refid'] = int(refid)
     return result
 

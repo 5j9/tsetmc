@@ -211,7 +211,13 @@ async def test_market_watch_init_non_int_tmin_tmax():
 
 @file('MarketWatchPlus00.txt')
 async def test_market_watch_plus_new():
-    mwp = await market_watch_plus(0, 0, messages=False, market_state=False)
+    mwp = await market_watch_plus(
+        0,
+        0,
+        messages=False,
+        market_state=False,
+        best_limits_prepare_join=False,
+    )
     new_prices = mwp['new_prices']
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     i = new_prices.index
@@ -220,7 +226,6 @@ async def test_market_watch_plus_new():
     best_limits = mwp['best_limits']
     assert all(t == 'int64' for t in best_limits.dtypes)
     assert best_limits.columns.to_list() == [
-        'number',
         'zo',
         'zd',
         'pd',
@@ -229,15 +234,17 @@ async def test_market_watch_plus_new():
         'qo',
     ]
     index = best_limits.index
-    assert index.name == 'ins_code'
-    assert index.dtype == 'string[python]'
+    assert index.names == ['ins_code', 'number']
+    assert [*index.dtypes] == ['string[python]', 'int64']
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
 
 
 @file('MarketWatchPlus_h64130_r9540883525.txt')
 async def test_market_watch_plus_update():
-    mwp = await market_watch_plus(64130, 9540883525)
+    mwp = await market_watch_plus(
+        64130, 9540883525, best_limits_prepare_join=False
+    )
     price_updates = mwp['price_updates']
     assert price_updates.columns.to_list() == [
         'heven',
@@ -261,9 +268,8 @@ async def test_market_watch_plus_update():
         assert type(m) is str
         assert m.isnumeric()
 
-    best_limits = mwp['best_limits']
-    assert best_limits.columns.to_list() == [
-        'number',
+    bl = mwp['best_limits']
+    assert bl.columns.to_list() == [
         'zo',
         'zd',
         'pd',
@@ -271,9 +277,9 @@ async def test_market_watch_plus_update():
         'qd',
         'qo',
     ]
-    assert all(is_numeric_dtype(c) for c in best_limits.dtypes)
-    assert best_limits.index.name == 'ins_code'
-    assert best_limits.index.dtype == 'string[python]'
+    assert all(is_numeric_dtype(c) for c in bl.dtypes)
+    assert bl.index.names == ['ins_code', 'number']
+    assert [*bl.index.dtypes] == ['string[python]', 'int64']
 
     assert type(mwp['refid']) == int
 
@@ -326,4 +332,6 @@ async def test_mwp_with_empty_eps():
     if not OFFLINE_MODE:
         return
     # used to raise error due to COW setting
-    await market_watch_plus(0, 0)
+    d = await market_watch_plus(0, 0)
+    bl = d['best_limits']
+    assert [*bl.columns] == ['zo', 'zd', 'pd', 'po', 'qd', 'qo']
