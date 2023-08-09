@@ -7,7 +7,6 @@ from typing import Any as _Any
 from numpy import nan as _nan
 from pandas import read_html as _read_html, to_numeric as _to_numeric
 
-import tsetmc as _tsetmc
 from tsetmc import (
     _csv2df,
     _DataFrame,
@@ -17,6 +16,7 @@ from tsetmc import (
     _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
+    _save_last_content,
     _TypedDict,
 )
 
@@ -144,9 +144,9 @@ async def market_watch_plus(
             best_limit,
             refid,
         ) = text.split('@')
-    except ValueError:
-        _error(f'{text = }')
-        raise
+    except ValueError as e:
+        _save_last_content(f'{e}')
+        raise e
     result = {}
     if messages:
         # whenever a new id appears, users should try to fetch new messages
@@ -164,7 +164,7 @@ async def market_watch_plus(
             try:
                 df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
             except ValueError as e:
-                _error(f'{text = }')
+                _save_last_content(f'{e}')
                 raise e
             df['eps'] = df['eps'].replace('', _nan)
             df['predtran'] = df['predtran'].replace('', _nan)
@@ -359,19 +359,21 @@ class MarketWatch:
         """
         self.interval = interval
         self.init_kwargs: dict = {} if init_kwargs is None else init_kwargs
-        self.init_callback = init_callback
-        self.plus_kwargs: dict = {} if plus_kwargs is None else plus_callback
-        self.plus_callback = plus_callback
+        self.plus_kwargs: dict = {} if plus_kwargs is None else plus_kwargs
+        if init_callback is None:
+            self.init_callback = self._default_init_callback
+            self.plus_callback = self._default_plus_callback
+            self.update_event = _Event()
+        else:
+            self.init_callback = init_callback
+            self.plus_callback = plus_callback
 
     async def start(self):
         while True:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
-                _error(
-                    f'Exception awaiting market_watch_init: {e = }'
-                    f'\n{_tsetmc._LAST_GET = }'
-                )
+                _error(f'{e} while awaiting market_watch_init')
                 await _sleep(self.interval)
                 continue
             break
@@ -390,10 +392,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _error(
-                    f'Exception awaiting market_watch_plus: {e = }'
-                    f'\n{_tsetmc._LAST_GET = }'
-                )
+                _error(f'{e} while awaiting market_watch_plus')
                 continue  # _sleep and retry
             if not self.plus_callback(mwp):
                 return

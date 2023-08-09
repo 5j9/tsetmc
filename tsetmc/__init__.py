@@ -2,7 +2,7 @@ __version__ = '0.54.1.dev0'
 
 from functools import partial as _partial
 from json import JSONDecodeError, loads
-from logging import error
+from logging import error as _error
 from re import compile as _rc, findall as _findall
 from typing import TypedDict as _TypedDict
 
@@ -194,15 +194,14 @@ async def _session_get(url: str) -> bytes:
     return await r.read()
 
 
-_LAST_GET: str | None = None
+_LAST_CONTENT: bytes
 
 
 async def _get(url: str, *, fa=False) -> str | bytes:
-    global _LAST_GET
-    content = await _session_get(url)
+    global _LAST_CONTENT
+    _LAST_CONTENT = content = await _session_get(url)
     if fa is True:
         content = content.decode().translate(_FARSI_NORM)
-    _LAST_GET = content
     return content
 
 
@@ -224,7 +223,7 @@ async def _api(path: str, *, fa=False):
     try:
         return loads(content)
     except JSONDecodeError:
-        error(f'url={_API}{path}\n{content=}')
+        _error(f'url={_API}{path}\n{content=}')
         raise
 
 
@@ -241,3 +240,12 @@ def _numerize(
         ) * c.str.extract(r'[\d\.]+([KMBT]+)', expand=False).fillna(1).replace(
             ['K', 'M', 'B', 'T'], [10**3, 10**6, 10**9, 10**12]
         )
+
+
+def _save_last_content(s: str, /):
+    from pathlib import Path
+
+    f = Path(__file__).parent / '~last_response.html'
+    with f.open('wb', encoding='utf8'):
+        f.write_bytes(_LAST_CONTENT)
+    _error(f'{s}; _LAST_CONTENT saved in {f}', stacklevel=2)
