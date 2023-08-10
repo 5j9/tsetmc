@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.0
+-------
 * BREAKING CHANGE: new argument for ``market_watch_plus``: ``best_limits_prepare_join``. To retain the old behaviour call this function with ``best_limits_prepare_join=False``.
 * Fixed occasional type-casting bug in ``market_watch_plus``.
 * Added easy-to-use default callbacks for ``MarketWatch`` class.
