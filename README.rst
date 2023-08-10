@@ -181,6 +181,26 @@ The `market_watch`_ module contains several function to fetch market watch data.
 * ``ombud_messages``
 * ``status_changes``
 
+Use ``market_watch.MarketWatch`` for watching the market. Here is how:
+
+.. code-block:: python
+
+    from asyncio import get_event_loop
+    from tsetmc.market_watch import MarketWatch
+
+    async def listen_to_update_events():
+        while True:
+            await market_watch.update_event.wait()
+            df = market_watch.df
+            print(df.at['35425587644337450', 'pl'])  # last price of فملی
+
+
+    market_watch = MarketWatch()
+    loop = get_event_loop()
+    loop.create_task(listen_to_update_events())
+    loop.run_until_complete(market_watch.start())
+
+
 There are many other functions and methods that are not covered here. Explore the codebase to learn more.
 
 If you are interested in other information available on tsetmc.com that this library has no API for, please `open an issue`_ for them.

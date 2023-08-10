@@ -1,12 +1,14 @@
 from aiohutils.tests import OFFLINE_MODE, file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
+from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
 
 from tests import assert_market_state
 
 # noinspection PyProtectedMember
 from tsetmc.market_watch import (
+    _BEST_LIMITS_NAMES,
     _PRICE_DTYPES,
     _parse_market_state,
     client_type_all,
@@ -19,6 +21,27 @@ from tsetmc.market_watch import (
 )
 
 PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][1:]
+BL_STACKED_COLUMNS = _BEST_LIMITS_NAMES[2:]
+BL_UNSTACKED_COLUMNS = [
+    f'{n}{i}' for n in BL_STACKED_COLUMNS for i in range(1, 6)
+]
+
+
+def assert_bl_dtypes(df: DataFrame, unstacked=True):
+    if unstacked:
+        columns = BL_UNSTACKED_COLUMNS
+        index = df.index
+        assert index.name == 'ins_code'
+        assert index.dtype == 'string[python]'
+    else:
+        columns = BL_STACKED_COLUMNS
+        index = df.index
+        assert index.names == ['ins_code', 'number']
+        assert [*index.dtypes] == ['string[python]', 'int64']
+
+    for c in columns:
+        col = df.pop(c)
+        assert is_numeric_dtype(col)
 
 
 @file('MarketWatchInit.aspx')
@@ -35,39 +58,8 @@ async def test_market_watch_init():
     prices = mwi['prices']
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
-    assert [*prices.dtypes.items()] == [
-        ('pd1', dtype('int64')),
-        ('po1', dtype('int64')),
-        ('qd1', dtype('int64')),
-        ('qo1', dtype('int64')),
-        ('zd1', dtype('int64')),
-        ('zo1', dtype('int64')),
-        ('pd2', dtype('int64')),
-        ('po2', dtype('int64')),
-        ('qd2', dtype('int64')),
-        ('qo2', dtype('int64')),
-        ('zd2', dtype('int64')),
-        ('zo2', dtype('int64')),
-        ('pd3', dtype('int64')),
-        ('po3', dtype('int64')),
-        ('qd3', dtype('int64')),
-        ('qo3', dtype('int64')),
-        ('zd3', dtype('int64')),
-        ('zo3', dtype('int64')),
-        ('pd4', dtype('int64')),
-        ('po4', dtype('int64')),
-        ('qd4', dtype('int64')),
-        ('qo4', dtype('int64')),
-        ('zd4', dtype('int64')),
-        ('zo4', dtype('int64')),
-        ('pd5', dtype('int64')),
-        ('po5', dtype('int64')),
-        ('qd5', dtype('int64')),
-        ('qo5', dtype('int64')),
-        ('zd5', dtype('int64')),
-        ('zo5', dtype('int64')),
-        *PRICE_DTYPES_ITEMS,
-    ]
+    assert_bl_dtypes(prices)
+    assert [*prices.dtypes.items()] == PRICE_DTYPES_ITEMS
 
     i = prices.index
     assert i.name == 'ins_code'
@@ -224,18 +216,7 @@ async def test_market_watch_plus_new():
     assert i.name == 'ins_code'
     assert i.dtype == 'string[python]'
     best_limits = mwp['best_limits']
-    assert all(t == 'int64' for t in best_limits.dtypes)
-    assert best_limits.columns.to_list() == [
-        'zo',
-        'zd',
-        'pd',
-        'po',
-        'qd',
-        'qo',
-    ]
-    index = best_limits.index
-    assert index.names == ['ins_code', 'number']
-    assert [*index.dtypes] == ['string[python]', 'int64']
+    assert_bl_dtypes(best_limits, False)
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
 
@@ -269,17 +250,7 @@ async def test_market_watch_plus_update():
         assert m.isnumeric()
 
     bl = mwp['best_limits']
-    assert bl.columns.to_list() == [
-        'zo',
-        'zd',
-        'pd',
-        'po',
-        'qd',
-        'qo',
-    ]
-    assert all(is_numeric_dtype(c) for c in bl.dtypes)
-    assert bl.index.names == ['ins_code', 'number']
-    assert [*bl.index.dtypes] == ['string[python]', 'int64']
+    assert_bl_dtypes(bl, False)
 
     assert type(mwp['refid']) == int
 
@@ -328,10 +299,12 @@ async def test_ombud_messages_empty():
 
 
 @file('empty_eps_in_mwp.txt')
-async def test_mwp_with_empty_eps():
+async def test_mwp_with_empty_eps_best_limits_prepare_join():
     if not OFFLINE_MODE:
         return
     # used to raise error due to COW setting
-    d = await market_watch_plus(0, 0)
-    bl = d['best_limits']
-    assert [*bl.columns] == ['zo', 'zd', 'pd', 'po', 'qd', 'qo']
+    mwp = await market_watch_plus(0, 0, best_limits_prepare_join=False)
+    assert_bl_dtypes(mwp['best_limits'], unstacked=False)
+
+    mwp = await market_watch_plus(0, 0)
+    assert_bl_dtypes(mwp['best_limits'], unstacked=True)

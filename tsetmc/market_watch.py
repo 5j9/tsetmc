@@ -1,11 +1,15 @@
-from asyncio import sleep as _sleep
+from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import error as _error
 from typing import Any as _Any
 
 from numpy import nan as _nan
-from pandas import read_html as _read_html, to_numeric as _to_numeric
+from pandas import (
+    concat as _concat,
+    read_html as _read_html,
+    to_numeric as _to_numeric,
+)
 
 from tsetmc import (
     _csv2df,
@@ -62,6 +66,14 @@ class _MarketWatchInit(_TypedDict, total=False):
     refid: int
 
 
+def _unstack_best_limits(bl: _DataFrame) -> _DataFrame:
+    # merge multiple rows sharing the same `row` number into one row.
+    # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
+    bl = bl.unstack()
+    bl.columns = [f'{name}{number}' for name, number in bl.columns]
+    return bl
+
+
 async def market_watch_init(
     *, market_state=True, prices=True, best_limits=True, join=True
 ) -> _MarketWatchInit:
@@ -96,11 +108,8 @@ async def market_watch_init(
             index_col=('ins_code', 'number'),
         )
     if join and prices and best_limits:
-        # merge multiple rows sharing the same `row` number into one row.
-        # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
         # noinspection PyUnboundLocalVariable
-        bl = bl.unstack(fill_value=0).sort_index(axis=1, level=1)
-        bl.columns = [f'{c}{i}' for c, i in bl.columns]
+        bl = _unstack_best_limits(bl)
         # noinspection PyUnboundLocalVariable
         joined = bl.join(price_df)
         # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
@@ -187,8 +196,7 @@ async def market_watch_plus(
             dtype={'ins_code': 'string'},
         )
         if best_limits_prepare_join:
-            bl.unstack(fill_value=0).sort_index(axis=1, level=1)
-            bl.columns = [f'{c}{i}' for c, i in bl.columns]
+            bl = _unstack_best_limits(bl)
         result['best_limits'] = bl
     result['refid'] = int(refid)
     return result
@@ -330,8 +338,9 @@ class MarketWatch:
         'init_kwargs',
         'plus_callback',
         'plus_kwargs',
-        'refid',
-        'heven',
+        'update_event',
+        'df',
+        'market_state',
     )
 
     def __init__(
@@ -339,8 +348,8 @@ class MarketWatch:
         *,
         init_kwargs: dict = None,
         plus_kwargs: dict = None,
-        init_callback: _Callable[[_MarketWatchInit], _Any],
-        plus_callback: _Callable[[_MarketWatchPlus], _Any],
+        init_callback: _Callable[[_MarketWatchInit], _Any] = None,
+        plus_callback: _Callable[[_MarketWatchPlus], _Any] = None,
         interval=1,
     ):
         """Create an object that helps with watching the market watch.
@@ -355,20 +364,55 @@ class MarketWatch:
             watch will be stopped.
         :param interval: The sleep interval.
 
+        Every a callback returns True, self.event will be
+        set. So, users can wait for this event to get notified of new updates.
         To stop the watch, set `plus_callback` to `lambda a: False`.
+
+        If init_callback is None, then self._default_init_callback and
+        self._default_plus_callback will be used which will create a
+        self.df and keep it up-to-date while the watch is running.
+        This is convenient, but note that you may be able to be implement a
+        more efficient algorith to gather specific updates by using
+        custom callback functions.
         """
         self.interval = interval
         self.init_kwargs: dict = {} if init_kwargs is None else init_kwargs
         self.plus_kwargs: dict = {} if plus_kwargs is None else plus_kwargs
+        self.update_event = _Event()
         if init_callback is None:
             self.init_callback = self._default_init_callback
             self.plus_callback = self._default_plus_callback
-            self.update_event = _Event()
         else:
             self.init_callback = init_callback
             self.plus_callback = plus_callback
 
+    def _default_init_callback(self, d: dict) -> bool:
+        self.df = d.get('prices')
+        self.market_state = d.get('market_state')
+        return True
+
+    def _default_plus_callback(self, d: dict) -> bool:
+        bl = d.get('best_limits')
+        if bl is not None:
+            self.df.update(bl)
+
+        np = d.get('new_prices')
+        if np is not None:
+            self.df = _concat([self.df, np])
+
+        pu = d.get('price_updates')
+        if pu is not None:
+            self.df.update(pu)
+
+        self.market_state = d.get('market_state')
+
+        return True
+
     async def start(self):
+        update_event = self.update_event
+        set_event = update_event.set
+        clear_event = update_event.clear
+
         while True:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
@@ -382,6 +426,9 @@ class MarketWatch:
         if not self.init_callback(mwi):
             return
 
+        set_event()
+        clear_event()
+
         heven = mwi['prices'].heven.max()
         refid = mwi['refid']
 
@@ -394,8 +441,13 @@ class MarketWatch:
             except Exception as e:
                 _error(f'{e} while awaiting market_watch_plus')
                 continue  # _sleep and retry
+
             if not self.plus_callback(mwp):
                 return
+
+            set_event()
+            clear_event()
+
             refid = mwp['refid']
             heven = max(
                 mwp['price_updates'].heven.max(),
