@@ -154,7 +154,7 @@ async def market_watch_plus(
             refid,
         ) = text.split('@')
     except ValueError as e:
-        _save_last_content(f'{e}')
+        _save_last_content(f'{e!r}')
         raise e
     result = {}
     if messages:
@@ -417,7 +417,7 @@ class MarketWatch:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
-                _error(f'{e} while awaiting market_watch_init')
+                _error(f'{e!r} while awaiting market_watch_init')
                 await _sleep(self.interval)
                 continue
             break
@@ -439,7 +439,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _error(f'{e} while awaiting market_watch_plus')
+                _error(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
 
             if not self.plus_callback(mwp):
