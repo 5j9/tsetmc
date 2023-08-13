@@ -5,7 +5,7 @@ from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 # cs == 69: اوراق تامين مالي
 # cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
-_CS_EXCLUSIONS = {59, 69}
+_CS_EXCLUSIONS = {'59', '69'}
 
 # see dev/tsetmc_source_files/market_watch.html
 _YVAL_EXCLUSIONS = {
