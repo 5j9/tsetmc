@@ -46,7 +46,7 @@ _PRICE_DTYPES = {
     # 0-7 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'flow': 'int16',
     # 1-98, see tsetmc.general.cs_codes()
-    'cs': 'int16',
+    'cs': 'string',
     'tmax': 'float64',
     'tmin': 'float64',
     'z': 'int64',

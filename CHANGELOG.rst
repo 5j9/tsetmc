@@ -1,3 +1,7 @@
+Unreleased
+----------
+* BREAKING CHANGE: ``cs`` column in ``market_watch_init`` and ``market_watch_plus`` now is of string type instead of numeric.
+
 v0.55.0
 -------
 * BREAKING CHANGE: new argument for ``market_watch_plus``: ``best_limits_prepare_join``. To retain the old behaviour call this function with ``best_limits_prepare_join=False``.
