@@ -126,7 +126,7 @@ class _LazyDS:
         d = cls.l30s_to_l18_code = dict(
             zip(df['ins_code'], [*zip(df['l18'], df['l30'])])
         )
-        g = cls.l18_code = d.get
+        g = cls.l18_l130 = d.get
         return g(code)
 
 

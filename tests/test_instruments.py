@@ -19,6 +19,7 @@ from tsetmc.instruments import (
     _ClosingPriceInfo,
     _Codal,
     _Identity,
+    _LazyDS,
     _LiveData,
     _Message,
     _parse_price_info,
@@ -803,3 +804,12 @@ async def test_related_companies():
 async def test_identity():
     d = await KARIS.identity()
     assert_dict_type(d, _Identity)
+
+
+def test_lazy_dataset():
+    # check cache
+    assert _LazyDS.l18_l130('35425587644337450')[0] == 'فملی'
+    assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
+    with patch.object(_LazyDS, 'df'):
+        assert _LazyDS.l18_l130('35425587644337450')[0] == 'فملی'
+        assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
