@@ -1,5 +1,7 @@
 from logging import info as _info, warning as _warning
 
+import pandas as _pd
+
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
@@ -20,14 +22,9 @@ _YVAL_EXCLUSIONS = {
 }
 
 
-def _dump(df):
-    if not df['code'].is_unique:
-        dups = df['code'].duplicated(keep='last')
-        _warning('%d non-unique code were found', len(dups))
-        # Some of the newly added codes are not unique, remove old duplicates.
-        df = df[~dups]
-
+def _dump(df: _pd.DataFrame):
     assert df['l18'].is_unique
+    assert df['ins_code'].is_unique
 
     df.sort_values('l18', inplace=True)
     df.to_csv(
@@ -58,12 +55,14 @@ async def update() -> None:
         'and cs not in @_CS_EXCLUSIONS '
         'and yval not in @_YVAL_EXCLUSIONS'
     )
-    ds = LazyDS.df
-    merged = LazyDS.cached_df = ds.merge(
-        prices[['l18', 'l30']], how='left', copy=False
-    )
-    diff = len(merged) - len(ds)
-    if diff:
+    ds = LazyDS.df.set_index('l18')
+    p = prices[['l18', 'l30']].reset_index().set_index('l18')
+    ds.update(p)  # update existing l18s/l30s
+    new_items = p[~p.index.isin(ds.index)]
+    merged = LazyDS.cached_df = _pd.concat([ds, new_items]).reset_index()[
+        ['ins_code', 'l18', 'l30']  # fix column order
+    ]
+    if diff := len(new_items):
         _dump(merged)
         _info(f'{diff} new entries were added by market watch.')
     else:
