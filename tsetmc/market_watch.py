@@ -333,7 +333,6 @@ async def status_changes(top: int | str) -> _DataFrame:
 
 class MarketWatch:
     __slots__ = (
-        'continue_',
         'df',
         'init_callback',
         'init_kwargs',
@@ -366,7 +365,7 @@ class MarketWatch:
         Each time a callback returns, self.event will be set. Users can wait
         for this event to get notified of new updates.
 
-        To stop the watch, set `self.continue_` to False.
+        To stop the watch, cancel the task that is running `self.start()`.
 
         If init_callback is None, then self._default_init_callback and
         self._default_plus_callback will be used which will create
@@ -410,12 +409,11 @@ class MarketWatch:
         self.market_state = d.get('market_state')
 
     async def start(self):
-        self.continue_ = True
         update_event = self.update_event
         set_event = update_event.set
         clear_event = update_event.clear
 
-        while self.continue_:
+        while True:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
@@ -430,7 +428,7 @@ class MarketWatch:
         set_event()
         clear_event()
 
-        while self.continue_:
+        while True:
             await _sleep(self.interval)
             try:
                 mwp = await market_watch_plus(

@@ -1,7 +1,7 @@
 Unreleased
 ----------
 * BREAKING CHANGE: ``cs`` column in ``market_watch_init`` and ``market_watch_plus`` now is of string type instead of numeric.
-* BREAKING CHANGE: Added ``MarketWatch.continue_`` attribute which will stop the market_watch if set to ``False``. The return value of callback functions is now ignored.
+* BREAKING CHANGE: The return values of callback functions in ``MarketWatch`` are now ignored. Users are supposed to cancel the running task instead of controlling the loop via the return values.
 * BREAKING CHANGE: The ``code`` column of dataset is renamed back to ``ins_code``. This name is more compatible with other existing functions.
 * Fixed a bug in ``dataset.update()``.
 * Updated dataset
