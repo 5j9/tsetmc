@@ -93,6 +93,7 @@ class ClassProperty:
         return self.method(owner_cls)
 
 
+# note: this class is public through dataset module
 class _LazyDS:
     l18s_to_l30_code: dict[str, tuple[str, str]] = None
     l30s_to_l18_code: dict[str, tuple[str, str]] = None
