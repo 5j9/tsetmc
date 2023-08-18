@@ -115,7 +115,7 @@ class _LazyDS:
     def l30_code(cls, l18: str) -> tuple[str, str]:
         df = cls.df
         d = cls.l18s_to_l30_code = dict(
-            zip(df['l18'], [*zip(df['l30'], df['code'])])
+            zip(df['l18'], [*zip(df['l30'], df['ins_code'])])
         )
         g = cls.l30_code = d.get
         return g(l18)
@@ -124,7 +124,7 @@ class _LazyDS:
     def l18_l130(cls, code: str) -> tuple[str, str]:
         df = cls.df
         d = cls.l30s_to_l18_code = dict(
-            zip(df['code'], [*zip(df['l18'], df['l30'])])
+            zip(df['ins_code'], [*zip(df['l18'], df['l30'])])
         )
         g = cls.l18_code = d.get
         return g(code)
