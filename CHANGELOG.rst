@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * BREAKING CHANGE: ``cs`` column in ``market_watch_init`` and ``market_watch_plus`` now is of string type instead of numeric.
+* BREAKING CHANGE: Added ``MarketWatch.continue_`` attribute which will stop the market_watch if set to ``False``. The return value of callback functions is now ignored.
 
 v0.55.0
 -------

@@ -333,14 +333,15 @@ async def status_changes(top: int | str) -> _DataFrame:
 
 class MarketWatch:
     __slots__ = (
-        'interval',
+        'continue_',
+        'df',
         'init_callback',
         'init_kwargs',
+        'interval',
+        'market_state',
         'plus_callback',
         'plus_kwargs',
         'update_event',
-        'df',
-        'market_state',
     )
 
     def __init__(
@@ -357,19 +358,18 @@ class MarketWatch:
         :param init_kwargs: kwargs to be passed to market_watch_init
         :param plus_kwargs: kwargs to be passed to market_watch_plus
         :param init_callback: function to be called with the result of
-            market_watch_init. This function should return True, otherwise the
-            watch will be stopped.
+            market_watch_init.
         :param plus_callback: function to be called with the result of
-            market_watch_plus. This function should return True, otherwise the
-            watch will be stopped.
+            market_watch_plus.
         :param interval: The sleep interval.
 
-        Every a callback returns True, self.event will be
-        set. So, users can wait for this event to get notified of new updates.
-        To stop the watch, set `plus_callback` to `lambda a: False`.
+        Each time a callback returns, self.event will be set. Users can wait
+        for this event to get notified of new updates.
+
+        To stop the watch, set `self.continue_` to False.
 
         If init_callback is None, then self._default_init_callback and
-        self._default_plus_callback will be used which will create a
+        self._default_plus_callback will be used which will create
         self.df and keep it up-to-date while the watch is running.
         This is convenient, but note that you may be able to be implement a
         more efficient algorith to gather specific updates by using
@@ -379,19 +379,22 @@ class MarketWatch:
         self.init_kwargs: dict = {} if init_kwargs is None else init_kwargs
         self.plus_kwargs: dict = {} if plus_kwargs is None else plus_kwargs
         self.update_event = _Event()
-        if init_callback is None:
-            self.init_callback = self._default_init_callback
-            self.plus_callback = self._default_plus_callback
-        else:
-            self.init_callback = init_callback
-            self.plus_callback = plus_callback
+        self.init_callback = (
+            self._default_init_callback
+            if init_callback is None
+            else init_callback
+        )
+        self.plus_callback = (
+            self._default_plus_callback
+            if plus_callback is None
+            else plus_callback
+        )
 
-    def _default_init_callback(self, d: dict) -> bool:
+    def _default_init_callback(self, d: dict):
         self.df = d.get('prices')
         self.market_state = d.get('market_state')
-        return True
 
-    def _default_plus_callback(self, d: dict) -> bool:
+    def _default_plus_callback(self, d: dict):
         bl = d.get('best_limits')
         if bl is not None:
             self.df.update(bl)
@@ -406,14 +409,13 @@ class MarketWatch:
 
         self.market_state = d.get('market_state')
 
-        return True
-
     async def start(self):
+        self.continue_ = True
         update_event = self.update_event
         set_event = update_event.set
         clear_event = update_event.clear
 
-        while True:
+        while self.continue_:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
@@ -422,17 +424,13 @@ class MarketWatch:
                 continue
             break
 
-        # noinspection PyUnboundLocalVariable
-        if not self.init_callback(mwi):
-            return
-
+        self.init_callback(mwi)  # noqa: F823
+        heven = mwi['prices'].heven.max()
+        refid = mwi['refid']
         set_event()
         clear_event()
 
-        heven = mwi['prices'].heven.max()
-        refid = mwi['refid']
-
-        while True:
+        while self.continue_:
             await _sleep(self.interval)
             try:
                 mwp = await market_watch_plus(
@@ -442,14 +440,12 @@ class MarketWatch:
                 _error(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
 
-            if not self.plus_callback(mwp):
-                return
-
-            set_event()
-            clear_event()
+            self.plus_callback(mwp)
 
             refid = mwp['refid']
             heven = max(
                 mwp['price_updates'].heven.max(),
                 mwp['new_prices'].heven.max(),
             )
+            set_event()
+            clear_event()
