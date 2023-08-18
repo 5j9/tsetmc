@@ -5,22 +5,6 @@ import pandas as _pd
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
-# cs == 69: اوراق تامين مالي
-# cs == 59: اوراق حق تقدم استفاده از تسهيلات مسكن
-_CS_EXCLUSIONS = {'59', '69'}
-
-# see dev/tsetmc_source_files/market_watch.html
-_YVAL_EXCLUSIONS = {
-    # OraghMosharekat
-    306,
-    301,
-    706,
-    208,
-    701,
-    # گواهی سسپرده کالایی (سیمان/زعفران)
-    327,
-}
-
 
 def _dump(df: _pd.DataFrame):
     assert df['l18'].is_unique
@@ -49,12 +33,12 @@ async def add_instrument(inst: _Instrument) -> None:
 async def update() -> None:
     mwi = await _market_watch_init(market_state=False, best_limits=False)
     prices = mwi['prices']
-    # flow == 3: futures market
-    prices = prices.query(
-        'flow != 3 '
-        'and cs not in @_CS_EXCLUSIONS '
-        'and yval not in @_YVAL_EXCLUSIONS'
-    )
+    prices = prices[
+        # cs == 69: اوراق تامين مالي. Currently مهرایران is the only exception of this
+        # group that does not end with a digit.
+        ~(prices['cs'] == '69')
+        & ~(prices['l18'].str.slice(-1).str.isdigit())
+    ]
     ds = LazyDS.df.set_index('l18')
     p = prices[['l18', 'l30']].reset_index().set_index('l18')
     ds.update(p)  # update existing l18s/l30s
