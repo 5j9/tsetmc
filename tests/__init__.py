@@ -28,13 +28,3 @@ def assert_market_state(market_state: _MarketState):
         'tse_index_change_percent',
     }
     assert all(type(v) is float for v in market_state.values())
-
-
-def assert_dict_type(d: dict, td: callable):
-    assert td.__optional_keys__ == (d.keys() - td.__required_keys__)
-    for k, t in td.__annotations__.items():
-        v = d[k]
-        if isinstance(v, dict):
-            assert_dict_type(v, t)
-            continue
-        assert isinstance(v, t), f'{td=} {k=} {v=} {t=}'
