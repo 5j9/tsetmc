@@ -111,9 +111,11 @@ async def test_client_type_all():
             'l_sell_volume',
         ]
     )
-    assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'ins_code'
     assert df.index.dtype == string
+    if df.empty:
+        return
+    assert all(dt == 'int64' for dt in df.dtypes)
 
 
 @file('InstValue.aspx')

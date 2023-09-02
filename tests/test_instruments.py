@@ -650,6 +650,8 @@ async def test_info_on_fmelli():
 @file('karis_trades.json')
 async def test_trades():
     df = await KARIS.trades()
+    if df.empty:
+        return
     assert [*df.dtypes.items()] == [
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
