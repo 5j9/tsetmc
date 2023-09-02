@@ -256,6 +256,6 @@ def _save_last_content(msg: str, /):
     from pathlib import Path
 
     f = Path(__file__).parent / '~last_response.html'
-    with f.open('wb', encoding='utf8'):
+    with f.open('wb'):
         f.write_bytes(_LAST_CONTENT)
     _error(f'{msg}; _LAST_CONTENT saved in {f}', stacklevel=2)

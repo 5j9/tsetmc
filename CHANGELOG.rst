@@ -2,6 +2,7 @@ Unreleased
 ----------
 * BREAKING CHANGE: Require pyarrow and pandas >= 2.1.0 and use pyarrow string dtype in pandas. Also ``pandas.options.future.infer_string = True``.
 * Updated dataset
+* Fixed a logging bug in market_watch_plus causing exception in rare occasions.
 
 v0.56.0
 -------
