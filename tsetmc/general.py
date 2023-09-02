@@ -30,9 +30,9 @@ async def cs_codes() -> dict[str, str]:
 async def industrial_groups_overview() -> _DataFrame:
     """Return a dataframe of industrial groups.
 
-     The result contains info about each group's price change.
-     See: http://www.tsetmc.com/Loader.aspx?ParTree=111C1214
-     """
+    The result contains info about each group's price change.
+    See: http://old.tsetmc.com/Loader.aspx?ParTree=111C1214
+    """
     content = await _get_par_tree('111C1214')
     df = _read_html(content)[0]
     show = df[1]
@@ -45,7 +45,9 @@ async def industrial_groups_overview() -> _DataFrame:
     return df
 
 
-async def market_map_data(*, market=0, size=9999, sector=0, typeSelected=1, heven=0) -> _DataFrame:
+async def market_map_data(
+    *, market=0, size=9999, sector=0, typeSelected=1, heven=0
+) -> _DataFrame:
     j = await _api(
         f'ClosingPrice/GetMarketMap'
         f'?market={market}&size={size}&sector={sector}'
@@ -53,7 +55,6 @@ async def market_map_data(*, market=0, size=9999, sector=0, typeSelected=1, heve
         fa=True,
     )
     df = _DataFrame(j)
-    df['insCode'] = df.insCode.astype('int64')
     return df
 
 
@@ -71,22 +72,30 @@ async def major_holders_activity() -> _DataFrame:
         inst_div = td0.select_one('div')
         if inst_div:
             href = inst_div.select_one('a')['href']
-            ins_code = int(href[href.rfind('=') + 1:])
+            ins_code = int(href[href.rfind('=') + 1 :])
             l30 = inst_div.text
 
         holder = td0.select_one('li').text
         # noinspection PyUnboundLocalVariable
         append_row([ins_code, l30, holder, *_parse_tds(tds)])
-    return _DataFrame(rows, copy=False, columns=(
-        'ins_code', 'l30', 'holder', *(
-            # the first header is 'شرکت - سهامدار'
-            th.text for th in trs[0].select('th')[1:]
-        )
-    ))
+    return _DataFrame(
+        rows,
+        copy=False,
+        columns=(
+            'ins_code',
+            'l30',
+            'holder',
+            *(
+                # the first header is 'شرکت - سهامدار'
+                th.text
+                for th in trs[0].select('th')[1:]
+            ),
+        ),
+    )
 
 
 async def top_industry_groups() -> _DataFrame:
-    """http://www.tsetmc.com/Loader.aspx?Partree=15131O"""
+    """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
     df = _read_html(text)[0]
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
@@ -136,5 +145,7 @@ async def market_overview(n=1) -> _MarketOverview:
 async def related_companies(cs: str) -> dict[str, _DataFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
     j['relatedCompany'] = _json_normalize(j['relatedCompany'])
-    j['relatedCompanyThirtyDayHistory'] = _DataFrame(j['relatedCompanyThirtyDayHistory'], copy=False)
+    j['relatedCompanyThirtyDayHistory'] = _DataFrame(
+        j['relatedCompanyThirtyDayHistory'], copy=False
+    )
     return j
