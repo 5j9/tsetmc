@@ -1,11 +1,12 @@
-from aiohutils.tests import file
+from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 from pytest import warns
 
-from tests import assert_dict_type
 from tsetmc.instruments import Instrument, _ClientTypeOnDate, _ClosingPrice
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
+
+string = 'string'
 
 
 @file('faraz_GetClosingPriceHistory_20220222.json')
@@ -30,7 +31,7 @@ async def test_intraday_closing_price():
 async def test_static_thresholds():
     df = await FARAZ_ON_DATE.static_thresholds()
     assert [*df.dtypes.items()] == [
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('psGelStaMax', dtype('float64')),
@@ -68,7 +69,7 @@ async def test_intraday_trades():
         ('qTitTran', dtype('int64')),
         ('pTran', dtype('float64')),
         ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', dtype('O')),
+        ('iSensVarP', string),
         ('pPhSeaCotJ', dtype('float64')),
         ('pPbSeaCotJ', dtype('float64')),
         ('iAnuTran', dtype('int64')),
@@ -111,10 +112,10 @@ async def test_intraday_states():
         ('idn', dtype('int64')),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('lVal18AFC', dtype('O')),
         ('lVal30', dtype('O')),
-        ('cEtaval', dtype('O')),
+        ('cEtaval', string),
         ('realHeven', dtype('int64')),
         ('underSupervision', dtype('int64')),
         ('cEtavalTitle', dtype('O')),
@@ -126,8 +127,8 @@ async def test_intraday_holders():
     df = await FARAZ_ON_DATE.holders()
     assert [*df.dtypes.items()] == [
         ('shareHolderID', dtype('int64')),
-        ('shareHolderName', dtype('O')),
-        ('cIsin', dtype('O')),
+        ('shareHolderName', string),
+        ('cIsin', string),
         ('dEven', dtype('int64')),
         ('numberOfShares', dtype('float64')),
         ('perOfShares', dtype('float64')),

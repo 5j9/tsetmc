@@ -806,8 +806,8 @@ class Instrument:
         # todo: use separate columns
         df.columns = ['holder', 'shares/units', '%', 'change']
         df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
-        if df['change'].dtype == 'O':
-            _numerize(df, ('change',), int)
+        _numerize(df, ('change',), 'Int64')
+        _numerize(df, ('shares/units',), 'int64')
         return df
 
     @staticmethod

@@ -9,12 +9,14 @@ from typing import TypedDict as _TypedDict
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
 from pandas import (
+    NA as _NA,
     DataFrame as _DataFrame,
     options as _o,
     read_csv as _read_csv,
 )
 
 _o.mode.copy_on_write = True
+_o.future.infer_string = True
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 
@@ -237,8 +239,16 @@ def _numerize(
         # https://stackoverflow.com/a/39684629/2705757
         df[col] = (
             c.replace(r' [KMB]$', '', regex=True).astype(astype)
-        ) * c.str.extract(r'[\d\.]+([KMBT]+)', expand=False).fillna(1).replace(
-            ['K', 'M', 'B', 'T'], [10**3, 10**6, 10**9, 10**12]
+        ) * c.str.extract(r'[\d\. ]+([KMBT]+)', expand=False).map(
+            {
+                _NA: 1,
+                'K': 10**3,
+                'M': 10**6,
+                'B': 10**9,
+                'T': 10**12,
+            }
+        ).astype(
+            astype
         )
 
 

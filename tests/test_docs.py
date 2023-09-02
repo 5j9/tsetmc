@@ -17,9 +17,9 @@ async def test_client_type():
     out = d['output']
     assert len(out) == 9
     assert [*out.dtypes.items()] == [
-        ('InsCode', dtype('O')),
-        ('کد داخلی نماد', dtype('O')),
-        ('Instrument Unique Key', dtype('O')),
+        ('InsCode', 'string'),
+        ('کد داخلی نماد', 'string'),
+        ('Instrument Unique Key', 'string'),
     ]
 
 

@@ -1,7 +1,6 @@
-from aiohutils.tests import file
+from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
-from tests import assert_dict_type
 from tsetmc.general import (
     _MarketOverview,
     boards,
@@ -12,6 +11,8 @@ from tsetmc.general import (
     market_overview,
     top_industry_groups,
 )
+
+string = 'string'
 
 
 @file('boards.html')
@@ -105,7 +106,7 @@ async def test_cs_codes():
 async def test_industrial_groups_overview():
     df = await industrial_groups_overview()
     assert [*df.dtypes.items()] == [
-        ('group', dtype('O')),
+        ('group', string),
         (':-2', dtype('int64')),
         ('-2:0', dtype('int64')),
         ('0:2', dtype('int64')),
@@ -129,16 +130,16 @@ async def test_market_map_data():
         ('qTotTran5J', dtype('float64')),
         ('qTotCap', dtype('float64')),
         ('priceYesterday', dtype('float64')),
-        ('lVal18AFC', dtype('O')),
-        ('lVal30', dtype('O')),
-        ('lSecVal', dtype('O')),
+        ('lVal18AFC', string),
+        ('lVal30', string),
+        ('lSecVal', string),
         ('percent', dtype('float64')),
         ('priceChangePercent', dtype('float64')),
-        ('hEvenShow', dtype('O')),
-        ('color', dtype('O')),
+        ('hEvenShow', string),
+        ('color', string),
         ('fontSize', dtype('int64')),
-        ('fontColor', dtype('O')),
-        ('customLabel', dtype('O')),
+        ('fontColor', string),
+        ('customLabel', string),
     ]
 
 
@@ -148,8 +149,8 @@ async def test_major_holders_activity():
     dtypes = [*df.dtypes.items()]
     assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
-        ('l30', dtype('O')),
-        ('holder', dtype('O')),
+        ('l30', string),
+        ('holder', string),
     ]
     for _, t in dtypes[3:]:
         assert dtype(t) == dtype('float64')
@@ -159,7 +160,7 @@ async def test_major_holders_activity():
 async def test_top_industry_groups():
     df = await top_industry_groups()
     assert [*df.dtypes.items()] == [
-        ('group', dtype('O')),
+        ('group', string),
         ('mv', dtype('float64')),
         ('tno', dtype('int64')),
         ('tvol', dtype('float64')),

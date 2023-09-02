@@ -25,6 +25,7 @@ BL_STACKED_COLUMNS = _BEST_LIMITS_NAMES[2:]
 BL_UNSTACKED_COLUMNS = [
     f'{n}{i}' for n in BL_STACKED_COLUMNS for i in range(1, 6)
 ]
+string = 'string'
 
 
 def assert_bl_dtypes(df: DataFrame, unstacked=True):
@@ -32,12 +33,12 @@ def assert_bl_dtypes(df: DataFrame, unstacked=True):
         columns = BL_UNSTACKED_COLUMNS
         index = df.index
         assert index.name == 'ins_code'
-        assert index.dtype == 'string[python]'
+        assert index.dtype == string
     else:
         columns = BL_STACKED_COLUMNS
         index = df.index
         assert index.names == ['ins_code', 'number']
-        assert [*index.dtypes] == ['string[python]', 'int64']
+        assert [*index.dtypes] == [string, 'int64']
 
     for c in columns:
         col = df.pop(c)
@@ -49,7 +50,7 @@ async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
+        ('ins_code', string),
         ('number', dtype('int64')),
     ]
     assert 'market_state' not in mwi
@@ -63,12 +64,12 @@ async def test_market_watch_init():
 
     i = prices.index
     assert i.name == 'ins_code'
-    assert i.dtype == 'string[python]'
+    assert i.dtype == string
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
     assert [*mwi['best_limits'].index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
+        ('ins_code', string),
         ('number', dtype('int64')),
     ]
 
@@ -89,7 +90,7 @@ async def test_closing_price_all():
         'pf',
     ]
     assert [*df.index.dtypes.items()] == [
-        ('ins_code', 'string[python]'),
+        ('ins_code', string),
         ('n', dtype('int64')),
     ]
 
@@ -112,7 +113,7 @@ async def test_client_type_all():
     )
     assert all(dt == 'int64' for dt in df.dtypes)
     assert df.index.name == 'ins_code'
-    assert df.index.dtype == 'string[python]'
+    assert df.index.dtype == string
 
 
 @file('InstValue.aspx')
@@ -121,7 +122,7 @@ async def test_key_stats():
     assert all(df.columns.str.startswith('is'))
     assert all(t == 'float64' for t in df.dtypes)
     assert df.index.name == 'ins_code'
-    assert df.index.dtype == 'string[python]'
+    assert df.index.dtype == string
 
 
 def test_parse_index():
@@ -214,7 +215,7 @@ async def test_market_watch_plus_new():
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     i = new_prices.index
     assert i.name == 'ins_code'
-    assert i.dtype == 'string[python]'
+    assert i.dtype == string
     best_limits = mwp['best_limits']
     assert_bl_dtypes(best_limits, False)
     assert 'messages' not in mwp
@@ -239,7 +240,7 @@ async def test_market_watch_plus_update():
         'pmax',
     ]
     assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
-    assert price_updates.index.dtype == 'string[python]'
+    assert price_updates.index.dtype == string
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
@@ -258,7 +259,7 @@ async def test_market_watch_plus_update():
     assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
     i = new_prices.index
     assert i.name == 'ins_code'
-    assert i.dtype == 'string[python]'
+    assert i.dtype == string
 
 
 @file('status_changes.html')
@@ -266,9 +267,9 @@ async def test_status_changes():
     df = await status_changes(3)
     assert len(df) == 3
     assert (*df.dtypes.items(),) == (
-        ('نماد', dtype('O')),
-        ('نام', dtype('O')),
-        ('وضعیت جدید', dtype('O')),
+        ('نماد', string),
+        ('نام', string),
+        ('وضعیت جدید', string),
         ('date', dtype('O')),
     )
     assert type(df.iat[0, 3]) is jdatetime
@@ -279,9 +280,9 @@ async def test_ombud_messages():
     df = await ombud_messages(top=3)
     assert len(df) == 3
     assert (*df.dtypes.items(),) == (
-        ('header', 'string[python]'),
+        ('header', string),
         ('date', dtype('O')),
-        ('description', 'string[python]'),
+        ('description', string),
     )
     assert type(df.iat[0, 1]) is jdatetime
 
@@ -292,9 +293,9 @@ async def test_ombud_messages_empty():
     df = await ombud_messages(top=1, sh_date='1400-11-02', flow=0)
     assert df.empty
     assert (*df.dtypes.items(),) == (
-        ('header', 'string[python]'),
+        ('header', string),
         ('date', dtype('O')),
-        ('description', 'string[python]'),
+        ('description', string),
     )
 
 

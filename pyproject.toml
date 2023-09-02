@@ -23,12 +23,13 @@ dynamic = [
     "version",
 ]
 dependencies = [
-    "jdatetime",
-    "pandas >= 2.0.0",
-    "numpy",
-    "beautifulsoup4",
-    "lxml",
     "aiohutils >= 0.10.0",
+    "beautifulsoup4",
+    "jdatetime",
+    "lxml",
+    "numpy",
+    "pandas >= 2.1.0",
+    "pyarrow",  # pd.options.future.infer_string = True
 ]
 [project.optional-dependencies]
 test = [

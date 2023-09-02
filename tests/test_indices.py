@@ -1,16 +1,17 @@
-from aiohutils.tests import file
+from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
-from tests import assert_dict_type
 from tsetmc import _InstrumentInfo
 from tsetmc.indices import Index, last_state
+
+string = 'string'
 
 
 @file('last_state.json')
 async def test_last_state():
     df = await last_state()
     assert [*df.dtypes.items()] == [
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('xDrNivJIdx004', dtype('float64')),
@@ -19,7 +20,7 @@ async def test_last_state():
         ('xVarIdxJRfV', dtype('float64')),
         ('last', dtype('bool')),
         ('indexChange', dtype('float64')),
-        ('lVal30', dtype('O')),
+        ('lVal30', string),
         ('c1', dtype('int64')),
         ('c2', dtype('int64')),
         ('c3', dtype('int64')),
@@ -92,7 +93,7 @@ async def test_companies():
         ('priceFirst', dtype('float64')),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
@@ -108,9 +109,9 @@ async def test_companies():
         ('instrument.lSoc30', dtype('O')),
         ('instrument.yMarNSC', dtype('O')),
         ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', dtype('O')),
-        ('instrument.lVal30', dtype('O')),
-        ('instrument.lVal18AFC', dtype('O')),
+        ('instrument.insCode', string),
+        ('instrument.lVal30', string),
+        ('instrument.lVal18AFC', string),
         ('instrument.flow', dtype('int64')),
         ('instrument.cIsin', dtype('O')),
         ('instrument.zTitad', dtype('float64')),
@@ -125,7 +126,7 @@ async def test_companies():
     ]
     assert [*companies_history.dtypes.items()] == [
         ('id', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),

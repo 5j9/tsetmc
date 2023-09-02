@@ -2,13 +2,13 @@ from datetime import datetime
 from types import NoneType
 from unittest.mock import patch
 
-from aiohutils.tests import file, files
+from aiohutils.tests import assert_dict_type, file, files
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
-from pandas import DataFrame, DatetimeIndex
+from pandas import DataFrame, DatetimeIndex, Int64Dtype
 from pytest import raises, warns
 
-from tests import assert_dict_type, assert_market_state
+from tests import assert_market_state
 from tsetmc import _InstrumentInfo
 
 # noinspection PyProtectedMember
@@ -31,6 +31,8 @@ from tsetmc.instruments import (
     search,
     share_holder_companies,
 )
+
+string = 'string'
 
 
 def assert_page_data(
@@ -324,7 +326,7 @@ async def test_client_type_history_no_date():
     df = await Instrument(8175784894140974).client_type_history()
     assert [*df.dtypes.items()] == [
         ('recDate', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('buy_I_Volume', dtype('float64')),
         ('buy_N_Volume', dtype('float64')),
         ('buy_I_Value', dtype('float64')),
@@ -354,11 +356,11 @@ async def test_holders_holder():
     with warns(DeprecationWarning):
         holders = await AVA.holders(cisin='IRT3AVAF0003')
     assert [*holders.dtypes.items()] == [
-        ('holder', dtype('O')),
-        ('shares/units', dtype('O')),
+        ('holder', string),
+        ('shares/units', dtype('int64')),
         ('%', dtype('float64')),
-        ('change', dtype('int64')),
-        ('id_cisin', dtype('O')),
+        ('change', Int64Dtype()),
+        ('id_cisin', string),
     ]
 
     id_cisin = holders.at[0, 'id_cisin']
@@ -369,7 +371,7 @@ async def test_holders_holder():
     assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
     assert [*oth.dtypes.items()] == [
-        ('name', dtype('O')),
+        ('name', string),
         ('shares', dtype('int64')),
         ('percent', dtype('float64')),
     ]
@@ -407,7 +409,7 @@ async def test_share_holders_companies_histories():
     assert [*df.dtypes.items()] == [
         ('shareHolderID', dtype('int64')),
         ('shareHolderName', dtype('O')),
-        ('cIsin', dtype('O')),
+        ('cIsin', string),
         ('numberOfShares', dtype('float64')),
         ('perOfShares', dtype('float64')),
         ('change', dtype('int64')),
@@ -462,8 +464,8 @@ async def test_price_adjustments_method():
 async def test_price_adjustments():
     df = await price_adjustments(7)
     assert [*df.dtypes.items()] == [
-        ('l18', dtype('O')),
-        ('l30', dtype('O')),
+        ('l18', string),
+        ('l30', string),
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
@@ -493,8 +495,8 @@ async def test_old_search():
     assert type(df) is DataFrame
     assert len(df) > 40
     assert [*df.dtypes.items()] == [
-        ('l18', dtype('O')),
-        ('l30', dtype('O')),
+        ('l18', string),
+        ('l30', string),
         ('ins_code', dtype('int64')),
         ('retail', dtype('int64')),
         ('compensation', dtype('int64')),
@@ -503,7 +505,7 @@ async def test_old_search():
         ('_unknown2', dtype('int64')),
         ('_unknown3', dtype('int64')),
         ('_unknown4', dtype('int64')),
-        ('_unknown5', dtype('O')),
+        ('_unknown5', string),
     ]
 
 
@@ -578,9 +580,9 @@ async def test_ombud_messages():
     with warns(DeprecationWarning):
         df = await Instrument(1301069819790264).ombud_messages()
     assert [*df.dtypes.items()] == [
-        ('header', 'string[python]'),
+        ('header', string),
         ('date', dtype('O')),
-        ('description', 'string[python]'),
+        ('description', string),
     ]
     assert type(df.iat[0, 1]) is jdatetime
 
@@ -656,7 +658,7 @@ async def test_trades():
         ('qTitTran', dtype('int64')),
         ('pTran', dtype('float64')),
         ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', dtype('O')),
+        ('iSensVarP', string),
         ('pPhSeaCotJ', dtype('float64')),
         ('pPbSeaCotJ', dtype('float64')),
         ('iAnuTran', dtype('int64')),
@@ -683,7 +685,7 @@ async def test_daily_closing_price():
         ('priceFirst', dtype('float64')),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('pClosing', dtype('float64')),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
@@ -752,7 +754,7 @@ async def test_related_companies():
         ('priceFirst', dtype('float64')),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
@@ -768,9 +770,9 @@ async def test_related_companies():
         ('instrument.lSoc30', dtype('O')),
         ('instrument.yMarNSC', dtype('O')),
         ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', dtype('O')),
-        ('instrument.lVal30', dtype('O')),
-        ('instrument.lVal18AFC', dtype('O')),
+        ('instrument.insCode', string),
+        ('instrument.lVal30', string),
+        ('instrument.lVal18AFC', string),
         ('instrument.flow', dtype('int64')),
         ('instrument.cIsin', dtype('O')),
         ('instrument.zTitad', dtype('float64')),
@@ -785,7 +787,7 @@ async def test_related_companies():
     ]
     assert [*h.dtypes.items()] == [
         ('id', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
