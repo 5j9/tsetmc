@@ -3,6 +3,7 @@ from typing import TypedDict as _TypedDict
 from bs4 import BeautifulSoup as _BeautifulSoup
 from pandas import (
     NA as _NA,
+    Timestamp as _Timestamp,
     concat as _concat,
     json_normalize as _json_normalize,
     read_html as _read_html,
@@ -114,21 +115,22 @@ def _parse_tds(tds):
 
 
 class _MarketOverview(_TypedDict):
+    indexChange: float
+    indexEqualWeightedChange: float
+    indexEqualWeightedLastValue: float
+    indexLastValue: float
     lastDataDEven: int
     lastDataHEven: int
-    indexLastValue: float
-    indexChange: float
-    indexEqualWeightedLastValue: float
-    indexEqualWeightedChange: float
     marketActivityDEven: int
     marketActivityHEven: int
-    marketActivityZTotTran: int
     marketActivityQTotCap: float
     marketActivityQTotTran: float
+    marketActivityTimestamp: _Timestamp
+    marketActivityZTotTran: int
     marketState: str
+    marketStateTitle: str
     marketValue: float
     marketValueBase: float
-    marketStateTitle: str
 
 
 async def market_overview(n=1) -> _MarketOverview:
@@ -139,7 +141,12 @@ async def market_overview(n=1) -> _MarketOverview:
         2: fara-bourse
     """
     j = await _api(f'MarketData/GetMarketOverview/{n}')
-    return j['marketOverview']
+    overview = j['marketOverview']
+    overview['marketActivityTimestamp'] = _Timestamp(
+        f"{overview['marketActivityDEven']}"
+        f"{overview['marketActivityHEven']:>06}"
+    )
+    return overview
 
 
 async def related_companies(cs: str) -> dict[str, _DataFrame]:

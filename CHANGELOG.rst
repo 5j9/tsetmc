@@ -4,6 +4,7 @@ Unreleased
 * BREAKING CHANGE: The ``ins_code`` column of ``general.industrial_groups_overview()`` is now of string type. (prviously it was int64)
 * Updated dataset
 * Fixed a logging bug in market_watch_plus causing exception in rare occasions.
+* The result of ``general.market_overview`` now includes ``marketActivityTimestamp`` which is a combination of ``marketActivityDEven`` and ``marketActivityHEven``.
 
 v0.56.0
 -------
