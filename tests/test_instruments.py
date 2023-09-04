@@ -5,7 +5,7 @@ from unittest.mock import patch
 from aiohutils.tests import assert_dict_type, file, files
 from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
-from pandas import DataFrame, DatetimeIndex, Int64Dtype
+from pandas import DataFrame, DatetimeIndex, Int64Dtype, Timestamp
 from pytest import raises, warns
 
 from tests import assert_market_state
@@ -138,8 +138,8 @@ def assert_live_data(
         assert type(d.pop('nav_datetime')) in (jdatetime, str)
         assert type(d.pop('nav')) is int
 
-    assert type(d.pop('datetime')) is datetime
-    for k in ('timestamp', 'status'):
+    assert type(d.pop('timestamp')) is Timestamp
+    for k in ('time', 'status'):
         assert type(d.pop(k)) is str
     assert [*d.keys()] == [
         'pl',

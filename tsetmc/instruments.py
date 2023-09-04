@@ -1,5 +1,4 @@
 from ast import literal_eval as _literal_eval
-from datetime import datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
@@ -8,6 +7,7 @@ from re import fullmatch as _fullmatch
 from warnings import warn as _warn
 
 from pandas import (
+    Timestamp as _Ts,
     read_csv as _read_csv,
     read_html as _read_html,
     to_datetime as _to_datetime,
@@ -34,7 +34,6 @@ from tsetmc import (
     _TypedDict,
 )
 
-_strptime = _datetime.strptime
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
 
 
@@ -145,22 +144,22 @@ class _IntraDay(_TypedDict, total=False):
 
 
 class _LiveData(_TypedDict, total=False):
-    market_state: _MarketState
     best_limits: _DataFrame
-    timestamp: str
-    status: str
-    datetime: _datetime
-    pl: int
-    pc: int
-    pf: int
-    py: int
-    pmin: int
-    pmax: int
-    tno: int
-    tvol: int
-    tval: int
+    market_state: _MarketState
     nav: int
     nav_datatime: _jdatetime
+    pc: int
+    pf: int
+    pl: int
+    pmax: int
+    pmin: int
+    py: int
+    status: str
+    timestamp: _Ts
+    timestamp: str
+    tno: int
+    tval: int
+    tvol: int
 
 
 class _ETF(_TypedDict):
@@ -1180,7 +1179,7 @@ def _parse_price_info(price_info):
         del price_parts[14]
 
     (  # see dev/tsetmc_source_files/Instinfo.js
-        timestamp,  # 0
+        time,  # 0
         status,  # 1
         pl,  # 2
         pc,  # 3
@@ -1199,11 +1198,9 @@ def _parse_price_info(price_info):
     ) = price_parts
 
     result = {
-        'timestamp': timestamp,
+        'time': time,
         'status': status,
-        'datetime': _strptime(
-            info_datetime_date + last_info_time, '%Y%m%d%H%M%S'
-        ),
+        'timestamp': _Ts(f'{info_datetime_date}{last_info_time:>06}'),
         'pl': int(pl),
         'pc': int(pc),
         'pf': int(pf),
