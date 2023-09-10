@@ -1,12 +1,12 @@
 from logging import info as _info, warning as _warning
 
-import pandas as _pd
+from pandas import DataFrame as _Df, concat as _concat
 
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 
-def _dump(df: _pd.DataFrame):
+def _dump(df: _Df):
     assert df['l18'].is_unique
     assert df['ins_code'].is_unique
 
@@ -30,20 +30,21 @@ async def add_instrument(inst: _Instrument) -> None:
     _dump(df)
 
 
-async def update() -> None:
-    mwi = await _market_watch_init(market_state=False, best_limits=False)
-    prices = mwi['prices']
-    prices = prices[
+async def update(df: _Df = None) -> None:
+    if df is None:
+        mwi = await _market_watch_init(market_state=False, best_limits=False)
+        df = mwi['prices']
+    df = df[
         # cs == 69: اوراق تامين مالي. Currently مهرایران is the only exception of this
         # group that does not end with a digit.
-        ~(prices['cs'] == '69')
-        & ~(prices['l18'].str.slice(-1).str.isdigit())
+        ~(df['cs'] == '69')
+        & ~(df['l18'].str.slice(-1).str.isdigit())
     ]
     ds = LazyDS.df.set_index('l18')
-    p = prices[['l18', 'l30']].reset_index().set_index('l18')
+    p = df[['l18', 'l30']].reset_index().set_index('l18')
     ds.update(p)  # update existing l18s/l30s
     new_items = p[~p.index.isin(ds.index)]
-    merged = LazyDS.cached_df = _pd.concat([ds, new_items]).reset_index()[
+    merged = LazyDS.cached_df = _concat([ds, new_items]).reset_index()[
         ['ins_code', 'l18', 'l30']  # fix column order
     ]
     if diff := len(new_items):

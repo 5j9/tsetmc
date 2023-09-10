@@ -3,9 +3,10 @@ Unreleased
 * BREAKING CHANGE: Require pyarrow and pandas >= 2.1.0 and use pyarrow string dtype in pandas. Also ``pandas.options.future.infer_string = True``.
 * BREAKING CHANGE: The ``ins_code`` column of ``general.industrial_groups_overview()`` is now of string type. (prviously it was int64)
 * BREAKING CHANGE: ``Instrument.live_data`` will now include a ``timestamp`` key instead of ``datetime``. The old ``timestamp`` key is renamed to ``time``.
-* Updated dataset
 * Fixed a logging bug in market_watch_plus causing exception in rare occasions.
 * The result of ``general.market_overview`` now includes ``marketActivityTimestamp`` which is a combination of ``marketActivityDEven`` and ``marketActivityHEven``.
+* Added optional ``df`` parameter to ``dataset.update``.
+* Updated dataset
 
 v0.56.0
 -------
