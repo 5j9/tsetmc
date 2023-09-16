@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.57.0
+-------
 * BREAKING CHANGE: Require pyarrow and pandas >= 2.1.0 and use pyarrow string dtype in pandas. Also ``pandas.options.future.infer_string = True``.
 * BREAKING CHANGE: The ``ins_code`` column of ``general.industrial_groups_overview()`` is now of string type. (prviously it was int64)
 * BREAKING CHANGE: ``Instrument.live_data`` will now include a ``timestamp`` key instead of ``datetime``. The old ``timestamp`` key is renamed to ``time``.
