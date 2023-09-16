@@ -5,6 +5,11 @@ from pandas import DataFrame as _Df, concat as _concat
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
+YVAL_EXCLUSIONS = {
+    '306',  # مهرایران
+    '327',  # شیشه01ن
+}
+
 
 def _dump(df: _Df):
     assert df['l18'].is_unique
@@ -35,9 +40,7 @@ async def update(df: _Df = None) -> None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
         df = mwi['prices']
     df = df[
-        # cs == 69: اوراق تامين مالي. Currently مهرایران is the only exception of this
-        # group that does not end with a digit.
-        ~(df['cs'] == '69')
+        ~(df['yva'].isin(YVAL_EXCLUSIONS))
         & ~(df['l18'].str.slice(-1).str.isdigit())
     ]
     ds = LazyDS.df.set_index('l18')

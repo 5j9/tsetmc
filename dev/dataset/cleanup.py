@@ -1,7 +1,7 @@
 from asyncio import as_completed, run
 from logging import basicConfig, info
 
-from tsetmc.dataset import LazyDS, _dump
+from tsetmc.dataset import YVAL_EXCLUSIONS, LazyDS, _dump
 from tsetmc.instruments import Instrument
 
 basicConfig(level='INFO', force=True)
@@ -15,7 +15,7 @@ async def check(l18: str):
         return
     inst = await Instrument.from_l18(l18)
     i = await inst.info()
-    if i['flow'] == 3 or i['flowTitle'] == 'بازار اوراق بدهی':
+    if i['yVal'] in YVAL_EXCLUSIONS:
         TO_BE_REMOVED.append(l18)
         info(f'marked {l18} for removal')
     CHECKED.add(l18)
