@@ -40,7 +40,7 @@ async def update(df: _Df = None) -> None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
         df = mwi['prices']
     df = df[
-        ~(df['yva'].isin(YVAL_EXCLUSIONS))
+        ~(df['yval'].isin(YVAL_EXCLUSIONS))
         & ~(df['l18'].str.slice(-1).str.isdigit())
     ]
     ds = LazyDS.df.set_index('l18')
