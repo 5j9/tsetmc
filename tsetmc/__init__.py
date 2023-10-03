@@ -1,4 +1,4 @@
-__version__ = '0.57.2.dev0'
+__version__ = '0.57.2'
 
 from functools import partial as _partial
 from io import StringIO as _StringIO
