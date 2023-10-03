@@ -1,7 +1,6 @@
 __version__ = '0.57.3.dev0'
 
 from functools import partial as _partial
-from io import StringIO as _StringIO
 from json import JSONDecodeError, loads
 from logging import error as _error
 from re import compile as _rc, findall as _findall
@@ -14,7 +13,6 @@ from pandas import (
     DataFrame as _DataFrame,
     options as _o,
     read_csv as _read_csv,
-    read_html as _read_html,
 )
 
 _o.mode.copy_on_write = True
@@ -261,7 +259,3 @@ def _save_last_content(msg: str, /):
     with f.open('wb'):
         f.write_bytes(_LAST_CONTENT)
     _error(f'{msg}; _LAST_CONTENT saved in {f}', stacklevel=2)
-
-
-def _html_to_df(html: str, index=0, /, **kwargs) -> _DataFrame:
-    return _read_html(_StringIO(html), **kwargs)[index]

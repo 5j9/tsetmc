@@ -6,6 +6,7 @@ from pathlib import Path
 from re import fullmatch as _fullmatch
 from warnings import warn as _warn
 
+from aiohutils.pd import html_to_df as _html_to_df
 from pandas import (
     Timestamp as _Ts,
     read_csv as _read_csv,
@@ -22,7 +23,6 @@ from tsetmc import (
     _get,
     _get_data,
     _get_par_tree,
-    _html_to_df,
     _InstrumentInfo,
     _jdatetime,
     _jstrptime,

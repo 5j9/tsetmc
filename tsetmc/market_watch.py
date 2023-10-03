@@ -4,6 +4,7 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import error as _error
 from typing import Any as _Any
 
+from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
 
@@ -12,7 +13,6 @@ from tsetmc import (
     _DataFrame,
     _get_data,
     _get_par_tree,
-    _html_to_df,
     _jstrptime,
     _MarketState,
     _parse_market_state,

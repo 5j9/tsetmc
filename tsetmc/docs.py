@@ -1,5 +1,7 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
-from tsetmc import _DOMAIN, _get, _html_to_df
+from aiohutils.pd import html_to_df as _html_to_df
+
+from tsetmc import _DOMAIN, _get
 from tsetmc.general import _make_soup
 
 

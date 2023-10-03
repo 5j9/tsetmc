@@ -1,5 +1,6 @@
 from typing import TypedDict as _TypedDict
 
+from aiohutils.pd import html_to_df as _html_to_df
 from bs4 import BeautifulSoup as _BeautifulSoup
 from pandas import (
     NA as _NA,
@@ -8,14 +9,7 @@ from pandas import (
     json_normalize as _json_normalize,
 )
 
-from tsetmc import (
-    _api,
-    _DataFrame,
-    _get_par_tree,
-    _html_to_df,
-    _numerize,
-    _partial,
-)
+from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
 
 _make_soup = _partial(_BeautifulSoup, features='lxml')
 
