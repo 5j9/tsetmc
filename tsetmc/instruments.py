@@ -9,7 +9,6 @@ from warnings import warn as _warn
 from pandas import (
     Timestamp as _Ts,
     read_csv as _read_csv,
-    read_html as _read_html,
     to_datetime as _to_datetime,
 )
 
@@ -23,6 +22,7 @@ from tsetmc import (
     _get,
     _get_data,
     _get_par_tree,
+    _html_to_df,
     _InstrumentInfo,
     _jdatetime,
     _jstrptime,
@@ -724,7 +724,7 @@ class Instrument:
             stacklevel=2,
         )
         text = await _get_par_tree(f'15131M&i={self.code}')
-        df = _read_html(text)[0]
+        df = _html_to_df(text)
         return dict(zip(df[0], df[1]))
 
     async def identity(self) -> _Identity:
@@ -741,7 +741,7 @@ class Instrument:
             stacklevel=2,
         )
         text = await _get_par_tree(f'15131V&s={await self._arabic_l18}')
-        df = _read_html(text)[0]
+        df = _html_to_df(text)
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
 
     async def publisher(self) -> dict:
@@ -800,7 +800,7 @@ class Instrument:
         if cisin is None:
             cisin = await self.cisin
         text = await _get_par_tree(f'15131T&c={cisin}')
-        df = _read_html(text)[0]
+        df = _html_to_df(text)
         df.drop(columns='Unnamed: 4', inplace=True)
         # todo: use separate columns
         df.columns = ['holder', 'shares/units', '%', 'change']
@@ -858,8 +858,8 @@ class Instrument:
             DeprecationWarning,
             stacklevel=2,
         )
-        text = await _get_par_tree(f'15131G&i={self.code}', fa=False)
-        df = _read_html(text)[0]
+        content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
+        df = _html_to_df(content.decode())
         df.columns = ('date', 'adj_pc', 'pc')
         df['date'] = df['date'].apply(_j_ymd_parse)
         return df
@@ -1073,7 +1073,7 @@ async def price_adjustments(flow: int) -> _DataFrame:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
     text = await _get_par_tree(f'151319&Flow={flow}')
-    df = _read_html(text)[0]
+    df = _html_to_df(text)
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
     df['date'] = df['date'].apply(_j_ymd_parse)
     return df

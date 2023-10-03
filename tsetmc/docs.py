@@ -1,7 +1,5 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
-from pandas import read_html as _read_html
-
-from tsetmc import _DOMAIN, _get
+from tsetmc import _DOMAIN, _get, _html_to_df
 from tsetmc.general import _make_soup
 
 
@@ -15,7 +13,7 @@ async def _site_partree(params: str):
 async def client_type() -> dict:
     """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111116&LnkIdn=3568"""
     text = await _site_partree('1114111116&LnkIdn=3568')
-    out = _read_html(text)[2]
+    out = _html_to_df(text, 2)
     out.rename(columns=out.iloc[0], inplace=True)
     return {
         'output': out,
@@ -29,7 +27,9 @@ async def instrument_filter_by_date() -> dict:
 
     ul0, ul1, ul2 = soup.select('td > ul')
 
-    flow = {int(k): v for k, v in [i.text.split(' : ') for i in ul0.select('li')]}
+    flow = {
+        int(k): v for k, v in [i.text.split(' : ') for i in ul0.select('li')]
+    }
     yval = {k: v for k, v in [i.text.split(': ') for i in ul1.select('li')]}
 
     return {
@@ -49,8 +49,14 @@ async def instrument_state() -> dict:
     soup = _make_soup(text)
 
     tds = soup.select('td')
-    flow = {int(k): v for k, v in [i.text.strip().split(' : ') for i in tds[7].select('li')]}
-    cetaval = {k.strip('"'): v.strip('"') for k, v in [i.text.strip().split(':') for i in tds[-1].select('p')]}
+    flow = {
+        int(k): v
+        for k, v in [i.text.strip().split(' : ') for i in tds[7].select('li')]
+    }
+    cetaval = {
+        k.strip('"'): v.strip('"')
+        for k, v in [i.text.strip().split(':') for i in tds[-1].select('p')]
+    }
 
     return {
         'input': {
@@ -70,7 +76,9 @@ async def instrument() -> dict:
     t0 = soup.select_one('table')
     t1, t2, t3 = t0.select('table')
 
-    flow = {int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]}
+    flow = {
+        int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]
+    }
 
     yval = {
         int(k.text): (v1.text.strip(), v2.text.strip())
@@ -95,8 +103,13 @@ async def best_limits_all_ins() -> dict:
     t0 = soup.select_one('table')
     t1, t2 = t0.select('table')
 
-    flow = {int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]}
-    out = {k.text.strip(): v.text.strip() for k, v in [tr.select('td') for tr in t2.select('tr')]}
+    flow = {
+        int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]
+    }
+    out = {
+        k.text.strip(): v.text.strip()
+        for k, v in [tr.select('td') for tr in t2.select('tr')]
+    }
 
     return {
         'input': {
@@ -111,8 +124,18 @@ async def trade_last_day() -> dict:
     text = await _site_partree('1114111113&LnkIdn=84')
     soup = _make_soup(text)
 
-    flow = {int(k): v for k, v in [i.text.split(' : ') for i in soup.select_one('ul').select('li')]}
-    out = {k.text.strip(): v.text.strip() for k, v in [tr.select('td') for tr in soup.select('table:last-child tr')]}
+    flow = {
+        int(k): v
+        for k, v in [
+            i.text.split(' : ') for i in soup.select_one('ul').select('li')
+        ]
+    }
+    out = {
+        k.text.strip(): v.text.strip()
+        for k, v in [
+            tr.select('td') for tr in soup.select('table:last-child tr')
+        ]
+    }
 
     return {
         'input': {

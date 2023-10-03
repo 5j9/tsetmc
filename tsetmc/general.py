@@ -6,10 +6,16 @@ from pandas import (
     Timestamp as _Timestamp,
     concat as _concat,
     json_normalize as _json_normalize,
-    read_html as _read_html,
 )
 
-from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
+from tsetmc import (
+    _api,
+    _DataFrame,
+    _get_par_tree,
+    _html_to_df,
+    _numerize,
+    _partial,
+)
 
 _make_soup = _partial(_BeautifulSoup, features='lxml')
 
@@ -17,14 +23,14 @@ _make_soup = _partial(_BeautifulSoup, features='lxml')
 async def boards() -> dict[int, str]:
     """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913."""
     content = await _get_par_tree('111C1913')
-    iloc = _read_html(content, header=0)[0].iloc
+    iloc = _html_to_df(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
 async def cs_codes() -> dict[str, str]:
     """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _get_par_tree('111C1213')
-    iloc = _read_html(content, header=0)[0].iloc
+    iloc = _html_to_df(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
@@ -35,7 +41,7 @@ async def industrial_groups_overview() -> _DataFrame:
     See: http://old.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
     content = await _get_par_tree('111C1214')
-    df = _read_html(content)[0]
+    df = _html_to_df(content)
     show = df[1]
     df.drop(columns=1, inplace=True)
     percents = show.str.extract(
@@ -98,7 +104,7 @@ async def major_holders_activity() -> _DataFrame:
 async def top_industry_groups() -> _DataFrame:
     """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
-    df = _read_html(text)[0]
+    df = _html_to_df(text)
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
     _numerize(df, ('mv', 'tvol', 'tval'), float, comma=True)
     return df

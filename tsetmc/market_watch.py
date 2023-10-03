@@ -5,17 +5,14 @@ from logging import error as _error
 from typing import Any as _Any
 
 from numpy import nan as _nan
-from pandas import (
-    concat as _concat,
-    read_html as _read_html,
-    to_numeric as _to_numeric,
-)
+from pandas import concat as _concat, to_numeric as _to_numeric
 
 from tsetmc import (
     _csv2df,
     _DataFrame,
     _get_data,
     _get_par_tree,
+    _html_to_df,
     _jstrptime,
     _MarketState,
     _parse_market_state,
@@ -323,7 +320,7 @@ async def ombud_messages(
 
 async def status_changes(top: int | str) -> _DataFrame:
     text = await _get_par_tree(f'15131L&top={top}')
-    df = _read_html(text)[0]
+    df = _html_to_df(text)
     df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
         _jstrptime, format='%Y/%m/%d %H:%M:%S'
     )
