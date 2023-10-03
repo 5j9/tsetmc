@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Fixed a deprecation warning in reading html tables.
+* Updated dataset
 
 v0.57.0
 -------
