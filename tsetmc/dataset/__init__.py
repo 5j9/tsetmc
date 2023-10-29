@@ -12,11 +12,13 @@ YVAL_EXCLUSIONS = {
 
 def _dump(df: _Df):
     assert df['l18'].is_unique
+    codes = df['ins_code']
     try:
-        assert df['ins_code'].is_unique
+        assert codes.is_unique
     except AssertionError:
-        logger.error('duplicated ins_codes: %s', df['ins_code'].duplicated())
-        raise
+        duplicated = codes.duplicated('last')
+        logger.error('duplicated ins_codes:\n%s', codes[duplicated])
+        df = df[~duplicated]
 
     df.sort_values('l18', inplace=True)
     df.to_csv(
