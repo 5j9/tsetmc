@@ -1,7 +1,6 @@
 from ast import literal_eval as _literal_eval
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from logging import warning as _warning
 from pathlib import Path
 from re import fullmatch as _fullmatch
 from warnings import warn as _warn

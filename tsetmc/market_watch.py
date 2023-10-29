@@ -1,7 +1,6 @@
 from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from logging import error as _error
 from typing import Any as _Any
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -14,6 +13,7 @@ from tsetmc import (
     _get_data,
     _get_par_tree,
     _jstrptime,
+    _logger,
     _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
@@ -414,7 +414,7 @@ class MarketWatch:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
-                _error(f'{e!r} while awaiting market_watch_init')
+                _logger.error(f'{e!r} while awaiting market_watch_init')
                 await _sleep(self.interval)
                 continue
             break
@@ -432,7 +432,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _error(f'{e!r} while awaiting market_watch_plus')
+                _logger.error(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
 
             self.plus_callback(mwp)
