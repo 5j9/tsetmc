@@ -13,12 +13,12 @@ from tsetmc import (
     _get_data,
     _get_par_tree,
     _jstrptime,
-    _logger,
     _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
     _save_last_content,
     _TypedDict,
+    logger,
 )
 
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
@@ -414,7 +414,7 @@ class MarketWatch:
             try:
                 mwi = await market_watch_init(**self.init_kwargs)
             except Exception as e:
-                _logger.error(f'{e!r} while awaiting market_watch_init')
+                logger.error(f'{e!r} while awaiting market_watch_init')
                 await _sleep(self.interval)
                 continue
             break
@@ -432,7 +432,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _logger.error(f'{e!r} while awaiting market_watch_plus')
+                logger.error(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
 
             self.plus_callback(mwp)

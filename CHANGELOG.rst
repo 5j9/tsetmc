@@ -1,3 +1,8 @@
+Unreleased
+----------
+* Introduced ``tsetmc.logger`` which can be used to change logging features.
+* Updated dataset
+
 v0.57.2
 -------
 * Fixed a deprecation warning in reading html tables.

@@ -15,7 +15,7 @@ from pandas import (
     read_csv as _read_csv,
 )
 
-_logger = _getLogger(__name__)
+logger = _getLogger(__name__)
 _o.mode.copy_on_write = True
 _o.future.infer_string = True
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
@@ -226,7 +226,7 @@ async def _api(path: str, *, fa=False):
     try:
         return loads(content)
     except JSONDecodeError:
-        _logger.error(f'url={_API}{path}\n{content=}')
+        logger.error(f'url={_API}{path}\n{content=}')
         raise
 
 
@@ -259,4 +259,4 @@ def _save_last_content(msg: str, /):
     f = Path(__file__).parent / '~last_response.html'
     with f.open('wb'):
         f.write_bytes(_LAST_CONTENT)
-    _logger.error(f'{msg}; _LAST_CONTENT saved in {f}', stacklevel=2)
+    logger.error(f'{msg}; _LAST_CONTENT saved in {f}', stacklevel=2)

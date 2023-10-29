@@ -1,6 +1,6 @@
 from pandas import DataFrame as _Df, concat as _concat
 
-from tsetmc import _logger
+from tsetmc import logger
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
@@ -15,7 +15,7 @@ def _dump(df: _Df):
     try:
         assert df['ins_code'].is_unique
     except AssertionError:
-        _logger.error('duplicated ins_codes: %s', df['ins_code'].duplicated())
+        logger.error('duplicated ins_codes: %s', df['ins_code'].duplicated())
         raise
 
     df.sort_values('l18', inplace=True)
@@ -32,7 +32,7 @@ async def add_instrument(inst: _Instrument) -> None:
     l18, l30 = info['lVal18AFC'], info['lVal30']
     if (l1830 := LazyDS.l18_l130(code)) is not None:
         if l1830 == (l18, l30):
-            _logger.warning(f'{l18 = } already exists in dataset')
+            logger.warning(f'{l18 = } already exists in dataset')
             return
     df.loc[len(df)] = [code, l18, l30]
     _dump(df)
@@ -57,6 +57,6 @@ async def update(df: _Df = None) -> None:
     ]
     if diff := len(new_items):
         _dump(merged)
-        _logger.info(f'{diff} new entries were added by market watch.')
+        logger.info(f'{diff} new entries were added by market watch.')
     else:
-        _logger.info('No new entries were added by market watch.')
+        logger.info('No new entries were added by market watch.')
