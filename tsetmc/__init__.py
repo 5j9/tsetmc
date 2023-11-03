@@ -22,7 +22,7 @@ _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 
 
-_INDEX_CHANGE_MATCH = _rc(rf"<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?").match
+_INDEX_CHANGE_MATCH = _rc(rf'<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?').match
 _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 
@@ -248,9 +248,7 @@ def _numerize(
                 'B': 10**9,
                 'T': 10**12,
             }
-        ).astype(
-            astype
-        )
+        ).astype(astype)
 
 
 def _save_last_content(msg: str, /):

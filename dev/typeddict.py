@@ -6,7 +6,9 @@ try:
     d: dict = eval(pst)
 except NameError:  # name 'null' is not defined
     import json
+
     d = json.loads(pst)
+
 
 def print_types(d, name=None):
     if name is None:
@@ -30,5 +32,6 @@ def print_types(d, name=None):
         print_types(d, name=name)
 
     print(string)
+
 
 print_types(d)

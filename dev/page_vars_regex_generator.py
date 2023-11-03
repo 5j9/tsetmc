@@ -11,7 +11,9 @@ pattern = None
 for string in strings:
     string = string.removeprefix('<script>var ').removesuffix('</script>')
     # FaraDesc has a space before = otherwise \s* is not needed
-    pat = sub(r"((\w+)\s*)=('?).*?'?([,;])", r"\1=\3(?P<\2>[^\4]*)\3\4", string)
+    pat = sub(
+        r"((\w+)\s*)=('?).*?'?([,;])", r'\1=\3(?P<\2>[^\4]*)\3\4', string
+    )
     # LVal18AFC is defined two times!
     pat = pat.replace('(?P<LVal18AFC>[^,]*)', '[^,]*', 1)
 
@@ -35,8 +37,4 @@ for string in strings:
 
 
 pattern_lines = '\n    '.join(map(repr, findall(r'.*?[,;]\b', pattern)))
-print(
-    f'PAGE_VARS = rc(\n'
-    f'    {pattern_lines}\n'
-    f').search'
-)
+print(f'PAGE_VARS = rc(\n' f'    {pattern_lines}\n' f').search')

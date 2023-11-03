@@ -247,7 +247,7 @@ async def test_repr():
         == "Instrument(35425587644337450, 'فملی')"
     )
     # unknown l18
-    assert repr(Instrument(1)) == "Instrument(1)"
+    assert repr(Instrument(1)) == 'Instrument(1)'
     assert (
         repr(Instrument(1, l30='مجتمع جهان فولاد سيرجان'))
         == "Instrument(1, l30='مجتمع جهان فولاد سيرجان')"
@@ -738,7 +738,7 @@ async def test_etf():
 @file('related_companies_karis.json')
 async def test_related_companies():
     # await KARIS.info()['sector']['cSecVal'] == "68 "
-    d = await KARIS.related_companies(cs="68 ")
+    d = await KARIS.related_companies(cs='68 ')
     c = d['relatedCompany']
     h = d['relatedCompanyThirtyDayHistory']
 

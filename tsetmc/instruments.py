@@ -78,8 +78,8 @@ _PAGE_VARS = _rc(
     "PSR='(?P<PSR>[^;]*)';"
 ).search
 _TITLE_FULLMATCH = _rc(r"(.*?) \(.*?\) \- ([^']*)").fullmatch
-_RELATED_COMPANIES = _rc(r"var RelatedCompanies=(\[.*\]);").search
-_TRADE_HISTORY = _rc(r"var TradeHistory=(\[.*\]);").search
+_RELATED_COMPANIES = _rc(r'var RelatedCompanies=(\[.*\]);').search
+_TRADE_HISTORY = _rc(r'var TradeHistory=(\[.*\]);').search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
@@ -311,9 +311,9 @@ class Instrument:
     def __repr__(self):
         # not using self.l18 because it may require a web request
         if self._l18 is not None:
-            return f"Instrument({self.code}, {self._l18!r})"
+            return f'Instrument({self.code}, {self._l18!r})'
         if self._l30 is not None:
-            return f"Instrument({self.code}, l30={self._l30!r})"
+            return f'Instrument({self.code}, l30={self._l30!r})'
         return f'Instrument({self.code})'
 
     def __eq__(self, other):

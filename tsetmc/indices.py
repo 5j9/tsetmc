@@ -13,7 +13,6 @@ async def last_state(i=1, /) -> _DataFrame:
 
 
 class Index:
-
     __slots__ = 'code'
 
     def __init__(self, code: str | int):
@@ -26,7 +25,10 @@ class Index:
     async def last_day_history(self) -> _DataFrame:
         j = await _api(f'Index/GetIndexB1LastDay/{self.code}', fa=True)
         df = _DataFrame(j['indexB1'])
-        dt = _to_datetime(df.pop('dEven').astype(str) + df.pop('hEven').astype(str), format='%Y%m%d%H%M%S')
+        dt = _to_datetime(
+            df.pop('dEven').astype(str) + df.pop('hEven').astype(str),
+            format='%Y%m%d%H%M%S',
+        )
         df.set_index(dt, inplace=True)
         return df
 
@@ -40,5 +42,7 @@ class Index:
     async def companies(self) -> dict[str, _DataFrame]:
         j = await _api(f'ClosingPrice/GetIndexCompany/{self.code}', fa=True)
         j['indexCompany'] = _json_normalize(j['indexCompany'])
-        j['relatedCompanyThirtyDayHistory'] = _DataFrame(j['relatedCompanyThirtyDayHistory'])
+        j['relatedCompanyThirtyDayHistory'] = _DataFrame(
+            j['relatedCompanyThirtyDayHistory']
+        )
         return j
