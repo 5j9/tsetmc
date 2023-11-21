@@ -1,4 +1,4 @@
 exclude .gitattributes
 
-prune test
+prune tests
 prune dev
