@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.58.0
+-------
 * Update API url. (http now redirects to https)
 * Updated dataset
 
