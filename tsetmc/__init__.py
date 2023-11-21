@@ -210,7 +210,7 @@ async def _get(url: str, *, fa=False) -> str | bytes:
 
 _DOMAIN = 'http://old.tsetmc.com/'
 # API does not work on www domain
-_API = 'http://cdn.tsetmc.com/api/'
+_API = 'https://cdn.tsetmc.com/api/'
 
 
 async def _get_data(path: str, *, fa=False) -> str | bytes:
