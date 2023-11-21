@@ -13,7 +13,7 @@ async def test_adding_existing_insturment():
     with (
         patch.object(Instrument, 'info', return_value=i) as info,
         patch('tsetmc.dataset._dump') as dump,
-        patch('tsetmc.dataset._warning') as warning,
+        patch('tsetmc.dataset._logger.warning') as warning,
     ):
         await add_instrument(fmelli)
     info.assert_awaited_once()

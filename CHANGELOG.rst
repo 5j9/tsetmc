@@ -1,6 +1,5 @@
 Unreleased
 ----------
-* Introduced ``tsetmc.logger`` which can be used to change logging features.
 * Update API url. (http now redirects to https)
 * Updated dataset
 

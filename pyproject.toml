@@ -65,3 +65,7 @@ attr = "tsetmc.__version__"
 format.quote-style = 'single'
 line-length = 79
 isort.combine-as-imports = true
+
+[tool.pytest.ini_options]
+addopts = '--quiet --showlocals --tb=native'
+asyncio_mode = 'auto'
