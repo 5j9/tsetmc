@@ -13,12 +13,12 @@ from tsetmc import (
     _get_data,
     _get_par_tree,
     _jstrptime,
+    _logger,
     _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
     _save_last_content,
     _TypedDict,
-    _logger,
 )
 
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
