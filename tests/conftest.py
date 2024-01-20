@@ -1,1 +1,1 @@
-from aiohutils.tests import event_loop, session
+from aiohutils.tests import session

@@ -897,7 +897,7 @@ class Instrument:
             header=None,
             sep='@',
         )
-        df.columns = [
+        cols = [
             'publish_date',
             'meeting_date',
             'fiscal_year',
@@ -906,9 +906,9 @@ class Instrument:
             'accumulated_profit_at_the_end_of_the_period',
             'cash_earnings_per_share',
         ]
-        df.iloc[:, :3] = df.iloc[:, :3].apply(
-            lambda col: [_jstrptime(i, format='%Y/%m/%d') for i in col]
-        )
+        df.columns = cols
+        for col in cols[:3]:
+            df[col] = df[col].map(_partial(_jstrptime, format='%Y/%m/%d'))
         return df
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
