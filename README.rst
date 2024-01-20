@@ -4,7 +4,7 @@ Note: The API is provisional and may change rapidly without deprecation.
 
 Installation
 ------------
-Requires latest stable Python version.
+Requires latest stable Python 3.12 or later.
 
 ``pip install tsetmc``
 

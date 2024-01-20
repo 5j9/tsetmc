@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Minimum Python requirement is now 3.12.
+
 v0.58.0
 -------
 * Update API url. (http now redirects to https)
