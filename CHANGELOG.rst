@@ -1,6 +1,7 @@
 v0.59.0
 -------
 * Minimum Python requirement is now 3.12.
+* Fixed a new deprecation warning in pandas 2.2.0.
 
 v0.58.0
 -------
