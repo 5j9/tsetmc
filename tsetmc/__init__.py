@@ -18,6 +18,7 @@ from pandas import (
 _logger = _getLogger(__name__)
 _o.mode.copy_on_write = True
 _o.future.infer_string = True
+_o.future.no_silent_downcasting = True
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 
