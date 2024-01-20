@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.59.0
+-------
 * Minimum Python requirement is now 3.12.
 
 v0.58.0
