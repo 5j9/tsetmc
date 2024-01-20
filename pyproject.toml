@@ -16,9 +16,9 @@ keywords = [
 ]
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dynamic = [
     "version",
 ]
@@ -74,5 +74,5 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
-addopts = '--quiet --showlocals --tb=native'
+addopts = '--quiet --tb=short'
 asyncio_mode = 'auto'
