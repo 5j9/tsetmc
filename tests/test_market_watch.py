@@ -127,7 +127,7 @@ async def test_key_stats():
     assert df.index.dtype == string
 
 
-def test_parse_index(aiolib):
+def test_parse_index():
     # no tse_value
     assert _parse_market_state(
         "00/1/14 06:40:12,F,1294521.64,<div class='mn'>(8671.45)</div>,,0.00,0.00,0,C,0.00,0.00,0,C,0.00,0.00,0,"

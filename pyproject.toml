@@ -23,7 +23,7 @@ dynamic = [
     "version",
 ]
 dependencies = [
-    "aiohutils >= 0.12.0",
+    "aiohutils >= 0.13.0",
     "beautifulsoup4",
     "jdatetime",
     "lxml",
@@ -33,7 +33,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 test = [
-    "aiohutils[test] >= 0.12.0",
+    "aiohutils[test] >= 0.13.0",
 ]
 
 [project.license]
@@ -71,7 +71,7 @@ extend-select = [
 ]
 ignore = [
     'UP027',  # list comprehensions are faster than generator expressions
-    'E721',  # Do not compare types, use `isinstance()`; I know what I'm doing.
+    'E721',  # Do not compare types, use `isinstance()`
 ]
 
 [tool.pytest.ini_options]

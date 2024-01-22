@@ -610,11 +610,11 @@ async def test_dps_history():
     assert type(df.iat[0, 2]) is jdatetime
 
 
-def test_hash(aiolib):
+def test_hash():
     assert hash(Instrument(int64(1))) == 1
 
 
-def test_parse_price_info(aiolib):
+def test_parse_price_info():
     assert _parse_price_info(  # len == 17
         '12:29:23,A ,75910,75850,76030,75860,76280,75500,887,1599031,121280988420,1,20220430,122923,121280988420,1401/2/10 15:30:00,79184'
     ) == _parse_price_info(  # len == 16
@@ -622,7 +622,7 @@ def test_parse_price_info(aiolib):
     )
 
 
-def test_parse_price_info_bad_date(aiolib):
+def test_parse_price_info_bad_date():
     # 1400/12/30 is not a valid date
     assert (
         _parse_price_info(
@@ -810,7 +810,7 @@ async def test_identity():
     assert_dict_type(d, _Identity)
 
 
-def test_lazy_dataset(aiolib):
+def test_lazy_dataset():
     # check cache
     assert _LazyDS.l18_l130('35425587644337450')[0] == 'فملی'
     assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
