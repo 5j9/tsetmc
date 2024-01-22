@@ -100,7 +100,7 @@ async def test_historic_data():
 
 
 @file('faraz_GetClosingPriceDaily_20220222.json')
-async def test_historic_data():
+async def test_daily_closing_price():
     d = await FARAZ_ON_DATE.closing_price()
     assert_dict_type(d, _ClosingPrice)
 

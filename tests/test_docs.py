@@ -1,5 +1,4 @@
 from aiohutils.tests import file
-from numpy import dtype
 
 from tsetmc.docs import (
     best_limits_all_ins,

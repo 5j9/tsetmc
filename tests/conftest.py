@@ -1,1 +1,1 @@
-from aiohutils.tests import session
+from aiohutils.tests import session  # noqa: F401
