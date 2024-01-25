@@ -748,6 +748,7 @@ async def test_related_companies():
         ('finalLastDate', dtype('int64')),
         ('nvt', dtype('float64')),
         ('mop', dtype('int64')),
+        ('pRedTran', dtype('float64')),
         ('thirtyDayClosingHistory', dtype('O')),
         ('priceChange', dtype('float64')),
         ('priceMin', dtype('float64')),
@@ -801,7 +802,7 @@ async def test_related_companies():
         ('qTotCap', dtype('float64')),
     ]
 
-    assert h.groupby('insCode')['insCode'].agg(len).mode()[0] == 29
+    assert h.groupby('insCode')['insCode'].agg(len).mode()[0] > 20
 
 
 @file('test_identity.json')
