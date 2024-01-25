@@ -114,7 +114,7 @@ def _parse_tds(tds):
                 yield _NA
 
 
-class _MarketOverview(_TypedDict):
+class MarketOverview(_TypedDict):
     indexChange: float
     indexEqualWeightedChange: float
     indexEqualWeightedLastValue: float
@@ -133,7 +133,7 @@ class _MarketOverview(_TypedDict):
     marketValueBase: float
 
 
-async def market_overview(n=1) -> _MarketOverview:
+async def market_overview(n=1) -> MarketOverview:
     """Return GetMarketOverview result.
 
     :param n:

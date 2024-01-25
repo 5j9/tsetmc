@@ -2,7 +2,7 @@ from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
 from tsetmc.general import (
-    _MarketOverview,
+    MarketOverview,
     boards,
     cs_codes,
     industrial_groups_overview,
@@ -173,4 +173,4 @@ async def test_top_industry_groups():
 @file('market_overview.json')
 async def test_market_overview():
     d = await market_overview()
-    assert_dict_type(d, _MarketOverview)
+    assert_dict_type(d, MarketOverview)

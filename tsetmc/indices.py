@@ -4,7 +4,7 @@ from pandas import (
 )
 
 from tsetmc import _api, _DataFrame
-from tsetmc.instruments import _InstrumentInfo
+from tsetmc.instruments import InstrumentInfo
 
 
 async def last_state(i=1, /) -> _DataFrame:
@@ -18,7 +18,7 @@ class Index:
     def __init__(self, code: str | int):
         self.code = code
 
-    async def info(self) -> _InstrumentInfo:
+    async def info(self) -> InstrumentInfo:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
         return j['instrumentInfo']
 

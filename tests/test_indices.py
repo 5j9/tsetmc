@@ -1,7 +1,7 @@
 from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
-from tsetmc import _InstrumentInfo
+from tsetmc import InstrumentInfo
 from tsetmc.indices import Index, last_state
 
 string = 'string'
@@ -34,7 +34,7 @@ OVERALL = Index('32097828799138957')
 @file('index_info.json')
 async def test_info():
     info = await OVERALL.info()
-    assert_dict_type(info, _InstrumentInfo)
+    assert_dict_type(info, InstrumentInfo)
 
 
 @file('index_last_day_history.json')

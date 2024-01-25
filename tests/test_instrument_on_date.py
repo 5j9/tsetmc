@@ -2,7 +2,7 @@ from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 from pytest import warns
 
-from tsetmc.instruments import Instrument, _ClientTypeOnDate, _ClosingPrice
+from tsetmc.instruments import ClientTypeOnDate, ClosingPrice, Instrument
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
@@ -102,7 +102,7 @@ async def test_historic_data():
 @file('faraz_GetClosingPriceDaily_20220222.json')
 async def test_daily_closing_price():
     d = await FARAZ_ON_DATE.closing_price()
-    assert_dict_type(d, _ClosingPrice)
+    assert_dict_type(d, ClosingPrice)
 
 
 @file('faraz_GetInstrumentState_20220222.json')
@@ -141,7 +141,7 @@ async def test_intraday_holders():
 @file('ondate_client_type.json')
 async def test_client_type():
     d = await FARAZ_ON_DATE.client_type()
-    assert_dict_type(d, _ClientTypeOnDate)
+    assert_dict_type(d, ClientTypeOnDate)
     with warns():
         d2 = await FARAZ_ON_DATE.client_types()
     assert d2 == d

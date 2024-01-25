@@ -16,6 +16,8 @@ from pandas import (
 from tsetmc import (
     _F,
     _FARSI_NORM,
+    InstrumentInfo,
+    MarketState,
     _api,
     _csv2df,
     _DataFrame,
@@ -23,10 +25,8 @@ from tsetmc import (
     _get,
     _get_data,
     _get_par_tree,
-    _InstrumentInfo,
     _jdatetime,
     _jstrptime,
-    _MarketState,
     _numerize,
     _parse_market_state,
     _parse_ombud_messages,
@@ -130,7 +130,7 @@ class _LazyDS:
         return g(code)
 
 
-class _IntraDay(_TypedDict, total=False):
+class IntraDay(_TypedDict, total=False):
     general: dict
     thresholds: _DataFrame
     closings: _DataFrame
@@ -143,9 +143,9 @@ class _IntraDay(_TypedDict, total=False):
     best_limits: _DataFrame
 
 
-class _LiveData(_TypedDict, total=False):
+class LiveData(_TypedDict, total=False):
     best_limits: _DataFrame
-    market_state: _MarketState
+    market_state: MarketState
     nav: int
     nav_datatime: _jdatetime
     pc: int
@@ -162,7 +162,7 @@ class _LiveData(_TypedDict, total=False):
     tvol: int
 
 
-class _ETF(_TypedDict):
+class ETF(_TypedDict):
     insCode: str
     deven: int
     hEven: int
@@ -171,7 +171,7 @@ class _ETF(_TypedDict):
     iClose: int
 
 
-class _InstrumentState(_TypedDict):
+class InstrumentState(_TypedDict):
     idn: int
     dEven: int
     hEven: int
@@ -182,8 +182,8 @@ class _InstrumentState(_TypedDict):
     cEtavalTitle: str
 
 
-class _ClosingPriceInfo(_TypedDict):
-    instrumentState: _InstrumentState
+class ClosingPriceInfo(_TypedDict):
+    instrumentState: InstrumentState
     instrument: None
     lastHEven: int
     finalLastDate: int
@@ -205,11 +205,12 @@ class _ClosingPriceInfo(_TypedDict):
     yClose: bool
     pDrCotVal: float
     zTotTran: float
+    pRedTran: int
     qTotTran5J: float
     qTotCap: float
 
 
-class _ClientType(_TypedDict):
+class ClientType(_TypedDict):
     buy_I_Volume: float
     buy_N_Volume: float
     buy_DDD_Volume: float
@@ -222,22 +223,22 @@ class _ClientType(_TypedDict):
     sell_CountN: int
 
 
-class _Sector(_TypedDict):
+class Sector(_TypedDict):
     dEven: int
     cSecVal: str
     lSecVal: str
 
 
-class _SubSector(_TypedDict):
+class SubSector(_TypedDict):
     dEven: int
     cSecVal: None
     cSoSecVal: int
     lSoSecVal: str
 
 
-class _Identity(_TypedDict):
-    sector: _Sector
-    subSector: _SubSector
+class Identity(_TypedDict):
+    sector: Sector
+    subSector: SubSector
     cValMne: str
     lVal18: str
     cSocCSAC: str
@@ -260,7 +261,7 @@ class _Identity(_TypedDict):
     cgrValCotTitle: str
 
 
-class _ShareHolder(_TypedDict):
+class ShareHolder(_TypedDict):
     shareHolderID: int
     shareHolderName: str | None  # None: reserved code of ETFs
     cIsin: str
@@ -272,7 +273,7 @@ class _ShareHolder(_TypedDict):
     shareHolderShareID: int
 
 
-class _Message(_TypedDict):
+class Message(_TypedDict):
     tseMsgIdn: int
     dEven: int
     hEven: int
@@ -281,7 +282,7 @@ class _Message(_TypedDict):
     flow: int
 
 
-class _Codal(_TypedDict):
+class Codal(_TypedDict):
     id: int
     symbol: str
     name: str
@@ -371,7 +372,7 @@ class Instrument:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
-    async def info(self) -> _InstrumentInfo:
+    async def info(self) -> InstrumentInfo:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
         d = j['instrumentInfo']
         # cache for properties
@@ -386,7 +387,7 @@ class Instrument:
         df = _DataFrame(j['trade'], copy=False)
         return df
 
-    async def codal(self, n=9) -> list[_Codal]:
+    async def codal(self, n=9) -> list[Codal]:
         j = await _api(
             f'Codal/GetPreparedDataByInsCode/{n}/{self.code}', fa=True
         )
@@ -404,7 +405,7 @@ class Instrument:
         df.set_index(datetime.dt.normalize(), inplace=True)
         return df
 
-    async def closing_price_info(self) -> _ClosingPriceInfo:
+    async def closing_price_info(self) -> ClosingPriceInfo:
         j = await _api(
             f'ClosingPrice/GetClosingPriceInfo/{self.code}', fa=True
         )
@@ -415,11 +416,11 @@ class Instrument:
         df = _DataFrame(j['bestLimits'], copy=False)
         return df
 
-    async def client_type(self) -> _ClientType:
+    async def client_type(self) -> ClientType:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
         return j['clientType']
 
-    async def etf(self) -> _ETF:
+    async def etf(self) -> ETF:
         """Return ETF data. (Includes redemption NAV and datetime of it).
 
         This method is only valid for ETFs.
@@ -530,7 +531,7 @@ class Instrument:
 
     async def live_data(
         self, general=True, best_limits=False, market_state=False
-    ) -> _LiveData:
+    ) -> LiveData:
         """Return live data price/order data using instinfodata.aspx module.
 
         :keyword best_limits: parse best_limits and include related values.
@@ -727,7 +728,7 @@ class Instrument:
         df = _html_to_df(text)
         return dict(zip(df[0], df[1]))
 
-    async def identity(self) -> _Identity:
+    async def identity(self) -> Identity:
         j = await _api(
             f'Instrument/GetInstrumentIdentity/{self.code}', fa=True
         )
@@ -757,7 +758,7 @@ class Instrument:
         d = (await search(s))[0]
         return Instrument(d['insCode'], d['lVal18AFC'], d['lVal30'])
 
-    async def share_holders(self) -> list[_ShareHolder]:
+    async def share_holders(self) -> list[ShareHolder]:
         """Return a list of the current major holders of this instrument."""
         j = await _api(
             f'Shareholder/GetInstrumentShareHolderLast/{self.code}', fa=True
@@ -871,7 +872,7 @@ class Instrument:
         df.set_index('dEven', inplace=True)
         return df
 
-    async def messages(self) -> list[_Message]:
+    async def messages(self) -> list[Message]:
         j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
         return j['msg']
 
@@ -923,7 +924,7 @@ class Instrument:
         return InstrumentOnDate(_inst=self, _date=date)
 
 
-class _ClosingPrice(_TypedDict):
+class ClosingPrice(_TypedDict):
     priceChange: float
     priceMin: float
     priceMax: float
@@ -943,7 +944,7 @@ class _ClosingPrice(_TypedDict):
     qTotCap: float
 
 
-class _ClientTypeOnDate(_TypedDict):
+class ClientTypeOnDate(_TypedDict):
     recDate: int
     insCode: str
     buy_I_Volume: float
@@ -979,7 +980,7 @@ class InstrumentOnDate:
         self.inst = _inst
         self.code = _inst.code
 
-    async def closing_price(self) -> _ClosingPrice:
+    async def closing_price(self) -> ClosingPrice:
         """Return general closing price info.
 
         Result dict has the following keys: {
@@ -1009,7 +1010,7 @@ class InstrumentOnDate:
         )
         return _DataFrame(j['instrumentState'], copy=False)
 
-    async def client_type(self) -> _ClientTypeOnDate:
+    async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
 
     async def client_types(self) -> dict:
@@ -1106,7 +1107,7 @@ async def old_search(skey: str, /) -> _DataFrame:
     )
 
 
-class _Search(_TypedDict):
+class Search(_TypedDict):
     insCode2: str
     insCode3: str
     insCode4: str
@@ -1126,12 +1127,12 @@ class _Search(_TypedDict):
     cgrValCotTitle: str
 
 
-async def search(s: str, /) -> list[_Search]:
+async def search(s: str, /) -> list[Search]:
     r = await _api(f'Instrument/GetInstrumentSearch/{s}', fa=True)
     return r['instrumentSearch']
 
 
-class _Instrument(_TypedDict, total=False):
+class InstrumentType(_TypedDict, total=False):
     cValMne: None
     lVal18: None
     cSocCSAC: None
@@ -1154,15 +1155,15 @@ class _Instrument(_TypedDict, total=False):
     cgrValCotTitle: None
 
 
-class _ShareHolderCompany(_TypedDict):
-    instrument: _Instrument
+class ShareHolderCompany(_TypedDict):
+    instrument: InstrumentType
     numberOfShares: float
     perOfShares: float
 
 
 async def share_holder_companies(
     share_holder_share_id: int | str, /
-) -> list[_ShareHolderCompany]:
+) -> list[ShareHolderCompany]:
     r = await _api(
         f'Shareholder/GetShareHolderCompanyList/{share_holder_share_id}',
         fa=True,

@@ -30,7 +30,7 @@ _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 _jstrptime = _jdatetime.strptime
 
 
-class _MarketState(_TypedDict, total=False):
+class MarketState(_TypedDict, total=False):
     datetime: _jdatetime
     tset_status: str
     tset_index: float
@@ -45,20 +45,20 @@ class _MarketState(_TypedDict, total=False):
     derivatives_status: int
 
 
-class _Eps(_TypedDict):
+class Eps(_TypedDict):
     epsValue: None
     estimatedEPS: str | None
     sectorPE: float
     psr: float
 
 
-class _Sector(_TypedDict):
+class Sector(_TypedDict):
     dEven: int
     cSecVal: str
     lSecVal: str
 
 
-class _StaticThreshold(_TypedDict):
+class StaticThreshold(_TypedDict):
     insCode: None
     dEven: int
     hEven: int
@@ -66,10 +66,10 @@ class _StaticThreshold(_TypedDict):
     psGelStaMin: float
 
 
-class _InstrumentInfo(_TypedDict):
-    eps: _Eps
-    sector: _Sector
-    staticThreshold: _StaticThreshold
+class InstrumentInfo(_TypedDict):
+    eps: Eps
+    sector: Sector
+    staticThreshold: StaticThreshold
     minWeek: float
     maxWeek: float
     minYear: float
@@ -104,7 +104,7 @@ class _InstrumentInfo(_TypedDict):
     cgrValCotTitle: str
 
 
-def _parse_market_state(s: str) -> _MarketState:
+def _parse_market_state(s: str) -> MarketState:
     (
         datetime,
         tse_status,

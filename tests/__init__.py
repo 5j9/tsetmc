@@ -2,12 +2,12 @@ from aiohutils.tests import init_tests
 from jdatetime import datetime as jdatetime
 
 # noinspection PyProtectedMember
-from tsetmc import _MarketState
+from tsetmc import MarketState
 
 init_tests()
 
 
-def assert_market_state(market_state: _MarketState):
+def assert_market_state(market_state: MarketState):
     assert type(market_state.pop('datetime')) is jdatetime
     for k in ('tse_status', 'fb_status', 'derivatives_status'):
         assert type(market_state.pop(k)) is str

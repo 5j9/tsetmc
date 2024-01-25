@@ -9,23 +9,23 @@ from pandas import DataFrame, DatetimeIndex, Int64Dtype, Timestamp
 from pytest import raises, warns
 
 from tests import assert_market_state
-from tsetmc import _InstrumentInfo
+from tsetmc import InstrumentInfo
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
-    _ETF,
+    ETF,
+    ClientType,
+    ClosingPriceInfo,
+    Codal,
+    Identity,
     Instrument,
-    _ClientType,
-    _ClosingPriceInfo,
-    _Codal,
-    _Identity,
+    LiveData,
+    Message,
+    Search,
+    ShareHolder,
+    ShareHolderCompany,
     _LazyDS,
-    _LiveData,
-    _Message,
     _parse_price_info,
-    _Search,
-    _ShareHolder,
-    _ShareHolderCompany,
     old_search,
     price_adjustments,
     search,
@@ -116,7 +116,7 @@ async def test_page_data_negative_sector_pe():
 
 
 def assert_live_data(
-    d: _LiveData, best_limits=False, market_state=False, nav=False
+    d: LiveData, best_limits=False, market_state=False, nav=False
 ):
     if best_limits:
         best_limits = d.pop('best_limits')
@@ -394,12 +394,12 @@ async def test_holders_holder():
 async def test_share_holders_companies_histories():
     holders = await AVA.share_holders()
     first_holder = holders[0]
-    assert_dict_type(first_holder, _ShareHolder)
+    assert_dict_type(first_holder, ShareHolder)
 
     share_holder_share_id = first_holder['shareHolderShareID']
 
     companies = await share_holder_companies(share_holder_share_id)
-    assert_dict_type(companies[0], _ShareHolderCompany)
+    assert_dict_type(companies[0], ShareHolderCompany)
 
     df = await AVA.share_holder_history(
         share_holder_id=share_holder_share_id,
@@ -513,7 +513,7 @@ async def test_old_search():
 async def test_search():
     r = await search('اطلس')
     assert type(r) is list
-    assert_dict_type(r[0], _Search)
+    assert_dict_type(r[0], Search)
 
 
 async def test_l18_without_web_request():
@@ -590,7 +590,7 @@ async def test_ombud_messages():
 @file('shetab_messages.json')
 async def test_messages():
     messages = await Instrument(64216772923447100).messages()
-    assert_dict_type(messages[0], _Message)
+    assert_dict_type(messages[0], Message)
 
 
 @file('fmelli_dps.txt')
@@ -638,13 +638,13 @@ KARIS = Instrument(69067576215760005)
 @file('karis_info.json')
 async def test_info_on_etf():
     info = await KARIS.info()
-    assert_dict_type(info, _InstrumentInfo)
+    assert_dict_type(info, InstrumentInfo)
 
 
 @file('fmelli_info.json')
 async def test_info_on_fmelli():
     info = await FMELLI.info()
-    assert_dict_type(info, _InstrumentInfo)
+    assert_dict_type(info, InstrumentInfo)
 
 
 @file('karis_trades.json')
@@ -673,7 +673,7 @@ async def test_trades():
 async def test_codal():
     d = await KARIS.codal(n=3)
     assert len(d) == 3
-    assert_dict_type(d[0], _Codal)
+    assert_dict_type(d[0], Codal)
 
 
 @file('daily_closing_price_karis.json')
@@ -704,7 +704,7 @@ async def test_daily_closing_price():
 @file('closing_price_info_karis.json')
 async def test_closing_price_info():
     info = await KARIS.closing_price_info()
-    assert_dict_type(info, _ClosingPriceInfo)
+    assert_dict_type(info, ClosingPriceInfo)
 
 
 @file('best_limits.json')
@@ -726,13 +726,13 @@ async def test_best_limits():
 @file('client_type_karis.json')
 async def test_client_type():
     d = await KARIS.client_type()
-    assert_dict_type(d, _ClientType)
+    assert_dict_type(d, ClientType)
 
 
 @file('etf_karis.json')
 async def test_etf():
     d = await KARIS.etf()
-    assert_dict_type(d, _ETF)
+    assert_dict_type(d, ETF)
 
 
 @file('related_companies_karis.json')
@@ -808,7 +808,7 @@ async def test_related_companies():
 @file('test_identity.json')
 async def test_identity():
     d = await KARIS.identity()
-    assert_dict_type(d, _Identity)
+    assert_dict_type(d, Identity)
 
 
 def test_lazy_dataset():

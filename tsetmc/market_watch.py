@@ -8,13 +8,13 @@ from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
 
 from tsetmc import (
+    MarketState,
     _csv2df,
     _DataFrame,
     _get_data,
     _get_par_tree,
     _jstrptime,
     _logger,
-    _MarketState,
     _parse_market_state,
     _parse_ombud_messages,
     _save_last_content,
@@ -56,10 +56,10 @@ _PRICE_COLUMNS = _PRICE_DTYPES.keys()
 _PRICE_UPDATE_COLUMNS = ('ins_code', *(*_PRICE_COLUMNS,)[4:13])
 
 
-class _MarketWatchInit(_TypedDict, total=False):
+class MarketWatchInit(_TypedDict, total=False):
     prices: _DataFrame
     best_limits: _DataFrame
-    market_state: _MarketState
+    market_state: MarketState
     refid: int
 
 
@@ -73,7 +73,7 @@ def _unstack_best_limits(bl: _DataFrame) -> _DataFrame:
 
 async def market_watch_init(
     *, market_state=True, prices=True, best_limits=True, join=True
-) -> _MarketWatchInit:
+) -> MarketWatchInit:
     """Return the market status which are the info used in creating filters.
 
     If `join` is True, `best_limits` will be joined to `prices`, otherwise
@@ -116,12 +116,12 @@ async def market_watch_init(
     return result
 
 
-class _MarketWatchPlus(_TypedDict, total=False):
+class MarketWatchPlus(_TypedDict, total=False):
     new_prices: _DataFrame
     price_updates: _DataFrame
     best_limits: _DataFrame
     messages: list[str]
-    market_state: _MarketState
+    market_state: MarketState
     refid: int
 
 
@@ -135,7 +135,7 @@ async def market_watch_plus(
     price_updates=True,
     best_limits=True,
     best_limits_prepare_join=True,
-) -> _MarketWatchPlus:
+) -> MarketWatchPlus:
     # See dev/tsetmc_source_files/market_watch.html
     # for how the response is parsed in the browser.
     text = await _get_data(
@@ -345,8 +345,8 @@ class MarketWatch:
         *,
         init_kwargs: dict = None,
         plus_kwargs: dict = None,
-        init_callback: _Callable[[_MarketWatchInit], _Any] = None,
-        plus_callback: _Callable[[_MarketWatchPlus], _Any] = None,
+        init_callback: _Callable[[MarketWatchInit], _Any] = None,
+        plus_callback: _Callable[[MarketWatchPlus], _Any] = None,
         interval=1,
     ):
         """Create an object that helps with watching the market watch.
