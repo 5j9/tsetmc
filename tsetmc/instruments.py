@@ -176,6 +176,8 @@ class InstrumentState(_TypedDict):
     dEven: int
     hEven: int
     insCode: None
+    lVal18AFC: None
+    lVal30: None
     cEtaval: str
     realHeven: int
     underSupervision: int
@@ -205,7 +207,7 @@ class ClosingPriceInfo(_TypedDict):
     yClose: bool
     pDrCotVal: float
     zTotTran: float
-    pRedTran: int
+    pRedTran: float
     qTotTran5J: float
     qTotCap: float
 
