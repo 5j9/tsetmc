@@ -355,13 +355,14 @@ AVA = Instrument('18007109712724189')
 async def test_holders_holder():
     with warns(DeprecationWarning):
         holders = await AVA.holders(cisin='IRT3AVAF0003')
-    assert [*holders.dtypes.items()] == [
-        ('holder', string),
-        ('shares/units', dtype('int64')),
-        ('%', dtype('float64')),
-        ('change', Int64Dtype()),
-        ('id_cisin', string),
-    ]
+    dtypes = holders.dtypes.to_dict()
+    assert dtypes.pop('change') in (Int64Dtype(), 'int64')
+    assert dtypes == {
+        'holder': 'string[pyarrow_numpy]',
+        'shares/units': dtype('int64'),
+        '%': dtype('float64'),
+        'id_cisin': 'string[pyarrow_numpy]',
+    }
 
     id_cisin = holders.at[0, 'id_cisin']
 
