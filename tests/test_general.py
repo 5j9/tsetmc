@@ -1,6 +1,7 @@
 from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
+from tests import STR
 from tsetmc.general import (
     MarketOverview,
     boards,
@@ -11,8 +12,6 @@ from tsetmc.general import (
     market_overview,
     top_industry_groups,
 )
-
-string = 'string'
 
 
 @file('boards.html')
@@ -106,7 +105,7 @@ async def test_cs_codes():
 async def test_industrial_groups_overview():
     df = await industrial_groups_overview()
     assert [*df.dtypes.items()] == [
-        ('group', string),
+        ('group', STR),
         (':-2', dtype('int64')),
         ('-2:0', dtype('int64')),
         ('0:2', dtype('int64')),
@@ -123,7 +122,7 @@ async def test_market_map_data():
     assert len(df) > 300
     assert not df.lVal18AFC.str.contains('ي').any()
     assert [*df.dtypes.items()] == [
-        ('insCode', string),
+        ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
@@ -132,16 +131,16 @@ async def test_market_map_data():
         ('qTotTran5J', dtype('float64')),
         ('qTotCap', dtype('float64')),
         ('priceYesterday', dtype('float64')),
-        ('lVal18AFC', string),
-        ('lVal30', string),
-        ('lSecVal', string),
+        ('lVal18AFC', STR),
+        ('lVal30', STR),
+        ('lSecVal', STR),
         ('percent', dtype('float64')),
         ('priceChangePercent', dtype('float64')),
-        ('hEvenShow', string),
-        ('color', string),
+        ('hEvenShow', STR),
+        ('color', STR),
         ('fontSize', dtype('int64')),
-        ('fontColor', string),
-        ('customLabel', string),
+        ('fontColor', STR),
+        ('customLabel', STR),
     ]
 
 
@@ -151,8 +150,8 @@ async def test_major_holders_activity():
     dtypes = [*df.dtypes.items()]
     assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
-        ('l30', string),
-        ('holder', string),
+        ('l30', STR),
+        ('holder', STR),
     ]
     for _, t in dtypes[3:]:
         assert dtype(t) == dtype('float64')
@@ -162,7 +161,7 @@ async def test_major_holders_activity():
 async def test_top_industry_groups():
     df = await top_industry_groups()
     assert [*df.dtypes.items()] == [
-        ('group', string),
+        ('group', STR),
         ('mv', dtype('float64')),
         ('tno', dtype('int64')),
         ('tvol', dtype('float64')),

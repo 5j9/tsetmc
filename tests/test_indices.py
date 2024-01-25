@@ -1,17 +1,16 @@
 from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
+from tests import STR
 from tsetmc import InstrumentInfo
 from tsetmc.indices import Index, last_state
-
-string = 'string'
 
 
 @file('last_state.json')
 async def test_last_state():
     df = await last_state()
     assert [*df.dtypes.items()] == [
-        ('insCode', string),
+        ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('xDrNivJIdx004', dtype('float64')),
@@ -20,7 +19,7 @@ async def test_last_state():
         ('xVarIdxJRfV', dtype('float64')),
         ('last', dtype('bool')),
         ('indexChange', dtype('float64')),
-        ('lVal30', string),
+        ('lVal30', STR),
         ('c1', dtype('int64')),
         ('c2', dtype('int64')),
         ('c3', dtype('int64')),
@@ -85,6 +84,7 @@ async def test_companies():
         ('finalLastDate', dtype('int64')),
         ('nvt', dtype('float64')),
         ('mop', dtype('int64')),
+        ('pRedTran', dtype('float64')),
         ('thirtyDayClosingHistory', dtype('O')),
         ('priceChange', dtype('float64')),
         ('priceMin', dtype('float64')),
@@ -93,7 +93,7 @@ async def test_companies():
         ('priceFirst', dtype('float64')),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
-        ('insCode', string),
+        ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),
@@ -109,9 +109,9 @@ async def test_companies():
         ('instrument.lSoc30', dtype('O')),
         ('instrument.yMarNSC', dtype('O')),
         ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', string),
-        ('instrument.lVal30', string),
-        ('instrument.lVal18AFC', string),
+        ('instrument.insCode', STR),
+        ('instrument.lVal30', STR),
+        ('instrument.lVal18AFC', STR),
         ('instrument.flow', dtype('int64')),
         ('instrument.cIsin', dtype('O')),
         ('instrument.zTitad', dtype('float64')),
@@ -126,7 +126,7 @@ async def test_companies():
     ]
     assert [*companies_history.dtypes.items()] == [
         ('id', dtype('int64')),
-        ('insCode', string),
+        ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
         ('pClosing', dtype('float64')),

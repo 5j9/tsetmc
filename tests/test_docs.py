@@ -1,5 +1,6 @@
 from aiohutils.tests import file
 
+from tests import STR
 from tsetmc.docs import (
     best_limits_all_ins,
     client_type,
@@ -16,9 +17,9 @@ async def test_client_type():
     out = d['output']
     assert len(out) == 9
     assert [*out.dtypes.items()] == [
-        ('InsCode', 'string'),
-        ('کد داخلی نماد', 'string'),
-        ('Instrument Unique Key', 'string'),
+        ('InsCode', STR),
+        ('کد داخلی نماد', STR),
+        ('Instrument Unique Key', STR),
     ]
 
 

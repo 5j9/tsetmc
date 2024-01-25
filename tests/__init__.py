@@ -5,6 +5,7 @@ from jdatetime import datetime as jdatetime
 from tsetmc import MarketState
 
 init_tests()
+STR = 'string[pyarrow_numpy]'
 
 
 def assert_market_state(market_state: MarketState):
