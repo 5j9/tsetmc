@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Some type hints (Subclasses of TypedDict) are now publicly exposed.
+
 v0.59.0
 -------
 * Minimum Python requirement is now 3.12.
