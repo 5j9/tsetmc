@@ -185,7 +185,7 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
 .. code-block:: python
 
-    from asyncio import get_event_loop
+    from asyncio import new_event_loop
     from tsetmc.market_watch import MarketWatch
 
     async def listen_to_update_events():
@@ -196,7 +196,7 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
 
     market_watch = MarketWatch()
-    loop = get_event_loop()
+    loop = new_event_loop()
     loop.create_task(listen_to_update_events())
     loop.run_until_complete(market_watch.start())
 
