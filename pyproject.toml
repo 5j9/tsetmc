@@ -49,6 +49,9 @@ content-type = 'text/x-rst'
 [project.urls]
 Homepage = 'https://github.com/5j9/tsetmc'
 
+[tool.flit.sdist]
+exclude = ['tests', 'dev', '.gitattributes', 'sample_scripts']
+
 [tool.ruff]
 line-length = 79
 format.quote-style = 'single'
