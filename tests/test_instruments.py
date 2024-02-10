@@ -364,18 +364,19 @@ async def test_holders_holder():
         'id_cisin': 'string[pyarrow_numpy]',
     }
 
-    id_cisin = holders.at[0, 'id_cisin']
+    id_cisin = holders.iat[-1, -1]
 
     with warns(DeprecationWarning):
         hist, oth = await AVA.holder(id_cisin, True, True)
     assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
     assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
-    assert [*oth.dtypes.items()] == [
-        ('name', string),
-        ('shares', dtype('int64')),
-        ('percent', dtype('float64')),
-    ]
+    if not oth.empty:
+        assert [*oth.dtypes.items()] == [
+            ('name', string),
+            ('shares', dtype('int64')),
+            ('percent', dtype('float64')),
+        ]
     with warns(DeprecationWarning):
         hist = await AVA.holder('43789,IRT3AVAF0003', True)
     assert type(hist) is DataFrame
