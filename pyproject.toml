@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=66.1.0",
+    'setuptools>=66.1.0',
 ]
 
 [build-system.build-backend]
@@ -8,46 +8,46 @@ requires = ['flit_core >=3.2,<4']
 build-backend = 'flit_core.buildapi'
 
 [project]
-name = "tsetmc"
+name = 'tsetmc'
 authors = [
-    { name = "5j9", email = "5j9@users.noreply.github.com" },
+    { name = '5j9', email = '5j9@users.noreply.github.com' },
 ]
-description = "a library to retrieve data from tsetmc.com website"
+description = 'a library to retrieve data from tsetmc.com website'
 keywords = [
-    "tsetmc",
-    "client",
+    'tsetmc',
+    'client',
 ]
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "Programming Language :: Python :: 3.12",
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Programming Language :: Python :: 3.12',
 ]
-requires-python = ">=3.12"
+requires-python = '>=3.12'
 dynamic = [
-    "version",
+    'version',
 ]
 dependencies = [
-    "aiohutils >= 0.13.0",
-    "beautifulsoup4",
-    "jdatetime",
-    "lxml",
-    "numpy",
-    "pandas >= 2.1.0",
-    "pyarrow",  # pd.options.future.infer_string = True
+    'aiohutils >= 0.13.0',
+    'beautifulsoup4',
+    'jdatetime',
+    'lxml',
+    'numpy',
+    'pandas >= 2.1.0',
+    'pyarrow',  # pd.options.future.infer_string = True
 ]
 [project.optional-dependencies]
 test = [
-    "aiohutils[test] >= 0.13.0",
+    'aiohutils[test] >= 0.13.0',
 ]
 
 [project.license]
-text = "GNU General Public License v3 (GPLv3)"
+text = 'GNU General Public License v3 (GPLv3)'
 
 [project.readme]
-file = "README.rst"
-content-type = "text/x-rst"
+file = 'README.rst'
+content-type = 'text/x-rst'
 
 [project.urls]
-Homepage = "https://github.com/5j9/tsetmc"
+Homepage = 'https://github.com/5j9/tsetmc'
 
 [tool.ruff]
 line-length = 79
