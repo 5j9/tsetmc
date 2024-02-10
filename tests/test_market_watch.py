@@ -9,7 +9,7 @@ from tests import assert_market_state
 # noinspection PyProtectedMember
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
-    _PRICE_DTYPES,
+    _PRICE_DTYPES_25,
     _parse_market_state,
     client_type_all,
     closing_price_all,
@@ -20,7 +20,7 @@ from tsetmc.market_watch import (
     status_changes,
 )
 
-PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES.items()][1:]
+PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES_25.items()][1:]  # ins_code is now index
 BL_STACKED_COLUMNS = _BEST_LIMITS_NAMES[2:]
 BL_UNSTACKED_COLUMNS = [
     f'{n}{i}' for n in BL_STACKED_COLUMNS for i in range(1, 6)
@@ -311,3 +311,11 @@ async def test_mwp_with_empty_eps_best_limits_prepare_join():
 
     mwp = await market_watch_plus(0, 0)
     assert_bl_dtypes(mwp['best_limits'], unstacked=True)
+
+
+@file('mwp_23_cols.txt')
+async def test_23_cols():
+    if not OFFLINE_MODE:
+        return
+    mwp = await market_watch_plus(0, 0)
+    assert len(mwp['new_prices'].columns) == 22  # ins_code has become index

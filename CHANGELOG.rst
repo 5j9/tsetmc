@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Fixed handling of 23-column data in `market_watch_plus`.
 * Some type hints (Subclasses of TypedDict) are now publicly exposed.
 
 v0.59.0

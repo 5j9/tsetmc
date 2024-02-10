@@ -22,7 +22,7 @@ from tsetmc import (
 )
 
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
-_PRICE_DTYPES = {
+_PRICE_DTYPES_23 = {
     'ins_code': 'string',
     'isin': 'string',
     'l18': 'string',
@@ -49,11 +49,11 @@ _PRICE_DTYPES = {
     'z': 'int64',
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'yval': 'int16',
-    'predtran': 'float64',
-    'buyop': 'Int64',
 }
-_PRICE_COLUMNS = _PRICE_DTYPES.keys()
-_PRICE_UPDATE_COLUMNS = ('ins_code', *(*_PRICE_COLUMNS,)[4:13])
+_PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
+_PRICE_COLS_25 = [*_PRICE_DTYPES_25]
+_PRICE_COLS_23 = _PRICE_COLS_25[:-2]
+_PRICE_UPDATE_COLUMNS = ('ins_code', *_PRICE_COLS_25[4:13])
 
 
 class MarketWatchInit(_TypedDict, total=False):
@@ -93,9 +93,9 @@ async def market_watch_init(
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
-            names=_PRICE_COLUMNS,
+            names=_PRICE_COLS_25,
             index_col='ins_code',
-            dtype=_PRICE_DTYPES,
+            dtype=_PRICE_DTYPES_25,
         )
     if best_limits:
         result['best_limits'] = bl = _csv2df(
@@ -167,15 +167,25 @@ async def market_watch_plus(
         inst_prices = [ip.split(',') for ip in inst_price.split(';')]
         if new_prices:
             lst = [ip for ip in inst_prices if len(ip) != 10]
+            twenty_five_cols = not lst or len(lst[0]) == 25
             try:
-                df = _DataFrame(lst, columns=_PRICE_COLUMNS, copy=False)
+                df = _DataFrame(
+                    lst,
+                    columns=_PRICE_COLS_25
+                    if twenty_five_cols is True
+                    else _PRICE_COLS_23,
+                    copy=False,
+                )
             except ValueError as e:
                 _save_last_content(f'{e}')
                 raise e
             df['eps'] = df['eps'].replace('', _nan)
-            df['predtran'] = df['predtran'].replace('', _nan)
-            df['buyop'] = df['buyop'].replace('', _nan)
-            df = df.astype(_PRICE_DTYPES, False)
+            if twenty_five_cols is True:
+                df['predtran'] = df['predtran'].replace('', _nan)
+                df['buyop'] = df['buyop'].replace('', _nan)
+                df = df.astype(_PRICE_DTYPES_25, False)
+            else:
+                df = df.astype(_PRICE_DTYPES_23, False)
             df.set_index('ins_code', inplace=True)
             result['new_prices'] = df
         if price_updates:
