@@ -395,7 +395,8 @@ class Instrument:
         )
         return j['preparedData']
 
-    async def daily_closing_price(self, n=9) -> _DataFrame:
+    async def daily_closing_price(self, n=0) -> _DataFrame:
+        """n is the number of days. Use 0 (default) to fetch all."""
         j = await _api(
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
@@ -632,7 +633,7 @@ class Instrument:
         return df
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
-        # As far as I can thell the new tsetmc site does not have any
+        # As far as I can thll the new tsetmc site does not have any
         # API for adjusted price history, but see self.price_adjustments.
         content = await _get(
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'

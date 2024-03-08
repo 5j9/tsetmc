@@ -1,6 +1,6 @@
 Unreleased
 ----------
-*
+* The default value of ``n`` for ``Instrument.daily_closing_price`` is now ``0`` instead of ``9``. Meaning that complete history will be fetched instead of just the last 9 days.
 * Updated dataset
 
 v0.61.0
