@@ -88,6 +88,7 @@ async def market_watch_init(
         `heven` is the time of the last transaction in HHMMSS format.
     """
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
+    # todo: ValueError('not enough values to unpack (expected 5, got 1)') while awaiting market_watch_init
     _, market_state_str, states, price_rows, refid = text.split('@')
     result = {'refid': int(refid)}
     if prices:
