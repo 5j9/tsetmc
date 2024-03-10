@@ -1,3 +1,7 @@
+Unreleased
+----------
+* Fixed incompatible dtype FutureWarning in  ``market_watch_plus``.
+
 v0.62.0
 -------
 * The default value of ``n`` for ``Instrument.daily_closing_price`` is now ``0`` instead of ``9``. Meaning that complete history will be fetched instead of just the last 9 days.

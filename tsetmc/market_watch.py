@@ -22,11 +22,7 @@ from tsetmc import (
 )
 
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
-_PRICE_DTYPES_23 = {
-    'ins_code': 'string',
-    'isin': 'string',
-    'l18': 'string',
-    'l30': 'string',
+_COMMON_DTYPES = {
     'heven': 'int32',
     'pf': 'int64',
     'pc': 'int64',
@@ -36,6 +32,13 @@ _PRICE_DTYPES_23 = {
     'tval': 'int64',
     'pmin': 'int64',
     'pmax': 'int64',
+}
+_PRICE_DTYPES_23 = {
+    'ins_code': 'string',
+    'isin': 'string',
+    'l18': 'string',
+    'l30': 'string',
+    **_COMMON_DTYPES,
     'py': 'int64',
     'eps': 'float64',
     'bvol': 'int64',
@@ -51,9 +54,7 @@ _PRICE_DTYPES_23 = {
     'yval': 'int16',
 }
 _PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
-_PRICE_COLS_25 = [*_PRICE_DTYPES_25]
-_PRICE_COLS_23 = _PRICE_COLS_25[:-2]
-_PRICE_UPDATE_COLUMNS = ('ins_code', *_PRICE_COLS_25[4:13])
+_PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
 
 
 class MarketWatchInit(_TypedDict, total=False):
@@ -94,7 +95,7 @@ async def market_watch_init(
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
-            names=_PRICE_COLS_25,
+            names=_PRICE_DTYPES_25,
             index_col='ins_code',
             dtype=_PRICE_DTYPES_25,
         )
@@ -170,11 +171,13 @@ async def market_watch_plus(
             lst = [ip for ip in inst_prices if len(ip) != 10]
             twenty_five_cols = not lst or len(lst[0]) == 25
             try:
+                # noinspection PyTypeChecker
+                # https://github.com/pandas-dev/pandas/issues/57798
                 df = _DataFrame(
                     lst,
-                    columns=_PRICE_COLS_25
+                    columns=_PRICE_DTYPES_25
                     if twenty_five_cols is True
-                    else _PRICE_COLS_23,
+                    else _PRICE_DTYPES_23,
                     copy=False,
                 )
             except ValueError as e:
@@ -191,10 +194,12 @@ async def market_watch_plus(
             result['new_prices'] = df
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
+            # noinspection PyTypeChecker
+            # https://github.com/pandas-dev/pandas/issues/57798
             df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
+            df = df.astype(_PRICE_UPDATE_COLUMNS)
             df.ins_code = df.ins_code.astype('string')
             df.set_index('ins_code', inplace=True)
-            df = df.astype('int64', False)
             result['price_updates'] = df
     if best_limits:
         bl = _csv2df(
