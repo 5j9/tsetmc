@@ -187,9 +187,9 @@ async def market_watch_plus(
             if twenty_five_cols is True:
                 df['predtran'] = df['predtran'].replace('', _nan)
                 df['buyop'] = df['buyop'].replace('', _nan)
-                df = df.astype(_PRICE_DTYPES_25, False)
+                df = df.astype(_PRICE_DTYPES_25)
             else:
-                df = df.astype(_PRICE_DTYPES_23, False)
+                df = df.astype(_PRICE_DTYPES_23)
             df.set_index('ins_code', inplace=True)
             result['new_prices'] = df
         if price_updates:
