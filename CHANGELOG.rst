@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.62.1
+-------
 * Fixed incompatible dtype FutureWarning in  ``market_watch_plus``.
 
 v0.62.0
