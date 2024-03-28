@@ -405,7 +405,8 @@ class Instrument:
             df.pop('dEven').astype(str)
             + df.pop('hEven').astype(str).str.rjust(6, '0')
         )
-        df.set_index(datetime.dt.normalize(), inplace=True)
+        df['date'] = datetime.dt.normalize()
+        df.set_index('date', inplace=True)
         return df
 
     async def closing_price_info(self) -> ClosingPriceInfo:

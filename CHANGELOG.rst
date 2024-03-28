@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+*  ``Instrument.daily_closing_price()`` now has index set to date column.
 
 v0.62.1
 -------
