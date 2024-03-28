@@ -1,7 +1,6 @@
 from aiohutils.tests import init_tests
 from jdatetime import datetime as jdatetime
 
-# noinspection PyProtectedMember
 from tsetmc import MarketState
 
 init_tests()
