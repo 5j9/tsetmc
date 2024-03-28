@@ -6,6 +6,7 @@ from typing import Any as _Any
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
+
 from tsetmc import (
     MarketState,
     _csv2df,
