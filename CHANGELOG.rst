@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.63.0
+-------
 * ``Instrument.daily_closing_price()`` now has index set to date column.
 * ``docs.client_type()`` will not set first as column name for output.
 
