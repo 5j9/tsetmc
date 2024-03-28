@@ -16,11 +16,7 @@ async def test_client_type():
     d = await client_type()
     out = d['output']
     assert len(out) == 9
-    assert [*out.dtypes.items()] == [
-        ('InsCode', STR),
-        ('کد داخلی نماد', STR),
-        ('Instrument Unique Key', STR),
-    ]
+    assert [*out.dtypes.items()] == [(0, STR), (1, STR), (2, STR)]
 
 
 @file('instrument_filter_by_date.html')

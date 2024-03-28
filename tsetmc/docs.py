@@ -1,4 +1,5 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
+
 from aiohutils.pd import html_to_df as _html_to_df
 
 from tsetmc import _DOMAIN, _get
@@ -16,7 +17,6 @@ async def client_type() -> dict:
     """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111116&LnkIdn=3568"""
     text = await _site_partree('1114111116&LnkIdn=3568')
     out = _html_to_df(text, 2)
-    out.rename(columns=out.iloc[0], inplace=True)
     return {
         'output': out,
     }
