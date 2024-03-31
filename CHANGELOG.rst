@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* Automatically handle ``ServerDisconnectedError`` by retrying.
 
 v0.63.0
 -------
