@@ -12,7 +12,7 @@ string = 'string'
 @file('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
     df = await FARAZ_ON_DATE.closing_price_history()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('id', dtype('int64')),
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
@@ -30,7 +30,7 @@ async def test_intraday_closing_price():
 @file('faraz_GetStaticThreshold_20220222.json')
 async def test_static_thresholds():
     df = await FARAZ_ON_DATE.static_thresholds()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -42,7 +42,7 @@ async def test_static_thresholds():
 @file('faraz_BestLimits_20220222.json')
 async def test_intraday_best_limits():
     df = await FARAZ_ON_DATE.best_limits()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('idn', dtype('int64')),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -61,7 +61,7 @@ async def test_intraday_best_limits():
 @file('faraz_GetTradeHistory_20220222.json')
 async def test_intraday_trades():
     df = await FARAZ_ON_DATE.trades()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
         ('nTran', dtype('int64')),
@@ -108,7 +108,7 @@ async def test_daily_closing_price():
 @file('faraz_GetInstrumentState_20220222.json')
 async def test_intraday_states():
     df = await FARAZ_ON_DATE.states()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('idn', dtype('int64')),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -125,7 +125,7 @@ async def test_intraday_states():
 @file('faraz_Shareholder_20220222.json')
 async def test_intraday_holders():
     df = await FARAZ_ON_DATE.holders()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('shareHolderID', dtype('int64')),
         ('shareHolderName', string),
         ('cIsin', string),

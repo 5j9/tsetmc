@@ -9,7 +9,7 @@ from tsetmc.indices import Index, last_state
 @file('last_state.json')
 async def test_last_state():
     df = await last_state()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -39,7 +39,7 @@ async def test_info():
 @file('index_last_day_history.json')
 async def test_last_day_history():
     df = await OVERALL.last_day_history()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('O')),
         ('xDrNivJIdx004', dtype('float64')),
         ('xPhNivJIdx004', dtype('float64')),
@@ -59,7 +59,7 @@ async def test_last_day_history():
 @file('index_history.json')
 async def test_history():
     df = await OVERALL.history()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('int64')),
         ('xNivInuClMresIbs', dtype('float64')),
         ('xNivInuPbMresIbs', dtype('float64')),
@@ -78,7 +78,7 @@ async def test_companies():
     companies_history = d['relatedCompanyThirtyDayHistory']
     if companies.empty:  # before the market start
         return
-    assert [*companies.dtypes.items()] == [
+    assert [*zip(companies.columns, companies.dtypes)] == [
         ('instrumentState', dtype('O')),
         ('lastHEven', dtype('int64')),
         ('finalLastDate', dtype('int64')),
@@ -124,7 +124,7 @@ async def test_companies():
         ('instrument.flowTitle', dtype('O')),
         ('instrument.cgrValCotTitle', dtype('O')),
     ]
-    assert [*companies_history.dtypes.items()] == [
+    assert [*zip(companies_history.columns, companies_history.dtypes)] == [
         ('id', dtype('int64')),
         ('insCode', STR),
         ('dEven', dtype('int64')),

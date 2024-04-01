@@ -1,6 +1,6 @@
 from aiohutils.tests import file
+from polars import String
 
-from tests import STR
 from tsetmc.docs import (
     best_limits_all_ins,
     client_type,
@@ -16,7 +16,11 @@ async def test_client_type():
     d = await client_type()
     out = d['output']
     assert len(out) == 9
-    assert [*out.dtypes.items()] == [(0, STR), (1, STR), (2, STR)]
+    assert [*zip(out.columns, out.dtypes)] == [
+        ('0', String),
+        ('1', String),
+        ('2', String),
+    ]
 
 
 @file('instrument_filter_by_date.html')

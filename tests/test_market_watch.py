@@ -48,8 +48,12 @@ def assert_bl_dtypes(df: DataFrame, unstacked=True):
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
-    assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
-    assert [*mwi['best_limits'].index.dtypes.items()] == [
+    assert [
+        *zip(mwi['prices'].columns, mwi['prices'].dtypes)
+    ] == PRICE_DTYPES_ITEMS
+    assert [
+        *zip(mwi['best_limits'].index.columns, mwi['best_limits'].index.dtypes)
+    ] == [
         ('ins_code', string),
         ('number', dtype('int64')),
     ]
@@ -60,7 +64,7 @@ async def test_market_watch_init():
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
     assert_bl_dtypes(prices)
-    assert [*prices.dtypes.items()] == PRICE_DTYPES_ITEMS
+    assert [*zip(prices.columns, prices.dtypes)] == PRICE_DTYPES_ITEMS
 
     i = prices.index
     assert i.name == 'ins_code'
@@ -68,7 +72,9 @@ async def test_market_watch_init():
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
-    assert [*mwi['best_limits'].index.dtypes.items()] == [
+    assert [
+        *zip(mwi['best_limits'].index.columns, mwi['best_limits'].index.dtypes)
+    ] == [
         ('ins_code', string),
         ('number', dtype('int64')),
     ]
@@ -89,7 +95,7 @@ async def test_closing_price_all():
         'py',
         'pf',
     ]
-    assert [*df.index.dtypes.items()] == [
+    assert [*zip(df.index.columns, df.index.dtypes)] == [
         ('ins_code', string),
         ('n', dtype('int64')),
     ]
@@ -214,7 +220,7 @@ async def test_market_watch_plus_new():
         best_limits_prepare_join=False,
     )
     new_prices = mwp['new_prices']
-    assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
+    assert [*zip(new_prices.columns, new_prices.dtypes)] == PRICE_DTYPES_ITEMS
     i = new_prices.index
     assert i.name == 'ins_code'
     assert i.dtype == string
@@ -258,7 +264,7 @@ async def test_market_watch_plus_update():
     assert type(mwp['refid']) == int
 
     new_prices = mwp['new_prices']
-    assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
+    assert [*zip(new_prices.columns, new_prices.dtypes)] == PRICE_DTYPES_ITEMS
     i = new_prices.index
     assert i.name == 'ins_code'
     assert i.dtype == string

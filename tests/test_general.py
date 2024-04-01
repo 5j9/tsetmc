@@ -104,7 +104,7 @@ async def test_cs_codes():
 @file('industrial_groups_overview.html')
 async def test_industrial_groups_overview():
     df = await industrial_groups_overview()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('group', STR),
         (':-2', dtype('int64')),
         ('-2:0', dtype('int64')),
@@ -121,7 +121,7 @@ async def test_market_map_data():
         return
     assert len(df) > 300
     assert not df.lVal18AFC.str.contains('ي').any()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
@@ -147,7 +147,7 @@ async def test_market_map_data():
 @file('major_holders_activity.html')
 async def test_major_holders_activity():
     df = await major_holders_activity()
-    dtypes = [*df.dtypes.items()]
+    dtypes = [*zip(df.columns, df.dtypes)]
     assert dtypes[:3] == [
         ('ins_code', dtype('int64')),
         ('l30', STR),
@@ -160,7 +160,7 @@ async def test_major_holders_activity():
 @file('top_industry_groups.html')
 async def test_top_industry_groups():
     df = await top_industry_groups()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('group', STR),
         ('mv', dtype('float64')),
         ('tno', dtype('int64')),

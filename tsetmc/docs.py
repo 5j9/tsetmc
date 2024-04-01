@@ -1,6 +1,6 @@
 """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
 
-from aiohutils.pd import html_to_df as _html_to_df
+from aiohutils.df import from_html as _from_html
 
 from tsetmc import _DOMAIN, _get
 from tsetmc.general import _make_soup
@@ -16,7 +16,7 @@ async def _site_partree(params: str):
 async def client_type() -> dict:
     """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111116&LnkIdn=3568"""
     text = await _site_partree('1114111116&LnkIdn=3568')
-    out = _html_to_df(text, 2)
+    out = _from_html(text, 2)
     return {
         'output': out,
     }

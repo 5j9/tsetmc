@@ -40,7 +40,7 @@ def assert_page_data(
 ):
     if trade_history:
         trade_history = d.pop('trade_history')
-        assert [*trade_history.dtypes.items()] == [
+        assert [*zip(trade_history.columns, trade_history.dtypes)] == [
             ('pc', dtype('float64')),
             ('py', dtype('float64')),
             ('pmin', dtype('float64')),
@@ -120,7 +120,7 @@ def assert_live_data(
 ):
     if best_limits:
         best_limits = d.pop('best_limits')
-        assert [*best_limits.dtypes.items()] == [
+        assert [*zip(best_limits.columns, best_limits.dtypes)] == [
             ('zd', dtype('int64')),
             ('qd', dtype('int64')),
             ('pd', dtype('int64')),
@@ -204,7 +204,7 @@ async def test_vskhooz_long():
 async def test_trade_history():
     with warns(DeprecationWarning):
         df0 = await FMELLI.trade_history(2)
-    assert [*df0.dtypes.items()] == [
+    assert [*zip(df0.columns, df0.dtypes)] == [
         ('pmax', dtype('float64')),
         ('pmin', dtype('float64')),
         ('pc', dtype('float64')),
@@ -284,7 +284,7 @@ async def test_identification():
 async def test_client_type_history_old():
     with warns(DeprecationWarning):
         df = await Instrument(655060129740445).client_type_history_old()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('n_buy_count', dtype('int64')),
         ('l_buy_count', dtype('int64')),
         ('n_sell_count', dtype('int64')),
@@ -324,7 +324,7 @@ async def test_client_type_history():
 @file('fzar_GetClientTypeHistory_all.json')
 async def test_client_type_history_no_date():
     df = await Instrument(8175784894140974).client_type_history()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('recDate', dtype('int64')),
         ('insCode', string),
         ('buy_I_Volume', dtype('float64')),
@@ -368,11 +368,11 @@ async def test_holders_holder():
 
     with warns(DeprecationWarning):
         hist, oth = await AVA.holder(id_cisin, True, True)
-    assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
+    assert [*zip(hist.columns, hist.dtypes)] == [('shares', dtype('int64'))]
     assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
     if not oth.empty:
-        assert [*oth.dtypes.items()] == [
+        assert [*zip(oth.columns, oth.dtypes)] == [
             ('name', string),
             ('shares', dtype('int64')),
             ('percent', dtype('float64')),
@@ -408,7 +408,7 @@ async def test_share_holders_companies_histories():
         days=2,
     )
     assert len(df) == 2
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('shareHolderID', dtype('int64')),
         ('shareHolderName', dtype('O')),
         ('cIsin', string),
@@ -440,7 +440,7 @@ async def test_adjustments():
     with warns(DeprecationWarning):
         df = await FMELLI.adjustments()
     assert len(df) >= 18
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('date', dtype('O')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
@@ -452,7 +452,7 @@ async def test_adjustments():
 async def test_price_adjustments_method():
     df = await FMELLI.price_adjustments()
     assert len(df) >= 18
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('int64')),
         ('pClosing', dtype('float64')),
         ('pClosingNotAdjusted', dtype('float64')),
@@ -465,7 +465,7 @@ async def test_price_adjustments_method():
 @file('adjustments_flow_7.html')
 async def test_price_adjustments():
     df = await price_adjustments(7)
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('l18', string),
         ('l30', string),
         ('date', dtype('O')),
@@ -481,7 +481,7 @@ async def test_adjusted_price_history():
     df = await Instrument(16422980660132735).price_history()
     assert df.index.name == 'date'
     assert df.index.dtype == dtype('<M8[ns]')
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('pmax', dtype('int64')),
         ('pmin', dtype('int64')),
         ('pf', dtype('int64')),
@@ -496,7 +496,7 @@ async def test_old_search():
     df = await old_search('ملت')
     assert type(df) is DataFrame
     assert len(df) > 40
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('l18', string),
         ('l30', string),
         ('ins_code', dtype('int64')),
@@ -581,7 +581,7 @@ async def test_publisher():
 async def test_ombud_messages():
     with warns(DeprecationWarning):
         df = await Instrument(1301069819790264).ombud_messages()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('header', string),
         ('date', dtype('O')),
         ('description', string),
@@ -598,7 +598,7 @@ async def test_messages():
 @file('fmelli_dps.txt')
 async def test_dps_history():
     df = await FMELLI.dps_history()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('publish_date', dtype('O')),
         ('meeting_date', dtype('O')),
         ('fiscal_year', dtype('O')),
@@ -654,7 +654,7 @@ async def test_trades():
     df = await KARIS.trades()
     if df.empty:
         return
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
         ('nTran', dtype('int64')),
@@ -681,7 +681,7 @@ async def test_codal():
 @file('daily_closing_price_karis.json')
 async def test_daily_closing_price():
     df = await KARIS.daily_closing_price(n=3)
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('priceChange', dtype('float64')),
         ('priceMin', dtype('float64')),
         ('priceMax', dtype('float64')),
@@ -712,7 +712,7 @@ async def test_closing_price_info():
 @file('best_limits.json')
 async def test_best_limits():
     df = await KARIS.best_limits()
-    assert [*df.dtypes.items()] == [
+    assert [*zip(df.columns, df.dtypes)] == [
         ('number', dtype('int64')),
         ('qTitMeDem', dtype('int64')),
         ('zOrdMeDem', dtype('int64')),
@@ -744,7 +744,7 @@ async def test_related_companies():
     c = d['relatedCompany']
     h = d['relatedCompanyThirtyDayHistory']
 
-    assert [*c.dtypes.items()] == [
+    assert [*zip(c.columns, c.dtypes)] == [
         ('instrumentState', dtype('O')),
         ('lastHEven', dtype('int64')),
         ('finalLastDate', dtype('int64')),
@@ -790,7 +790,7 @@ async def test_related_companies():
         ('instrument.flowTitle', dtype('O')),
         ('instrument.cgrValCotTitle', dtype('O')),
     ]
-    assert [*h.dtypes.items()] == [
+    assert [*zip(h.columns, h.dtypes)] == [
         ('id', dtype('int64')),
         ('insCode', string),
         ('dEven', dtype('int64')),
