@@ -1,7 +1,8 @@
 from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
+from polars import Float64, Int64
 
-from tests import STR
+from tests import String
 from tsetmc.general import (
     MarketOverview,
     boards,
@@ -105,11 +106,11 @@ async def test_cs_codes():
 async def test_industrial_groups_overview():
     df = await industrial_groups_overview()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('group', STR),
-        (':-2', dtype('int64')),
-        ('-2:0', dtype('int64')),
-        ('0:2', dtype('int64')),
-        ('2:', dtype('int64')),
+        ('group', String),
+        (':-2', Int64),
+        ('-2:0', Int64),
+        ('0:2', Int64),
+        ('2:', Int64),
     ]
     assert len(df) > 40
 
@@ -117,30 +118,30 @@ async def test_industrial_groups_overview():
 @file('weatherforecast.json')
 async def test_market_map_data():
     df = await market_map_data()
-    if df.empty:
+    if df.is_empty():
         return
     assert len(df) > 300
     assert not df.lVal18AFC.str.contains('ي').any()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype(_Float64)),
-        ('pDrCotVal', dtype(_Float64)),
-        ('zTotTran', dtype(_Float64)),
-        ('qTotTran5J', dtype(_Float64)),
-        ('qTotCap', dtype(_Float64)),
-        ('priceYesterday', dtype(_Float64)),
-        ('lVal18AFC', STR),
-        ('lVal30', STR),
-        ('lSecVal', STR),
-        ('percent', dtype(_Float64)),
-        ('priceChangePercent', dtype(_Float64)),
-        ('hEvenShow', STR),
-        ('color', STR),
-        ('fontSize', dtype('int64')),
-        ('fontColor', STR),
-        ('customLabel', STR),
+        ('insCode', String),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('pClosing', Float64),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
+        ('priceYesterday', Float64),
+        ('lVal18AFC', String),
+        ('lVal30', String),
+        ('lSecVal', String),
+        ('percent', Float64),
+        ('priceChangePercent', Float64),
+        ('hEvenShow', String),
+        ('color', String),
+        ('fontSize', Int64),
+        ('fontColor', String),
+        ('customLabel', String),
     ]
 
 
@@ -149,23 +150,23 @@ async def test_major_holders_activity():
     df = await major_holders_activity()
     dtypes = [*zip(df.columns, df.dtypes)]
     assert dtypes[:3] == [
-        ('ins_code', dtype('int64')),
-        ('l30', STR),
-        ('holder', STR),
+        ('ins_code', Int64),
+        ('l30', String),
+        ('holder', String),
     ]
     for _, t in dtypes[3:]:
-        assert dtype(t) == dtype(_Float64)
+        assert dtype(t) == Float64
 
 
 @file('top_industry_groups.html')
 async def test_top_industry_groups():
     df = await top_industry_groups()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('group', STR),
-        ('mv', dtype(_Float64)),
-        ('tno', dtype('int64')),
-        ('tvol', dtype(_Float64)),
-        ('tval', dtype(_Float64)),
+        ('group', String),
+        ('mv', Float64),
+        ('tno', Int64),
+        ('tvol', Float64),
+        ('tval', Float64),
     ]
 
 

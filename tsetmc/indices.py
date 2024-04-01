@@ -9,7 +9,7 @@ from tsetmc.instruments import InstrumentInfo
 
 async def last_state(i=1, /) -> _DataFrame:
     j = await _api(f'Index/GetIndexB1LastAll/All/{i}', fa=True)
-    return _DataFrame(j['indexB1'], copy=False)
+    return _DataFrame(j['indexB1'])
 
 
 class Index:

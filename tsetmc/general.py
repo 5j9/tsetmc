@@ -1,9 +1,10 @@
+from datetime import datetime as _datetime
 from typing import TypedDict as _TypedDict
 
-from aiohutils.pd import html_to_df as _html_to_df
+from aiohutils.df import from_html as _from_html
 from bs4 import BeautifulSoup as _BeautifulSoup
 from polars import (
-    Datetime as _Datetime,
+    Float64 as _Float64,
     Null as _Null,
     concat as _concat,
 )
@@ -16,14 +17,14 @@ _make_soup = _partial(_BeautifulSoup, features='lxml')
 async def boards() -> dict[int, str]:
     """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913."""
     content = await _get_par_tree('111C1913')
-    iloc = _html_to_df(content, header=0).iloc
+    iloc = _from_html(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
 async def cs_codes() -> dict[str, str]:
     """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _get_par_tree('111C1213')
-    iloc = _html_to_df(content, header=0).iloc
+    iloc = _from_html(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
@@ -34,7 +35,7 @@ async def industrial_groups_overview() -> _DataFrame:
     See: http://old.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
     content = await _get_par_tree('111C1214')
-    df = _html_to_df(content)
+    df = _from_html(content)
     show = df[1]
     df.drop(columns=1, inplace=True)
     percents = show.str.extract(
@@ -80,7 +81,6 @@ async def major_holders_activity() -> _DataFrame:
         append_row([ins_code, l30, holder, *_parse_tds(tds)])
     return _DataFrame(
         rows,
-        copy=False,
         columns=(
             'ins_code',
             'l30',
@@ -97,9 +97,9 @@ async def major_holders_activity() -> _DataFrame:
 async def top_industry_groups() -> _DataFrame:
     """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
-    df = _html_to_df(text)
+    df = _from_html(text)
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
-    _numerize(df, ('mv', 'tvol', 'tval'), float, comma=True)
+    df = _numerize(df, ('mv', 'tvol', 'tval'), _Float64, comma=True)
     return df
 
 
@@ -124,7 +124,7 @@ class MarketOverview(_TypedDict):
     marketActivityHEven: int
     marketActivityQTotCap: float
     marketActivityQTotTran: float
-    marketActivityTimestamp: _Datetime
+    marketActivityTimestamp: _datetime
     marketActivityZTotTran: int
     marketState: str
     marketStateTitle: str
@@ -141,9 +141,10 @@ async def market_overview(n=1) -> MarketOverview:
     """
     j = await _api(f'MarketData/GetMarketOverview/{n}')
     overview = j['marketOverview']
-    overview['marketActivityTimestamp'] = _Datetime(
+    overview['marketActivityTimestamp'] = _datetime.strptime(
         f"{overview['marketActivityDEven']}"
-        f"{overview['marketActivityHEven']:>06}"
+        f"{overview['marketActivityHEven']:>06}",
+        '%Y%m%d%H%M%S',
     )
     return overview
 
