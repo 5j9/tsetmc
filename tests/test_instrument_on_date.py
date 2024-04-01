@@ -1,29 +1,27 @@
 from aiohutils.tests import assert_dict_type, file
-from numpy import dtype
+from polars import Boolean, Float64, Int64, Null, String
 from pytest import warns
 
 from tsetmc.instruments import ClientTypeOnDate, ClosingPrice, Instrument
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
-string = _String
-
 
 @file('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
     df = await FARAZ_ON_DATE.closing_price_history()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('id', dtype('int64')),
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype(_Float64)),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype(_Float64)),
-        ('zTotTran', dtype(_Float64)),
-        ('qTotTran5J', dtype(_Float64)),
-        ('qTotCap', dtype(_Float64)),
+        ('id', Int64),
+        ('insCode', Null),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('pClosing', Float64),
+        ('iClose', Boolean),
+        ('yClose', Boolean),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
     ]
 
 
@@ -31,11 +29,11 @@ async def test_intraday_closing_price():
 async def test_static_thresholds():
     df = await FARAZ_ON_DATE.static_thresholds()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('psGelStaMax', dtype(_Float64)),
-        ('psGelStaMin', dtype(_Float64)),
+        ('insCode', String),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('psGelStaMax', Float64),
+        ('psGelStaMin', Float64),
     ]
 
 
@@ -43,18 +41,18 @@ async def test_static_thresholds():
 async def test_intraday_best_limits():
     df = await FARAZ_ON_DATE.best_limits()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('idn', dtype('int64')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('refID', dtype('int64')),
-        ('number', dtype('int64')),
-        ('qTitMeDem', dtype('int64')),
-        ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype(_Float64)),
-        ('pMeOf', dtype(_Float64)),
-        ('zOrdMeOf', dtype('int64')),
-        ('qTitMeOf', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('idn', Int64),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('refID', Int64),
+        ('number', Int64),
+        ('qTitMeDem', Int64),
+        ('zOrdMeDem', Int64),
+        ('pMeDem', Float64),
+        ('pMeOf', Float64),
+        ('zOrdMeOf', Int64),
+        ('qTitMeOf', Int64),
+        ('insCode', Null),
     ]
 
 
@@ -62,19 +60,19 @@ async def test_intraday_best_limits():
 async def test_intraday_trades():
     df = await FARAZ_ON_DATE.trades()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('nTran', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('qTitTran', dtype('int64')),
-        ('pTran', dtype(_Float64)),
-        ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype(_Float64)),
-        ('pPbSeaCotJ', dtype(_Float64)),
-        ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype(_Float64)),
-        ('canceled', dtype('int64')),
+        ('insCode', Null),
+        ('dEven', Int64),
+        ('nTran', Int64),
+        ('hEven', Int64),
+        ('qTitTran', Int64),
+        ('pTran', Float64),
+        ('qTitNgJ', Int64),
+        ('iSensVarP', String),
+        ('pPhSeaCotJ', Float64),
+        ('pPbSeaCotJ', Float64),
+        ('iAnuTran', Int64),
+        ('xqVarPJDrPRf', Float64),
+        ('canceled', Int64),
     ]
 
 
@@ -109,16 +107,16 @@ async def test_daily_closing_price():
 async def test_intraday_states():
     df = await FARAZ_ON_DATE.states()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('idn', dtype('int64')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('insCode', string),
-        ('lVal18AFC', dtype('O')),
-        ('lVal30', dtype('O')),
-        ('cEtaval', string),
-        ('realHeven', dtype('int64')),
-        ('underSupervision', dtype('int64')),
-        ('cEtavalTitle', dtype('O')),
+        ('idn', Int64),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('insCode', String),
+        ('lVal18AFC', Null),
+        ('lVal30', Null),
+        ('cEtaval', String),
+        ('realHeven', Int64),
+        ('underSupervision', Int64),
+        ('cEtavalTitle', Null),
     ]
 
 
@@ -126,15 +124,15 @@ async def test_intraday_states():
 async def test_intraday_holders():
     df = await FARAZ_ON_DATE.holders()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('shareHolderID', dtype('int64')),
-        ('shareHolderName', string),
-        ('cIsin', string),
-        ('dEven', dtype('int64')),
-        ('numberOfShares', dtype(_Float64)),
-        ('perOfShares', dtype(_Float64)),
-        ('change', dtype('int64')),
-        ('changeAmount', dtype(_Float64)),
-        ('shareHolderShareID', dtype('int64')),
+        ('shareHolderID', Int64),
+        ('shareHolderName', String),
+        ('cIsin', String),
+        ('dEven', Int64),
+        ('numberOfShares', Float64),
+        ('perOfShares', Float64),
+        ('change', Int64),
+        ('changeAmount', Float64),
+        ('shareHolderShareID', Int64),
     ]
 
 
