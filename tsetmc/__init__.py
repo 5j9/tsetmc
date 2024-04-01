@@ -8,18 +8,14 @@ from typing import TypedDict as _TypedDict
 
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
-from pandas import (
-    NA as _NA,
+from polars import (
     DataFrame as _DataFrame,
-    options as _o,
+    Null as _Null,
     read_csv as _read_csv,
 )
 
 _logger = _getLogger(__name__)
-_o.mode.copy_on_write = True
-_o.future.infer_string = True
-_o.future.no_silent_downcasting = True
-_csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
+_colon_separated = _partial(_read_csv, eol_char=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 
 
@@ -170,17 +166,15 @@ def _parse_ombud_messages(text) -> _DataFrame:
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
     df = _DataFrame(
-        {'header': headers, 'date': dates, 'description': descriptions},
-        dtype='string',
-        copy=False,
+        {'header': headers, 'date': dates, 'description': descriptions}
     )
-    if dates:  # pandas cannot do ('14' + df['date']) on empty dates
-        df['date'] = ('14' + df['date']).apply(
-            _jstrptime, format='%Y/%m/%d %H:%M'
+    if not dates:  # empty column will handled as Null dtype
+        return df
+    return df.with_columns(
+        ('14' + df['date']).map_elements(
+            _partial(_jstrptime, format='%Y/%m/%d %H:%M')
         )
-    else:
-        df['date'] = df['date'].astype(object)
-    return df
+    )
 
 
 session_manager = SessionManager()
@@ -243,7 +237,7 @@ def _numerize(
             c.replace(r' [KMB]$', '', regex=True).astype(astype)
         ) * c.str.extract(r'[\d\. ]+([KMBT]+)', expand=False).map(
             {
-                _NA: 1,
+                _Null: 1,
                 'K': 10**3,
                 'M': 10**6,
                 'B': 10**9,

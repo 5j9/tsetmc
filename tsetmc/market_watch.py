@@ -9,7 +9,7 @@ from pandas import concat as _concat, to_numeric as _to_numeric
 
 from tsetmc import (
     MarketState,
-    _csv2df,
+    _colon_separated,
     _DataFrame,
     _get_data,
     _get_par_tree,
@@ -93,14 +93,14 @@ async def market_watch_init(
     _, market_state_str, states, price_rows, refid = text.split('@')
     result = {'refid': int(refid)}
     if prices:
-        result['prices'] = price_df = _csv2df(
+        result['prices'] = price_df = _colon_separated(
             _StringIO(states),
             names=_PRICE_DTYPES_25,
             index_col='ins_code',
             dtype=_PRICE_DTYPES_25,
         )
     if best_limits:
-        result['best_limits'] = bl = _csv2df(
+        result['best_limits'] = bl = _colon_separated(
             _StringIO(price_rows),
             names=_BEST_LIMITS_NAMES,
             dtype={'ins_code': 'string'},
@@ -202,7 +202,7 @@ async def market_watch_plus(
             df.set_index('ins_code', inplace=True)
             result['price_updates'] = df
     if best_limits:
-        bl = _csv2df(
+        bl = _colon_separated(
             _StringIO(best_limit),
             index_col=('ins_code', 'number'),
             names=_BEST_LIMITS_NAMES,
@@ -270,7 +270,7 @@ async def client_type_all() -> _DataFrame:
     In column names `n_` prefix stands for natural and `l_` for legal.
     """
     content = await _get_data('ClientTypeAll.aspx')
-    df = _csv2df(
+    df = _colon_separated(
         _BytesIO(content),
         names=(
             'ins_code',

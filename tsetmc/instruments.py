@@ -19,7 +19,7 @@ from tsetmc import (
     InstrumentInfo,
     MarketState,
     _api,
-    _csv2df,
+    _colon_separated,
     _DataFrame,
     _findall,
     _get,
@@ -589,7 +589,7 @@ class Instrument:
             if index_info:  # sometimes index_info is an empty string
                 result['market_state'] = _parse_market_state(index_info)
         if best_limits:
-            result['best_limits'] = _csv2df(
+            result['best_limits'] = _colon_separated(
                 _StringIO(orders_info),
                 sep='@',
                 names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
@@ -613,7 +613,7 @@ class Instrument:
         content = await _get_data(
             f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}'
         )
-        df = _csv2df(
+        df = _colon_separated(
             _BytesIO(content),
             sep='@',
             names=(
@@ -639,7 +639,7 @@ class Instrument:
         content = await _get(
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'
         )
-        df = _csv2df(
+        df = _colon_separated(
             _BytesIO(content),
             names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'),
             index_col='date',
@@ -667,7 +667,7 @@ class Instrument:
             DeprecationWarning,
             stacklevel=2,
         )
-        return _csv2df(
+        return _colon_separated(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}')),
             names=(
                 'date',
@@ -835,7 +835,7 @@ class Instrument:
         hist, _, oth = text.partition('#')
 
         def history_df() -> _DataFrame:
-            return _csv2df(
+            return _colon_separated(
                 _StringIO(hist),
                 names=('date', 'shares'),
                 dtype='int64',
@@ -844,7 +844,7 @@ class Instrument:
             )
 
         def other_holdings_df() -> _DataFrame:
-            return _csv2df(
+            return _colon_separated(
                 _StringIO(oth),
                 names=('ins_code', 'name', 'shares', 'percent'),
                 index_col='ins_code',
@@ -898,7 +898,7 @@ class Instrument:
         # Note: Currently does not have an _api equivalent. The DPS tab is
         # non-functional in the new tsetmc website.
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
-        df = _csv2df(
+        df = _colon_separated(
             _BytesIO(content),
             header=None,
             sep='@',
@@ -1086,7 +1086,7 @@ async def price_adjustments(flow: int) -> _DataFrame:
 
 async def old_search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
-    return _csv2df(
+    return _colon_separated(
         _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
         header=None,
         # Another terminology would be: {
