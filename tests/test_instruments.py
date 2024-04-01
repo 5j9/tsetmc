@@ -4,8 +4,17 @@ from unittest.mock import patch
 
 from aiohutils.tests import assert_dict_type, file, files
 from jdatetime import datetime as jdatetime
-from numpy import dtype, int64
-from pandas import DataFrame, DatetimeIndex, Int64Dtype, Timestamp
+from polars import (
+    Boolean,
+    DataFrame,
+    Date,
+    Datetime,
+    Float64,
+    Int64,
+    Null,
+    String,
+    Time,
+)
 from pytest import raises, warns
 
 from tests import assert_market_state
@@ -32,8 +41,6 @@ from tsetmc.instruments import (
     share_holder_companies,
 )
 
-string = _String
-
 
 def assert_page_data(
     d, general=True, trade_history=False, related_companies=False
@@ -41,16 +48,15 @@ def assert_page_data(
     if trade_history:
         trade_history = d.pop('trade_history')
         assert [*zip(trade_history.columns, trade_history.dtypes)] == [
-            ('pc', dtype(_Float64)),
-            ('py', dtype(_Float64)),
-            ('pmin', dtype(_Float64)),
-            ('pmax', dtype(_Float64)),
-            ('tno', dtype('int64')),
-            ('tvol', dtype('int64')),
-            ('tval', dtype(_Float64)),
+            ('date', Date),
+            ('pc', Float64),
+            ('py', Float64),
+            ('pmin', Float64),
+            ('pmax', Float64),
+            ('tno', Int64),
+            ('tvol', Int64),
+            ('tval', Float64),
         ]
-        assert trade_history.index.dtype == dtype('<M8[ns]')
-        assert trade_history.index.name == 'date'
 
     if related_companies:
         related_companies = d.pop('related_companies')
@@ -121,12 +127,12 @@ def assert_live_data(
     if best_limits:
         best_limits = d.pop('best_limits')
         assert [*zip(best_limits.columns, best_limits.dtypes)] == [
-            ('zd', dtype('int64')),
-            ('qd', dtype('int64')),
-            ('pd', dtype('int64')),
-            ('po', dtype('int64')),
-            ('qo', dtype('int64')),
-            ('zo', dtype('int64')),
+            ('zd', Int64),
+            ('qd', Int64),
+            ('pd', Int64),
+            ('po', Int64),
+            ('qo', Int64),
+            ('zo', Int64),
         ]
 
     if market_state:
@@ -138,7 +144,7 @@ def assert_live_data(
         assert type(d.pop('nav_datetime')) in (jdatetime, str)
         assert type(d.pop('nav')) is int
 
-    assert type(d.pop('timestamp')) is Timestamp
+    assert type(d.pop('timestamp')) is datetime
     for k in ('time', 'status'):
         assert type(d.pop(k)) is str
     assert [*d.keys()] == [
@@ -205,18 +211,17 @@ async def test_trade_history():
     with warns(DeprecationWarning):
         df0 = await FMELLI.trade_history(2)
     assert [*zip(df0.columns, df0.dtypes)] == [
-        ('pmax', dtype(_Float64)),
-        ('pmin', dtype(_Float64)),
-        ('pc', dtype(_Float64)),
-        ('pl', dtype(_Float64)),
-        ('pf', dtype(_Float64)),
-        ('py', dtype(_Float64)),
-        ('tval', dtype(_Float64)),
-        ('tvol', dtype('int64')),
-        ('tno', dtype('int64')),
+        ('date', Date),
+        ('pmax', Float64),
+        ('pmin', Float64),
+        ('pc', Float64),
+        ('pl', Float64),
+        ('pf', Float64),
+        ('py', Float64),
+        ('tval', Float64),
+        ('tvol', Int64),
+        ('tno', Int64),
     ]
-    assert df0.index.name == 'date'
-    assert isinstance(df0.index, DatetimeIndex)
     with warns(DeprecationWarning):
         df1 = await FMELLI.trade_history(2, 1)
     assert len(df1) >= len(df0)
@@ -285,18 +290,19 @@ async def test_client_type_history_old():
     with warns(DeprecationWarning):
         df = await Instrument(655060129740445).client_type_history_old()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('n_buy_count', dtype('int64')),
-        ('l_buy_count', dtype('int64')),
-        ('n_sell_count', dtype('int64')),
-        ('l_sell_count', dtype('int64')),
-        ('n_buy_volume', dtype('int64')),
-        ('l_buy_volume', dtype('int64')),
-        ('n_sell_volume', dtype('int64')),
-        ('l_sell_volume', dtype('int64')),
-        ('n_buy_value', dtype('int64')),
-        ('l_buy_value', dtype('int64')),
-        ('n_sell_value', dtype('int64')),
-        ('l_sell_value', dtype('int64')),
+        ('date', Date),
+        ('n_buy_count', Int64),
+        ('l_buy_count', Int64),
+        ('n_sell_count', Int64),
+        ('l_sell_count', Int64),
+        ('n_buy_volume', Int64),
+        ('l_buy_volume', Int64),
+        ('n_sell_volume', Int64),
+        ('l_sell_volume', Int64),
+        ('n_buy_value', Int64),
+        ('l_buy_value', Int64),
+        ('n_sell_value', Int64),
+        ('l_sell_value', Int64),
     ]
 
 
@@ -325,20 +331,20 @@ async def test_client_type_history():
 async def test_client_type_history_no_date():
     df = await Instrument(8175784894140974).client_type_history()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('recDate', dtype('int64')),
-        ('insCode', string),
-        ('buy_I_Volume', dtype(_Float64)),
-        ('buy_N_Volume', dtype(_Float64)),
-        ('buy_I_Value', dtype(_Float64)),
-        ('buy_N_Value', dtype(_Float64)),
-        ('buy_N_Count', dtype('int64')),
-        ('sell_I_Volume', dtype(_Float64)),
-        ('buy_I_Count', dtype(_Float64)),
-        ('sell_N_Volume', dtype(_Float64)),
-        ('sell_I_Value', dtype(_Float64)),
-        ('sell_N_Value', dtype(_Float64)),
-        ('sell_N_Count', dtype('int64')),
-        ('sell_I_Count', dtype('int64')),
+        ('recDate', Int64),
+        ('insCode', String),
+        ('buy_I_Volume', Float64),
+        ('buy_N_Volume', Float64),
+        ('buy_I_Value', Float64),
+        ('buy_N_Value', Float64),
+        ('buy_N_Count', Int64),
+        ('sell_I_Volume', Float64),
+        ('buy_I_Count', Float64),
+        ('sell_N_Volume', Float64),
+        ('sell_I_Value', Float64),
+        ('sell_N_Value', Float64),
+        ('sell_N_Count', Int64),
+        ('sell_I_Count', Int64),
     ]
 
 
@@ -355,27 +361,28 @@ AVA = Instrument('18007109712724189')
 async def test_holders_holder():
     with warns(DeprecationWarning):
         holders = await AVA.holders(cisin='IRT3AVAF0003')
-    dtypes = holders.dtypes.to_dict()
-    assert dtypes.pop('change') in (Int64Dtype(), 'int64')
-    assert dtypes == {
-        'holder': 'string[pyarrow_numpy]',
-        'shares/units': dtype('int64'),
-        '%': dtype(_Float64),
-        'id_cisin': 'string[pyarrow_numpy]',
+    assert dict(zip(holders.columns, holders.dtypes)) == {
+        'change': Int64,
+        'holder': String,
+        'shares/units': Int64,
+        '%': Float64,
+        'id_cisin': String,
     }
 
-    id_cisin = holders.iat[-1, -1]
+    id_cisin = holders[-1, -1]
 
     with warns(DeprecationWarning):
         hist, oth = await AVA.holder(id_cisin, True, True)
-    assert [*zip(hist.columns, hist.dtypes)] == [('shares', dtype('int64'))]
-    assert oth.index.name == 'ins_code'
-    assert hist.index.dtype.kind == 'M'
-    if not oth.empty:
+    assert [*zip(hist.columns, hist.dtypes)] == [
+        ('date', Date),
+        ('shares', Int64),
+    ]
+    if not oth.is_empty():
         assert [*zip(oth.columns, oth.dtypes)] == [
-            ('name', string),
-            ('shares', dtype('int64')),
-            ('percent', dtype(_Float64)),
+            ('ins_code', String),
+            ('name', String),
+            ('shares', Int64),
+            ('percent', Float64),
         ]
     with warns(DeprecationWarning):
         hist = await AVA.holder('43789,IRT3AVAF0003', True)
@@ -409,16 +416,16 @@ async def test_share_holders_companies_histories():
     )
     assert len(df) == 2
     assert [*zip(df.columns, df.dtypes)] == [
-        ('shareHolderID', dtype('int64')),
-        ('shareHolderName', dtype('O')),
-        ('cIsin', string),
-        ('numberOfShares', dtype(_Float64)),
-        ('perOfShares', dtype(_Float64)),
-        ('change', dtype('int64')),
-        ('changeAmount', dtype(_Float64)),
-        ('shareHolderShareID', dtype('int64')),
+        ('shareHolderID', Int64),
+        ('shareHolderName', Null),
+        ('cIsin', String),
+        ('dEven', Date),
+        ('numberOfShares', Float64),
+        ('perOfShares', Float64),
+        ('change', Int64),
+        ('changeAmount', Float64),
+        ('shareHolderShareID', Int64),
     ]
-    assert df.index.dtype == dtype('<M8[ns]')
 
 
 @file('vsadid_identification.html')
@@ -441,11 +448,10 @@ async def test_adjustments():
         df = await FMELLI.adjustments()
     assert len(df) >= 18
     assert [*zip(df.columns, df.dtypes)] == [
-        ('date', dtype('O')),
-        ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64')),
+        ('date', Datetime(time_unit='us', time_zone=None)),
+        ('adj_pc', Int64),
+        ('pc', Int64),
     ]
-    assert type(df.iat[0, 0]) is jdatetime
 
 
 @file('price_adjustment_api.json')
@@ -453,41 +459,40 @@ async def test_price_adjustments_method():
     df = await FMELLI.price_adjustments()
     assert len(df) >= 18
     assert [*zip(df.columns, df.dtypes)] == [
-        ('insCode', dtype('int64')),
-        ('pClosing', dtype(_Float64)),
-        ('pClosingNotAdjusted', dtype(_Float64)),
-        ('corporateTypeCode', dtype('O')),
-        ('instrument', dtype('O')),
+        ('insCode', Int64),
+        ('dEven', Date),
+        ('pClosing', Float64),
+        ('pClosingNotAdjusted', Float64),
+        ('corporateTypeCode', Null),
+        ('instrument', Null),
     ]
-    assert df.index[-1] == datetime(2009, 7, 15)
 
 
 @file('adjustments_flow_7.html')
 async def test_price_adjustments():
     df = await price_adjustments(7)
     assert [*zip(df.columns, df.dtypes)] == [
-        ('l18', string),
-        ('l30', string),
-        ('date', dtype('O')),
-        ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64')),
+        ('l18', String),
+        ('l30', String),
+        ('date', Datetime(time_unit='us', time_zone=None)),
+        ('adj_pc', Int64),
+        ('pc', Int64),
     ]
     assert len(df) == 6
-    assert df.iat[-1, -1] == 1000
+    assert df[-1, -1] == 1000
 
 
 @file('latif_financial_aph.aspx')
 async def test_adjusted_price_history():
     df = await Instrument(16422980660132735).price_history()
-    assert df.index.name == 'date'
-    assert df.index.dtype == dtype('<M8[ns]')
     assert [*zip(df.columns, df.dtypes)] == [
-        ('pmax', dtype('int64')),
-        ('pmin', dtype('int64')),
-        ('pf', dtype('int64')),
-        ('pl', dtype('int64')),
-        ('tvol', dtype('int64')),
-        ('pc', dtype('int64')),
+        ('date', Date),
+        ('pmax', Int64),
+        ('pmin', Int64),
+        ('pf', Int64),
+        ('pl', Int64),
+        ('tvol', Int64),
+        ('pc', Int64),
     ]
 
 
@@ -497,17 +502,17 @@ async def test_old_search():
     assert type(df) is DataFrame
     assert len(df) > 40
     assert [*zip(df.columns, df.dtypes)] == [
-        ('l18', string),
-        ('l30', string),
-        ('ins_code', dtype('int64')),
-        ('retail', dtype('int64')),
-        ('compensation', dtype('int64')),
-        ('wholesale', dtype('int64')),
-        ('_unknown1', dtype('int64')),
-        ('_unknown2', dtype('int64')),
-        ('_unknown3', dtype('int64')),
-        ('_unknown4', dtype('int64')),
-        ('_unknown5', string),
+        ('l18', String),
+        ('l30', String),
+        ('ins_code', Int64),
+        ('retail', Int64),
+        ('compensation', Int64),
+        ('wholesale', Int64),
+        ('_unknown1', Int64),
+        ('_unknown2', Int64),
+        ('_unknown3', Int64),
+        ('_unknown4', Int64),
+        ('_unknown5', String),
     ]
 
 
@@ -582,11 +587,10 @@ async def test_ombud_messages():
     with warns(DeprecationWarning):
         df = await Instrument(1301069819790264).ombud_messages()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('header', string),
-        ('date', dtype('O')),
-        ('description', string),
+        ('header', String),
+        ('date', Datetime(time_unit='us', time_zone=None)),
+        ('description', String),
     ]
-    assert type(df.iat[0, 1]) is jdatetime
 
 
 @file('shetab_messages.json')
@@ -599,20 +603,19 @@ async def test_messages():
 async def test_dps_history():
     df = await FMELLI.dps_history()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('publish_date', dtype('O')),
-        ('meeting_date', dtype('O')),
-        ('fiscal_year', dtype('O')),
-        ('profit_or_loss_after_tax', dtype(_Float64)),
-        ('distributable_profit', dtype(_Float64)),
-        ('accumulated_profit_at_the_end_of_the_period', dtype(_Float64)),
-        ('cash_earnings_per_share', dtype(_Float64)),
+        ('publish_date', Datetime(time_unit='us', time_zone=None)),
+        ('meeting_date', Datetime(time_unit='us', time_zone=None)),
+        ('fiscal_year', Datetime(time_unit='us', time_zone=None)),
+        ('profit_or_loss_after_tax', Float64),
+        ('distributable_profit', Float64),
+        ('accumulated_profit_at_the_end_of_the_period', Float64),
+        ('cash_earnings_per_share', Float64),
     ]
-    assert type(df.iat[0, 0]) is jdatetime
-    assert type(df.iat[0, 1]) is jdatetime
-    assert type(df.iat[0, 2]) is jdatetime
 
 
 def test_hash():
+    from numpy import int64
+
     assert hash(Instrument(int64(1))) == 1
 
 
@@ -652,22 +655,22 @@ async def test_info_on_fmelli():
 @file('karis_trades.json')
 async def test_trades():
     df = await KARIS.trades()
-    if df.empty:
+    if df.is_empty():
         return
     assert [*zip(df.columns, df.dtypes)] == [
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('nTran', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('qTitTran', dtype('int64')),
-        ('pTran', dtype(_Float64)),
-        ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype(_Float64)),
-        ('pPbSeaCotJ', dtype(_Float64)),
-        ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype(_Float64)),
-        ('canceled', dtype('int64')),
+        ('insCode', Null),
+        ('dEven', Int64),
+        ('nTran', Int64),
+        ('hEven', Int64),
+        ('qTitTran', Int64),
+        ('pTran', Float64),
+        ('qTitNgJ', Int64),
+        ('iSensVarP', String),
+        ('pPhSeaCotJ', Float64),
+        ('pPbSeaCotJ', Float64),
+        ('iAnuTran', Int64),
+        ('xqVarPJDrPRf', Float64),
+        ('canceled', Int64),
     ]
 
 
@@ -682,25 +685,25 @@ async def test_codal():
 async def test_daily_closing_price():
     df = await KARIS.daily_closing_price(n=3)
     assert [*zip(df.columns, df.dtypes)] == [
-        ('priceChange', dtype(_Float64)),
-        ('priceMin', dtype(_Float64)),
-        ('priceMax', dtype(_Float64)),
-        ('priceYesterday', dtype(_Float64)),
-        ('priceFirst', dtype(_Float64)),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('pClosing', dtype(_Float64)),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype(_Float64)),
-        ('zTotTran', dtype(_Float64)),
-        ('qTotTran5J', dtype(_Float64)),
-        ('qTotCap', dtype(_Float64)),
-        ('datetime', dtype('<M8[ns]')),
+        ('priceChange', Float64),
+        ('priceMin', Float64),
+        ('priceMax', Float64),
+        ('priceYesterday', Float64),
+        ('priceFirst', Float64),
+        ('last', Boolean),
+        ('id', Int64),
+        ('insCode', String),
+        ('dEven', Date),
+        ('hEven', Time),
+        ('pClosing', Float64),
+        ('iClose', Boolean),
+        ('yClose', Boolean),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
     ]
     assert len(df) == 3
-    assert df.index.dtype == dtype('<M8[ns]')
 
 
 @file('closing_price_info_karis.json')
@@ -713,14 +716,14 @@ async def test_closing_price_info():
 async def test_best_limits():
     df = await KARIS.best_limits()
     assert [*zip(df.columns, df.dtypes)] == [
-        ('number', dtype('int64')),
-        ('qTitMeDem', dtype('int64')),
-        ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype(_Float64)),
-        ('pMeOf', dtype(_Float64)),
-        ('zOrdMeOf', dtype('int64')),
-        ('qTitMeOf', dtype('int64')),
-        ('insCode', dtype('O')),
+        ('number', Int64),
+        ('qTitMeDem', Int64),
+        ('zOrdMeDem', Int64),
+        ('pMeDem', Float64),
+        ('pMeOf', Float64),
+        ('zOrdMeOf', Int64),
+        ('qTitMeOf', Int64),
+        ('insCode', Null),
     ]
     assert len(df) == 5
 
@@ -745,66 +748,66 @@ async def test_related_companies():
     h = d['relatedCompanyThirtyDayHistory']
 
     assert [*zip(c.columns, c.dtypes)] == [
-        ('instrumentState', dtype('O')),
-        ('lastHEven', dtype('int64')),
-        ('finalLastDate', dtype('int64')),
-        ('nvt', dtype(_Float64)),
-        ('mop', dtype('int64')),
-        ('pRedTran', dtype(_Float64)),
-        ('thirtyDayClosingHistory', dtype('O')),
-        ('priceChange', dtype(_Float64)),
-        ('priceMin', dtype(_Float64)),
-        ('priceMax', dtype(_Float64)),
-        ('priceYesterday', dtype(_Float64)),
-        ('priceFirst', dtype(_Float64)),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype(_Float64)),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype(_Float64)),
-        ('zTotTran', dtype(_Float64)),
-        ('qTotTran5J', dtype(_Float64)),
-        ('qTotCap', dtype(_Float64)),
-        ('instrument.cValMne', dtype('O')),
-        ('instrument.lVal18', dtype('O')),
-        ('instrument.cSocCSAC', dtype('O')),
-        ('instrument.lSoc30', dtype('O')),
-        ('instrument.yMarNSC', dtype('O')),
-        ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', string),
-        ('instrument.lVal30', string),
-        ('instrument.lVal18AFC', string),
-        ('instrument.flow', dtype('int64')),
-        ('instrument.cIsin', dtype('O')),
-        ('instrument.zTitad', dtype(_Float64)),
-        ('instrument.baseVol', dtype('int64')),
-        ('instrument.instrumentID', dtype('O')),
-        ('instrument.cgrValCot', dtype('O')),
-        ('instrument.cComVal', dtype('O')),
-        ('instrument.lastDate', dtype('int64')),
-        ('instrument.sourceID', dtype('int64')),
-        ('instrument.flowTitle', dtype('O')),
-        ('instrument.cgrValCotTitle', dtype('O')),
+        ('instrumentState', Null),
+        ('lastHEven', Int64),
+        ('finalLastDate', Int64),
+        ('nvt', Float64),
+        ('mop', Int64),
+        ('pRedTran', Float64),
+        ('thirtyDayClosingHistory', Null),
+        ('priceChange', Float64),
+        ('priceMin', Float64),
+        ('priceMax', Float64),
+        ('priceYesterday', Float64),
+        ('priceFirst', Float64),
+        ('last', Boolean),
+        ('id', Int64),
+        ('insCode', String),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('pClosing', Float64),
+        ('iClose', Boolean),
+        ('yClose', Boolean),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
+        ('instrument.cValMne', Null),
+        ('instrument.lVal18', Null),
+        ('instrument.cSocCSAC', Null),
+        ('instrument.lSoc30', Null),
+        ('instrument.yMarNSC', Null),
+        ('instrument.yVal', Null),
+        ('instrument.insCode', String),
+        ('instrument.lVal30', String),
+        ('instrument.lVal18AFC', String),
+        ('instrument.flow', Int64),
+        ('instrument.cIsin', Null),
+        ('instrument.zTitad', Float64),
+        ('instrument.baseVol', Int64),
+        ('instrument.instrumentID', Null),
+        ('instrument.cgrValCot', Null),
+        ('instrument.cComVal', Null),
+        ('instrument.lastDate', Int64),
+        ('instrument.sourceID', Int64),
+        ('instrument.flowTitle', Null),
+        ('instrument.cgrValCotTitle', Null),
     ]
     assert [*zip(h.columns, h.dtypes)] == [
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype(_Float64)),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype(_Float64)),
-        ('zTotTran', dtype(_Float64)),
-        ('qTotTran5J', dtype(_Float64)),
-        ('qTotCap', dtype(_Float64)),
+        ('id', Int64),
+        ('insCode', String),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('pClosing', Float64),
+        ('iClose', Boolean),
+        ('yClose', Boolean),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
     ]
 
-    assert h.groupby('insCode')['insCode'].agg(len).mode()[0] > 20
+    assert h.groupby('insCode').len().median()[0, 1] > 20
 
 
 @file('test_identity.json')

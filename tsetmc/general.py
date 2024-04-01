@@ -2,11 +2,10 @@ from typing import TypedDict as _TypedDict
 
 from aiohutils.pd import html_to_df as _html_to_df
 from bs4 import BeautifulSoup as _BeautifulSoup
-from pandas import (
-    NA as _NA,
-    Timestamp as _Timestamp,
+from polars import (
+    Datetime as _Datetime,
+    Null as _Null,
     concat as _concat,
-    json_normalize as _json_normalize,
 )
 
 from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
@@ -111,7 +110,7 @@ def _parse_tds(tds):
             yield float(text.replace(',', ''))
         except ValueError:
             if td == '\xa0':
-                yield _NA
+                yield _Null
 
 
 class MarketOverview(_TypedDict):
@@ -125,7 +124,7 @@ class MarketOverview(_TypedDict):
     marketActivityHEven: int
     marketActivityQTotCap: float
     marketActivityQTotTran: float
-    marketActivityTimestamp: _Timestamp
+    marketActivityTimestamp: _Datetime
     marketActivityZTotTran: int
     marketState: str
     marketStateTitle: str
@@ -142,7 +141,7 @@ async def market_overview(n=1) -> MarketOverview:
     """
     j = await _api(f'MarketData/GetMarketOverview/{n}')
     overview = j['marketOverview']
-    overview['marketActivityTimestamp'] = _Timestamp(
+    overview['marketActivityTimestamp'] = _Datetime(
         f"{overview['marketActivityDEven']}"
         f"{overview['marketActivityHEven']:>06}"
     )
@@ -151,8 +150,14 @@ async def market_overview(n=1) -> MarketOverview:
 
 async def related_companies(cs: str) -> dict[str, _DataFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
-    j['relatedCompany'] = _json_normalize(j['relatedCompany'])
+    rc = j['relatedCompany']
+    assert rc[0]['instrument'].keys() & rc[0].keys() == {'insCode'}
+    for c in rc:
+        inst = c.pop('instrument')
+        for k, v in inst.items():
+            c[f'instrument.{k}'] = v
+    j['relatedCompany'] = _DataFrame(rc)
     j['relatedCompanyThirtyDayHistory'] = _DataFrame(
-        j['relatedCompanyThirtyDayHistory'], copy=False
+        j['relatedCompanyThirtyDayHistory']
     )
     return j

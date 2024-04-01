@@ -1,4 +1,5 @@
 from ast import literal_eval as _literal_eval
+from datetime import datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
@@ -6,11 +7,16 @@ from pathlib import Path
 from re import fullmatch as _fullmatch
 from warnings import warn as _warn
 
-from aiohutils.pd import html_to_df as _html_to_df
-from pandas import (
-    Timestamp as _Ts,
+from aiohutils.df import from_html as _from_html
+from polars import (
+    Date as _Date,
+    Float64 as _Float64,
+    Int64 as _Int64,
+    Series as _Series,
+    String as _String,
+    Time as _Time,
+    col as _col,
     read_csv as _read_csv,
-    to_datetime as _to_datetime,
 )
 
 from tsetmc import (
@@ -102,13 +108,15 @@ class _LazyDS:
     @ClassProperty
     def df(cls) -> _DataFrame:
         if cls.cached_df is None:
-            cls.cached_df = _read_csv(
-                cls.path,
-                low_memory=False,
-                lineterminator='\n',
-                dtype=_String,
-                encoding='utf-8-sig',
-            )
+            with cls.path.open('rb') as f:
+                cls.cached_df = _read_csv(
+                    f,
+                    schema={
+                        'ins_code': _String,
+                        'l18': _String,
+                        'l30': _String,
+                    },
+                )
         return cls.cached_df
 
     @classmethod
@@ -155,7 +163,7 @@ class LiveData(_TypedDict, total=False):
     pmin: int
     py: int
     status: str
-    timestamp: _Ts
+    timestamp: _datetime
     timestamp: str
     tno: int
     tval: int
@@ -304,6 +312,17 @@ class Codal(_TypedDict):
     tracingNo: str
 
 
+_PRICE_HIST_SCHEMA = {
+    'date': _String,
+    'pmax': _Int64,
+    'pmin': _Int64,
+    'pf': _Int64,
+    'pl': _Int64,
+    'tvol': _Int64,
+    'pc': _Int64,
+}
+
+
 class Instrument:
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
@@ -386,8 +405,7 @@ class Instrument:
 
     async def trades(self) -> _DataFrame:
         j = await _api(f'Trade/GetTrade/{self.code}')
-        df = _DataFrame(j['trade'], copy=False)
-        return df
+        return _DataFrame(j['trade'])
 
     async def codal(self, n=9) -> list[Codal]:
         j = await _api(
@@ -400,13 +418,14 @@ class Instrument:
         j = await _api(
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
-        df = _DataFrame(j['closingPriceDaily'], copy=False)
-        datetime = df['datetime'] = _to_datetime(
-            df.pop('dEven').astype(str)
-            + df.pop('hEven').astype(str).str.rjust(6, '0')
+        df = _DataFrame(j['closingPriceDaily'])
+        df = df.with_columns(
+            df['dEven'].cast(_String).str.strptime(_Date, '%Y%m%d'),
+            df['hEven']
+            .cast(_String)
+            .str.rjust(6, '0')
+            .str.strptime(_Time, '%H%M%S'),
         )
-        df['date'] = datetime.dt.normalize()
-        df.set_index('date', inplace=True)
         return df
 
     async def closing_price_info(self) -> ClosingPriceInfo:
@@ -417,7 +436,7 @@ class Instrument:
 
     async def best_limits(self) -> _DataFrame:
         j = await _api(f'BestLimits/{self.code}')
-        df = _DataFrame(j['bestLimits'], copy=False)
+        df = _DataFrame(j['bestLimits'])
         return df
 
     async def client_type(self) -> ClientType:
@@ -510,20 +529,18 @@ class Instrument:
             th = _literal_eval(_STR_TO_NUM(m[1]))
             th = _DataFrame(
                 th,
-                copy=False,
-                columns=(
-                    'date',
-                    'pc',
-                    'py',
-                    'pmin',
-                    'pmax',
-                    'tno',
-                    'tvol',
-                    'tval',
-                ),
+                schema={
+                    'date': _String,
+                    'pc': _Float64,
+                    'py': _Float64,
+                    'pmin': _Float64,
+                    'pmax': _Float64,
+                    'tno': _Int64,
+                    'tvol': _Int64,
+                    'tval': _Float64,
+                },
             )
-            th['date'] = _to_datetime(th['date'], format='%Y%m%d')
-            th.set_index('date', inplace=True)
+            th = th.with_columns(th['date'].str.strptime(_Date, '%Y%m%d'))
             result['trade_history'] = th
         if related_companies:
             m = _RELATED_COMPANIES(text, m.end())
@@ -591,9 +608,16 @@ class Instrument:
         if best_limits:
             result['best_limits'] = _colon_separated(
                 _StringIO(orders_info),
-                sep='@',
-                names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
-                lineterminator=',',
+                separator='@',
+                schema={
+                    'zd': _Int64,
+                    'qd': _Int64,
+                    'pd': _Int64,
+                    'po': _Int64,
+                    'qo': _Int64,
+                    'zo': _Int64,
+                },
+                eol_char=',',
             )
         return result
 
@@ -615,23 +639,21 @@ class Instrument:
         )
         df = _colon_separated(
             _BytesIO(content),
-            sep='@',
-            names=(
-                'date',
-                'pmax',
-                'pmin',
-                'pc',
-                'pl',
-                'pf',
-                'py',
-                'tval',
-                'tvol',
-                'tno',
-            ),
-            index_col='date',
-            parse_dates=True,
+            separator='@',
+            schema={
+                'date': _String,
+                'pmax': _Float64,
+                'pmin': _Float64,
+                'pc': _Float64,
+                'pl': _Float64,
+                'pf': _Float64,
+                'py': _Float64,
+                'tval': _Float64,
+                'tvol': _Int64,
+                'tno': _Int64,
+            },
         )
-        return df
+        return df.with_columns(df['date'].str.strptime(_Date, '%Y%m%d'))
 
     async def price_history(self, adjusted: bool = True) -> _DataFrame:
         # As far as I can thll the new tsetmc site does not have any
@@ -641,11 +663,9 @@ class Instrument:
         )
         df = _colon_separated(
             _BytesIO(content),
-            names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'),
-            index_col='date',
-            parse_dates=True,
+            schema=_PRICE_HIST_SCHEMA,
         )
-        return df
+        return df.with_columns(df['date'].str.strptime(_Date, '%Y%m%d'))
 
     async def client_type_history_old(self) -> _DataFrame:
         """Get daily natural/legal history.
@@ -667,27 +687,25 @@ class Instrument:
             DeprecationWarning,
             stacklevel=2,
         )
-        return _colon_separated(
+        df = _colon_separated(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}')),
-            names=(
-                'date',
-                'n_buy_count',
-                'l_buy_count',
-                'n_sell_count',
-                'l_sell_count',
-                'n_buy_volume',
-                'l_buy_volume',
-                'n_sell_volume',
-                'l_sell_volume',
-                'n_buy_value',
-                'l_buy_value',
-                'n_sell_value',
-                'l_sell_value',
-            ),
-            index_col='date',
-            parse_dates=True,
-            dtype='int64',
+            schema={
+                'date': _String,
+                'n_buy_count': _Int64,
+                'l_buy_count': _Int64,
+                'n_sell_count': _Int64,
+                'l_sell_count': _Int64,
+                'n_buy_volume': _Int64,
+                'l_buy_volume': _Int64,
+                'n_sell_volume': _Int64,
+                'l_sell_volume': _Int64,
+                'n_buy_value': _Int64,
+                'l_buy_value': _Int64,
+                'n_sell_value': _Int64,
+                'l_sell_value': _Int64,
+            },
         )
+        return df.with_columns(df['date'].str.strptime(_Date, '%Y%m%d'))
 
     async def client_type_history(
         self, date: int | str = None
@@ -708,7 +726,7 @@ class Instrument:
             # j = (await _api(f'ClientType/GetClientType/{self.code}/1/0'))[
             #     'clientType']
             j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
-            return _DataFrame(j['clientType'], copy=False)
+            return _DataFrame(j['clientType'])
 
         j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
         return j['clientType']
@@ -729,8 +747,8 @@ class Instrument:
             stacklevel=2,
         )
         text = await _get_par_tree(f'15131M&i={self.code}')
-        df = _html_to_df(text)
-        return dict(zip(df[0], df[1]))
+        df = _from_html(text)
+        return dict(zip(df['0'], df['1']))
 
     async def identity(self) -> Identity:
         j = await _api(
@@ -746,8 +764,8 @@ class Instrument:
             stacklevel=2,
         )
         text = await _get_par_tree(f'15131V&s={await self._arabic_l18}')
-        df = _html_to_df(text)
-        return dict(zip(df[0].str.removesuffix(' :'), df[1]))
+        df = _from_html(text)
+        return dict(zip(df['0'].str.strip_suffix(' :'), df['1']))
 
     async def publisher(self) -> dict:
         j = await _api(
@@ -784,10 +802,10 @@ class Instrument:
             f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
             fa=True,
         )
-        df = _DataFrame(j['shareHolder'], copy=False)
-        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
-        df.set_index('dEven', inplace=True)
-        return df
+        df = _DataFrame(j['shareHolder'])
+        return df.with_columns(
+            df['dEven'].cast(_String).str.strptime(_Date, '%Y%m%d')
+        )
 
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.
@@ -805,14 +823,20 @@ class Instrument:
         if cisin is None:
             cisin = await self.cisin
         text = await _get_par_tree(f'15131T&c={cisin}')
-        df = _html_to_df(text)
-        df.drop(columns='Unnamed: 4', inplace=True)
+        df = _from_html(text)
+        df = df.drop('Unnamed: 4')
         # todo: use separate columns
         df.columns = ['holder', 'shares/units', '%', 'change']
-        df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
+        df = df.with_columns(
+            _Series(
+                'id_cisin',
+                _findall(r"ShowShareHolder\('([^']*)'\)", text),
+                dtype=_String,
+            )
+        )
         if df['change'].dtype == _String:
-            _numerize(df, ('change',), 'Int64')
-        _numerize(df, ('shares/units',), 'int64')
+            df = _numerize(df, ('change',), _Int64)
+        df = _numerize(df, ('shares/units',), _Int64)
         return df
 
     @staticmethod
@@ -835,19 +859,21 @@ class Instrument:
         hist, _, oth = text.partition('#')
 
         def history_df() -> _DataFrame:
-            return _colon_separated(
+            df = _colon_separated(
                 _StringIO(hist),
-                names=('date', 'shares'),
-                dtype='int64',
-                index_col='date',
-                parse_dates=True,
+                schema={'date': _String, 'shares': _Int64},
             )
+            return df.with_columns(df['date'].str.strptime(_Date, '%Y%m%d'))
 
         def other_holdings_df() -> _DataFrame:
             return _colon_separated(
                 _StringIO(oth),
-                names=('ins_code', 'name', 'shares', 'percent'),
-                index_col='ins_code',
+                schema={
+                    'ins_code': _String,
+                    'name': _String,
+                    'shares': _Int64,
+                    'percent': _Float64,
+                },
             )
 
         if history and other_holdings:
@@ -864,17 +890,16 @@ class Instrument:
             stacklevel=2,
         )
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
-        df = _html_to_df(content.decode())
+        df = _from_html(content.decode())
         df.columns = ('date', 'adj_pc', 'pc')
-        df['date'] = df['date'].apply(_j_ymd_parse)
-        return df
+        return df.with_columns(df['date'].apply(_j_ymd_parse))
 
     async def price_adjustments(self) -> _DataFrame:
         j = await _api(f'ClosingPrice/GetPriceAdjustList/{self.code}')
-        df = _DataFrame(j['priceAdjust'], copy=False)
-        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
-        df.set_index('dEven', inplace=True)
-        return df
+        df = _DataFrame(j['priceAdjust'])
+        return df.with_columns(
+            df['dEven'].cast(_String).str.strptime(_Date, '%Y%m%d')
+        )
 
     async def messages(self) -> list[Message]:
         j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
@@ -900,22 +925,16 @@ class Instrument:
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
         df = _colon_separated(
             _BytesIO(content),
-            header=None,
-            sep='@',
+            schema=_DPS_HIST_SCHEMA,
+            separator='@',
         )
-        cols = [
-            'publish_date',
-            'meeting_date',
-            'fiscal_year',
-            'profit_or_loss_after_tax',
-            'distributable_profit',
-            'accumulated_profit_at_the_end_of_the_period',
-            'cash_earnings_per_share',
-        ]
-        df.columns = cols
-        for col in cols[:3]:
-            df[col] = df[col].map(_partial(_jstrptime, format='%Y/%m/%d'))
-        return df
+        return df.with_columns(
+            df.select(
+                _col(_String).map_elements(
+                    _partial(_jstrptime, format='%Y/%m/%d')
+                )
+            )
+        )
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
         """Return an object resembling Instrument on a specific date.
@@ -926,6 +945,17 @@ class Instrument:
             Avoid making simultaneous calls.
         """
         return InstrumentOnDate(_inst=self, _date=date)
+
+
+_DPS_HIST_SCHEMA = {
+    'publish_date': _String,
+    'meeting_date': _String,
+    'fiscal_year': _String,
+    'profit_or_loss_after_tax': _Float64,
+    'distributable_profit': _Float64,
+    'accumulated_profit_at_the_end_of_the_period': _Float64,
+    'cash_earnings_per_share': _Float64,
+}
 
 
 class ClosingPrice(_TypedDict):
@@ -1002,7 +1032,7 @@ class InstrumentOnDate:
         j = await _api(
             f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}'
         )
-        return _DataFrame(j['closingPriceHistory'], copy=False)
+        return _DataFrame(j['closingPriceHistory'])
 
     async def states(self) -> _DataFrame:
         """Get intraday instrument states.
@@ -1012,7 +1042,7 @@ class InstrumentOnDate:
         j = await _api(
             f'MarketData/GetInstrumentState/{self.code}/{self.date}'
         )
-        return _DataFrame(j['instrumentState'], copy=False)
+        return _DataFrame(j['instrumentState'])
 
     async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
@@ -1033,12 +1063,12 @@ class InstrumentOnDate:
             holders.
         """
         j = await _api(f'Shareholder/{self.code}/{self.date}')
-        return _DataFrame(j['shareShareholder'], copy=False)
+        return _DataFrame(j['shareShareholder'])
 
     async def best_limits(self) -> _DataFrame:
         """Get intraday best limits history."""
         j = await _api(f'BestLimits/{self.code}/{self.date}')
-        return _DataFrame(j['bestLimitsHistory'], copy=False)
+        return _DataFrame(j['bestLimitsHistory'])
 
     async def trades(self) -> _DataFrame:
         """Get intraday trades.
@@ -1048,14 +1078,14 @@ class InstrumentOnDate:
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
-        return _DataFrame(j['tradeHistory'], copy=False)
+        return _DataFrame(j['tradeHistory'])
 
     async def static_thresholds(self) -> _DataFrame:
         """Get intraday static thresholds."""
         j = await _api(
             f'MarketData/GetStaticThreshold/{self.code}/{self.date}'
         )
-        return _DataFrame(j['staticThreshold'], copy=False)
+        return _DataFrame(j['staticThreshold'])
 
     async def data(self) -> dict:
         """Get general info about the instrument on the specific date.
@@ -1078,36 +1108,38 @@ async def price_adjustments(flow: int) -> _DataFrame:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
     text = await _get_par_tree(f'151319&Flow={flow}')
-    df = _html_to_df(text)
+    df = _from_html(text)
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
-    df['date'] = df['date'].apply(_j_ymd_parse)
-    return df
+    return df.with_columns(df['date'].apply(_j_ymd_parse))
+
+
+_OLD_SEARCH_SCHEMA = {
+    'l18': _String,
+    'l30': _String,
+    'ins_code': _Int64,
+    'retail': _Int64,
+    'compensation': _Int64,
+    'wholesale': _Int64,
+    '_unknown1': _Int64,
+    '_unknown2': _Int64,
+    '_unknown3': _Int64,
+    '_unknown4': _Int64,
+    '_unknown5': _String,
+}
 
 
 async def old_search(skey: str, /) -> _DataFrame:
     """`skey` (search key) is usually part of the l18 or l30."""
     return _colon_separated(
         _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
-        header=None,
+        has_header=False,
         # Another terminology would be: {
         #   ins_code: round_lot,
         #   retail: odd_lot,
         #   compensation: buyback,
         #   wholesale: block,
         # } see: https://www.sena.ir/news/77488/
-        names=(
-            'l18',
-            'l30',
-            'ins_code',
-            'retail',
-            'compensation',
-            'wholesale',
-            '_unknown1',
-            '_unknown2',
-            '_unknown3',
-            '_unknown4',
-            '_unknown5',
-        ),
+        schema=_OLD_SEARCH_SCHEMA,
     )
 
 
@@ -1205,7 +1237,9 @@ def _parse_price_info(price_info):
     result = {
         'time': time,
         'status': status,
-        'timestamp': _Ts(f'{info_datetime_date}{last_info_time:>06}'),
+        'timestamp': _datetime.strptime(
+            f'{info_datetime_date}{last_info_time:>06}', '%Y%m%d%H%M%S'
+        ),
         'pl': int(pl),
         'pc': int(pc),
         'pf': int(pf),

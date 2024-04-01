@@ -10,7 +10,7 @@ from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
 from polars import (
     DataFrame as _DataFrame,
-    Null as _Null,
+    Float64 as _Float64,
     read_csv as _read_csv,
 )
 
@@ -226,24 +226,18 @@ async def _api(path: str, *, fa=False):
 
 
 def _numerize(
-    df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False
-):
+    df: _DataFrame, cols: tuple[str, ...], cast=_Float64, comma=False
+) -> _DataFrame:
     for col in cols:
         c = df[col]
         if comma is True:
             c = c.str.replace(',', '')
-        # https://stackoverflow.com/a/39684629/2705757
-        df[col] = (
-            c.replace(r' [KMB]$', '', regex=True).astype(astype)
-        ) * c.str.extract(r'[\d\. ]+([KMBT]+)', expand=False).map(
-            {
-                _Null: 1,
-                'K': 10**3,
-                'M': 10**6,
-                'B': 10**9,
-                'T': 10**12,
-            }
-        ).astype(astype)
+        df = df.with_columns(
+            c.str.replace_many([' K', ' M', ' B'], ['e3', 'e6', 'e9'])
+            .cast(_Float64)
+            .cast(cast)
+        )
+    return df
 
 
 def _save_last_content(msg: str, /):
