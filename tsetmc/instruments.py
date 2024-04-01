@@ -106,7 +106,7 @@ class _LazyDS:
                 cls.path,
                 low_memory=False,
                 lineterminator='\n',
-                dtype='string',
+                dtype=_String,
                 encoding='utf-8-sig',
             )
         return cls.cached_df
@@ -810,7 +810,7 @@ class Instrument:
         # todo: use separate columns
         df.columns = ['holder', 'shares/units', '%', 'change']
         df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
-        if df['change'].dtype == 'string':
+        if df['change'].dtype == _String:
             _numerize(df, ('change',), 'Int64')
         _numerize(df, ('shares/units',), 'int64')
         return df

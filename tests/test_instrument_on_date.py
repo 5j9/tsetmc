@@ -6,7 +6,7 @@ from tsetmc.instruments import ClientTypeOnDate, ClosingPrice, Instrument
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
-string = 'string'
+string = _String
 
 
 @file('faraz_GetClosingPriceHistory_20220222.json')
@@ -17,13 +17,13 @@ async def test_intraday_closing_price():
         ('insCode', dtype('O')),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
+        ('pDrCotVal', dtype(_Float64)),
+        ('zTotTran', dtype(_Float64)),
+        ('qTotTran5J', dtype(_Float64)),
+        ('qTotCap', dtype(_Float64)),
     ]
 
 
@@ -34,8 +34,8 @@ async def test_static_thresholds():
         ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('psGelStaMax', dtype('float64')),
-        ('psGelStaMin', dtype('float64')),
+        ('psGelStaMax', dtype(_Float64)),
+        ('psGelStaMin', dtype(_Float64)),
     ]
 
 
@@ -50,8 +50,8 @@ async def test_intraday_best_limits():
         ('number', dtype('int64')),
         ('qTitMeDem', dtype('int64')),
         ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype('float64')),
-        ('pMeOf', dtype('float64')),
+        ('pMeDem', dtype(_Float64)),
+        ('pMeOf', dtype(_Float64)),
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
         ('insCode', dtype('O')),
@@ -67,13 +67,13 @@ async def test_intraday_trades():
         ('nTran', dtype('int64')),
         ('hEven', dtype('int64')),
         ('qTitTran', dtype('int64')),
-        ('pTran', dtype('float64')),
+        ('pTran', dtype(_Float64)),
         ('qTitNgJ', dtype('int64')),
         ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype('float64')),
-        ('pPbSeaCotJ', dtype('float64')),
+        ('pPhSeaCotJ', dtype(_Float64)),
+        ('pPbSeaCotJ', dtype(_Float64)),
         ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype('float64')),
+        ('xqVarPJDrPRf', dtype(_Float64)),
         ('canceled', dtype('int64')),
     ]
 
@@ -130,10 +130,10 @@ async def test_intraday_holders():
         ('shareHolderName', string),
         ('cIsin', string),
         ('dEven', dtype('int64')),
-        ('numberOfShares', dtype('float64')),
-        ('perOfShares', dtype('float64')),
+        ('numberOfShares', dtype(_Float64)),
+        ('perOfShares', dtype(_Float64)),
         ('change', dtype('int64')),
-        ('changeAmount', dtype('float64')),
+        ('changeAmount', dtype(_Float64)),
         ('shareHolderShareID', dtype('int64')),
     ]
 

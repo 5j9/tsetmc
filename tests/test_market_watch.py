@@ -1,16 +1,17 @@
 from aiohutils.tests import OFFLINE_MODE, file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
-from pandas import DataFrame
-from pandas.api.types import is_numeric_dtype
-from polars import Datetime, Null, String
+from polars import Datetime, Float64, Int64, Null, String
 
 from tests import assert_market_state
 
 # noinspection PyProtectedMember
 from tsetmc.market_watch import (
-    _BEST_LIMITS_NAMES,
+    _BEST_LIMITS_DTYPES,
+    _CLIENT_TYPE_SCHEMA,
+    _CLOSING_PRICE_SCHEMA,
     _PRICE_DTYPES_25,
+    _PRICE_UPDATE_SCHEMA,
     _parse_market_state,
     client_type_all,
     closing_price_all,
@@ -21,116 +22,58 @@ from tsetmc.market_watch import (
     status_changes,
 )
 
-PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES_25.items()][1:]  # ins_code is now index
-BL_STACKED_COLUMNS = _BEST_LIMITS_NAMES[2:]
-BL_UNSTACKED_COLUMNS = [
-    f'{n}{i}' for n in BL_STACKED_COLUMNS for i in range(1, 6)
-]
-
-
-def assert_bl_dtypes(df: DataFrame, unstacked=True):
-    if unstacked:
-        columns = BL_UNSTACKED_COLUMNS
-        index = df.index
-        assert index.name == 'ins_code'
-        assert index.dtype == String
-    else:
-        columns = BL_STACKED_COLUMNS
-        index = df.index
-        assert index.names == ['ins_code', 'number']
-        assert [*index.dtypes] == [String, 'int64']
-
-    for c in columns:
-        col = df.pop(c)
-        assert is_numeric_dtype(col)
+BL_UNSTACKED_DTYPES = {
+    f'{c}{i}': Float64 if c[0] == 'p' else Int64
+    for c, t in _BEST_LIMITS_DTYPES.items()
+    for i in range(1, 6)
+    if c not in ('row', 'ins_code')
+}
+BL_UNSTACKED_DTYPES['ins_code'] = String
 
 
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
-    assert [
-        *zip(mwi['prices'].columns, mwi['prices'].dtypes)
-    ] == PRICE_DTYPES_ITEMS
-    assert [
-        *zip(mwi['best_limits'].index.columns, mwi['best_limits'].index.dtypes)
-    ] == [
-        ('ins_code', String),
-        ('number', dtype('int64')),
-    ]
+    assert (
+        dict(zip(mwi['prices'].columns, mwi['prices'].dtypes))
+        == _PRICE_DTYPES_25
+    )
     assert 'market_state' not in mwi
 
     mwi = await market_watch_init(market_state=True)
     prices = mwi['prices']
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
-    assert_bl_dtypes(prices)
-    assert [*zip(prices.columns, prices.dtypes)] == PRICE_DTYPES_ITEMS
-
-    i = prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == String
+    assert (
+        dict(zip(prices.columns, prices.dtypes))
+        == _PRICE_DTYPES_25 | BL_UNSTACKED_DTYPES
+    )
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
-    assert [
-        *zip(mwi['best_limits'].index.columns, mwi['best_limits'].index.dtypes)
-    ] == [
-        ('ins_code', String),
-        ('number', dtype('int64')),
-    ]
 
 
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
     df = await closing_price_all()
-    assert all(t == 'int64' for t in df.dtypes)
-    assert df.columns.to_list() == [
-        'pc',
-        'pl',
-        'tno',
-        'tvol',
-        'tval',
-        'pmin',
-        'pmax',
-        'py',
-        'pf',
-    ]
-    assert [*zip(df.index.columns, df.index.dtypes)] == [
-        ('ins_code', String),
-        ('n', dtype('int64')),
-    ]
+    assert dict(zip(df.columns, df.dtypes)) == _CLOSING_PRICE_SCHEMA
 
 
 @file('ClientTypeAll.aspx')
 async def test_client_type_all():
     df = await client_type_all()
-    assert all(
-        df.columns
-        == [
-            'n_buy_count',
-            'l_buy_count',
-            'n_buy_volume',
-            'l_buy_volume',
-            'n_sell_count',
-            'l_sell_count',
-            'n_sell_volume',
-            'l_sell_volume',
-        ]
-    )
-    assert df.index.name == 'ins_code'
-    assert df.index.dtype == String
-    if df.empty:
+    if df.is_empty():
         return
-    assert all(dt == 'int64' for dt in df.dtypes)
+    assert dict(zip(df.columns, df.dtypes)) == _CLIENT_TYPE_SCHEMA
 
 
 @file('InstValue.aspx')
 async def test_key_stats():
     df = await key_stats()
-    assert all(df.columns.str.startswith('is'))
-    assert all(t == 'float64' for t in df.dtypes)
-    assert df.index.name == 'ins_code'
-    assert df.index.dtype == String
+    assert df.columns[0] == 'ins_code'
+    assert df.dtypes[0] == String
+    assert all(c.isnumeric() for c in df.columns[1:])
+    assert all(t == Int64 for t in df.dtypes[1:])
 
 
 def test_parse_index():
@@ -220,12 +163,9 @@ async def test_market_watch_plus_new():
         best_limits_prepare_join=False,
     )
     new_prices = mwp['new_prices']
-    assert [*zip(new_prices.columns, new_prices.dtypes)] == PRICE_DTYPES_ITEMS
-    i = new_prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == String
-    best_limits = mwp['best_limits']
-    assert_bl_dtypes(best_limits, False)
+    assert dict(zip(new_prices.columns, new_prices.dtypes)) == _PRICE_DTYPES_25
+    bl = mwp['best_limits']
+    assert dict(zip(bl.columns, bl.dtypes)) == _BEST_LIMITS_DTYPES
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
 
@@ -236,19 +176,10 @@ async def test_market_watch_plus_update():
         64130, 9540883525, best_limits_prepare_join=False
     )
     price_updates = mwp['price_updates']
-    assert price_updates.columns.to_list() == [
-        'heven',
-        'pf',
-        'pc',
-        'pl',
-        'tno',
-        'tvol',
-        'tval',
-        'pmin',
-        'pmax',
-    ]
-    assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
-    assert price_updates.index.dtype == String
+    assert (
+        dict(zip(price_updates.columns, price_updates.dtypes))
+        == _PRICE_UPDATE_SCHEMA
+    )
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
@@ -259,15 +190,12 @@ async def test_market_watch_plus_update():
         assert m.isnumeric()
 
     bl = mwp['best_limits']
-    assert_bl_dtypes(bl, False)
+    assert dict(zip(bl.columns, bl.dtypes)) == _BEST_LIMITS_DTYPES
 
     assert type(mwp['refid']) == int
 
     new_prices = mwp['new_prices']
-    assert [*zip(new_prices.columns, new_prices.dtypes)] == PRICE_DTYPES_ITEMS
-    i = new_prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == String
+    assert dict(zip(new_prices.columns, new_prices.dtypes)) == _PRICE_DTYPES_25
 
 
 @file('status_changes.html')
@@ -312,10 +240,13 @@ async def test_mwp_with_empty_eps_best_limits_prepare_join():
         return
     # used to raise error due to COW setting
     mwp = await market_watch_plus(0, 0, best_limits_prepare_join=False)
-    assert_bl_dtypes(mwp['best_limits'], unstacked=False)
+    bl = mwp['best_limits']
+    assert dict(zip(bl.columns, bl.dtypes)) == _BEST_LIMITS_DTYPES
 
+    # best_limits_prepare_join=True
     mwp = await market_watch_plus(0, 0)
-    assert_bl_dtypes(mwp['best_limits'], unstacked=True)
+    bl = mwp['best_limits']
+    assert dict(zip(bl.columns, bl.dtypes)) == BL_UNSTACKED_DTYPES
 
 
 @file('mwp_23_cols.txt')
@@ -323,4 +254,4 @@ async def test_23_cols():
     if not OFFLINE_MODE:
         return
     mwp = await market_watch_plus(0, 0)
-    assert len(mwp['new_prices'].columns) == 22  # ins_code has become index
+    assert len(mwp['new_prices'].columns) == 23

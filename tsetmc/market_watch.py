@@ -4,8 +4,15 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from typing import Any as _Any
 
 from aiohutils.pd import html_to_df as _html_to_df
-from numpy import nan as _nan
-from pandas import concat as _concat, to_numeric as _to_numeric
+from pandas import concat as _concat
+from polars import (
+    Float64 as _Float64,
+    Int8 as _Int8,
+    Int16 as _Int16,
+    Int32 as _Int32,
+    Int64 as _Int64,
+    String as _String,
+)
 
 from tsetmc import (
     MarketState,
@@ -21,40 +28,49 @@ from tsetmc import (
     _TypedDict,
 )
 
-_BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
+_BEST_LIMITS_DTYPES = {
+    'ins_code': _String,
+    'row': _Int8,
+    'zo': _Int64,
+    'zd': _Int64,
+    'pd': _Float64,
+    'po': _Float64,
+    'qd': _Int64,
+    'qo': _Int64,
+}
 _COMMON_DTYPES = {
-    'heven': 'int32',
-    'pf': 'int64',
-    'pc': 'int64',
-    'pl': 'int64',
-    'tno': 'int64',
-    'tvol': 'int64',
-    'tval': 'int64',
-    'pmin': 'int64',
-    'pmax': 'int64',
+    'heven': _Int32,
+    'pf': _Int64,
+    'pc': _Int64,
+    'pl': _Int64,
+    'tno': _Int64,
+    'tvol': _Int64,
+    'tval': _Int64,
+    'pmin': _Int64,
+    'pmax': _Int64,
 }
 _PRICE_DTYPES_23 = {
-    'ins_code': 'string',
-    'isin': 'string',
-    'l18': 'string',
-    'l30': 'string',
+    'ins_code': _String,
+    'isin': _String,
+    'l18': _String,
+    'l30': _String,
     **_COMMON_DTYPES,
-    'py': 'int64',
-    'eps': 'float64',
-    'bvol': 'int64',
-    'visitcount': 'int64',
+    'py': _Int64,
+    'eps': _Float64,
+    'bvol': _Int64,
+    'visitcount': _Int64,
     # 0-7 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'flow': 'int16',
+    'flow': _Int16,
     # 1-98, see tsetmc.general.cs_codes()
-    'cs': 'string',
-    'tmax': 'float64',
-    'tmin': 'float64',
-    'z': 'int64',
+    'cs': _String,
+    'tmax': _Float64,
+    'tmin': _Float64,
+    'z': _Int64,
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'yval': 'int16',
+    'yval': _Int16,
 }
-_PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
-_PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
+_PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': _Float64, 'buyop': _Int64}
+_PRICE_UPDATE_SCHEMA = {'ins_code': _String, **_COMMON_DTYPES}
 
 
 class MarketWatchInit(_TypedDict, total=False):
@@ -65,11 +81,13 @@ class MarketWatchInit(_TypedDict, total=False):
 
 
 def _unstack_best_limits(bl: _DataFrame) -> _DataFrame:
-    # merge multiple rows sharing the same `row` number into one row.
-    # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    bl = bl.unstack()
-    bl.columns = [f'{name}{number}' for name, number in bl.columns]
-    return bl
+    pivot = bl.pivot(
+        index=['ins_code'],
+        columns=['row'],
+        values=['zo', 'zd', 'po', 'pd', 'qo', 'qd'],
+    )
+    pivot.columns = [c.replace('_row_', '') for c in pivot.columns]
+    return pivot
 
 
 async def market_watch_init(
@@ -95,22 +113,18 @@ async def market_watch_init(
     if prices:
         result['prices'] = price_df = _colon_separated(
             _StringIO(states),
-            names=_PRICE_DTYPES_25,
-            index_col='ins_code',
-            dtype=_PRICE_DTYPES_25,
+            schema=_PRICE_DTYPES_25,
         )
     if best_limits:
         result['best_limits'] = bl = _colon_separated(
             _StringIO(price_rows),
-            names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'},
-            index_col=('ins_code', 'number'),
+            schema=_BEST_LIMITS_DTYPES,
         )
     if join and prices and best_limits:
         # noinspection PyUnboundLocalVariable
         bl = _unstack_best_limits(bl)
         # noinspection PyUnboundLocalVariable
-        joined = bl.join(price_df)
+        joined = bl.join(price_df, on='ins_code')
         # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
         result['prices'] = joined
     if market_state:
@@ -166,47 +180,34 @@ async def market_watch_plus(
         if update_fast_view != '':
             result['market_state'] = _parse_market_state(update_fast_view)
     if new_prices or price_updates:
-        inst_prices = [ip.split(',') for ip in inst_price.split(';')]
+        inst_prices = [
+            [s if s else None for s in ip.split(',')]
+            for ip in inst_price.split(';')
+        ]
         if new_prices:
             lst = [ip for ip in inst_prices if len(ip) != 10]
             twenty_five_cols = not lst or len(lst[0]) == 25
             try:
-                # noinspection PyTypeChecker
-                # https://github.com/pandas-dev/pandas/issues/57798
                 df = _DataFrame(
                     lst,
-                    columns=_PRICE_DTYPES_25
-                    if twenty_five_cols is True
-                    else _PRICE_DTYPES_23,
-                    copy=False,
+                    orient='row',
+                    schema=(
+                        _PRICE_DTYPES_25
+                        if twenty_five_cols is True
+                        else _PRICE_DTYPES_23
+                    ),
                 )
             except ValueError as e:
                 _save_last_content(f'{e}')
                 raise e
-            df['eps'] = df['eps'].replace('', _nan)
-            if twenty_five_cols is True:
-                df['predtran'] = df['predtran'].replace('', _nan)
-                df['buyop'] = df['buyop'].replace('', _nan)
-                df = df.astype(_PRICE_DTYPES_25)
-            else:
-                df = df.astype(_PRICE_DTYPES_23)
-            df.set_index('ins_code', inplace=True)
             result['new_prices'] = df
         if price_updates:
             lst = [ip for ip in inst_prices if len(ip) == 10]
-            # noinspection PyTypeChecker
-            # https://github.com/pandas-dev/pandas/issues/57798
-            df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
-            df = df.astype(_PRICE_UPDATE_COLUMNS)
-            df.ins_code = df.ins_code.astype('string')
-            df.set_index('ins_code', inplace=True)
+            df = _DataFrame(lst, orient='row', schema=_PRICE_UPDATE_SCHEMA)
             result['price_updates'] = df
     if best_limits:
         bl = _colon_separated(
-            _StringIO(best_limit),
-            index_col=('ins_code', 'number'),
-            names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'},
+            _StringIO(best_limit), dtypes=_BEST_LIMITS_DTYPES
         )
         if best_limits_prepare_join:
             bl = _unstack_best_limits(bl)
@@ -215,10 +216,10 @@ async def market_watch_plus(
     return result
 
 
-def _split_id_rows(content: bytes, id_row_len: int) -> list:
-    data = content.split(b';')
+def _split_id_rows(csv: bytes, id_row_len: int) -> list:
+    data = csv.decode().split(';')
     for i, datum in enumerate(data):
-        items = datum.split(b',')
+        items = datum.split(',')
         if len(items) == id_row_len:
             id_ = items[0]
         else:
@@ -227,6 +228,21 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list:
         # noinspection PyTypeChecker
         data[i] = items
     return data
+
+
+_CLOSING_PRICE_SCHEMA = {
+    'ins_code': _String,
+    'n': _Int8,
+    'pc': _Int64,
+    'pl': _Int64,
+    'tno': _Int64,
+    'tvol': _Int64,
+    'tval': _Int64,
+    'pmin': _Int64,
+    'pmax': _Int64,
+    'py': _Int64,
+    'pf': _Int64,
+}
 
 
 async def closing_price_all() -> _DataFrame:
@@ -240,28 +256,20 @@ async def closing_price_all() -> _DataFrame:
     """
     content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
-    columns = [
-        'ins_code',
-        'n',
-        'pc',
-        'pl',
-        'tno',
-        'tvol',
-        'tval',
-        'pmin',
-        'pmax',
-        'py',
-        'pf',
-    ]
-    df = _DataFrame(
-        data,
-        columns=columns,
-        copy=False,
-    )
-    df[columns[1:]] = df[columns[1:]].apply(_to_numeric)
-    df.ins_code = df.ins_code.astype('string')
-    df.set_index(['ins_code', 'n'], inplace=True)
-    return df
+    return _DataFrame(data, schema=_CLOSING_PRICE_SCHEMA)
+
+
+_CLIENT_TYPE_SCHEMA = {
+    'ins_code': _String,
+    'n_buy_count': _Int64,
+    'l_buy_count': _Int64,
+    'n_buy_volume': _Int64,
+    'l_buy_volume': _Int64,
+    'n_sell_count': _Int64,
+    'l_sell_count': _Int64,
+    'n_sell_volume': _Int64,
+    'l_sell_volume': _Int64,
+}
 
 
 async def client_type_all() -> _DataFrame:
@@ -272,19 +280,7 @@ async def client_type_all() -> _DataFrame:
     content = await _get_data('ClientTypeAll.aspx')
     df = _colon_separated(
         _BytesIO(content),
-        names=(
-            'ins_code',
-            'n_buy_count',
-            'l_buy_count',
-            'n_buy_volume',
-            'l_buy_volume',
-            'n_sell_count',
-            'l_sell_count',
-            'n_sell_volume',
-            'l_sell_volume',
-        ),
-        index_col='ins_code',
-        dtype={'ins_code': 'string'},
+        schema=_CLIENT_TYPE_SCHEMA,
     )
     return df
 
@@ -298,11 +294,10 @@ async def key_stats() -> _DataFrame:
     """
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
-    df = _DataFrame(data, columns=('ins_code', 'n', 'value'), copy=False)
-    df.set_index(df.pop('ins_code').astype('string'), inplace=True)
-    df = df.apply(_to_numeric)
-    df = df.pivot(columns='n', values='value')
-    df.columns = [f'is{c}' for c in df.columns]
+    df = _DataFrame(
+        data, schema={'ins_code': _String, 'n': _Int64, 'value': _Int64}
+    )
+    df = df.pivot(index='ins_code', columns='n', values='value')
     return df
 
 

@@ -125,17 +125,17 @@ async def test_market_map_data():
         ('insCode', STR),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
+        ('pDrCotVal', dtype(_Float64)),
+        ('zTotTran', dtype(_Float64)),
+        ('qTotTran5J', dtype(_Float64)),
+        ('qTotCap', dtype(_Float64)),
+        ('priceYesterday', dtype(_Float64)),
         ('lVal18AFC', STR),
         ('lVal30', STR),
         ('lSecVal', STR),
-        ('percent', dtype('float64')),
-        ('priceChangePercent', dtype('float64')),
+        ('percent', dtype(_Float64)),
+        ('priceChangePercent', dtype(_Float64)),
         ('hEvenShow', STR),
         ('color', STR),
         ('fontSize', dtype('int64')),
@@ -154,7 +154,7 @@ async def test_major_holders_activity():
         ('holder', STR),
     ]
     for _, t in dtypes[3:]:
-        assert dtype(t) == dtype('float64')
+        assert dtype(t) == dtype(_Float64)
 
 
 @file('top_industry_groups.html')
@@ -162,10 +162,10 @@ async def test_top_industry_groups():
     df = await top_industry_groups()
     assert [*zip(df.columns, df.dtypes)] == [
         ('group', STR),
-        ('mv', dtype('float64')),
+        ('mv', dtype(_Float64)),
         ('tno', dtype('int64')),
-        ('tvol', dtype('float64')),
-        ('tval', dtype('float64')),
+        ('tvol', dtype(_Float64)),
+        ('tval', dtype(_Float64)),
     ]
 
 

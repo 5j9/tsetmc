@@ -32,7 +32,7 @@ from tsetmc.instruments import (
     share_holder_companies,
 )
 
-string = 'string'
+string = _String
 
 
 def assert_page_data(
@@ -41,13 +41,13 @@ def assert_page_data(
     if trade_history:
         trade_history = d.pop('trade_history')
         assert [*zip(trade_history.columns, trade_history.dtypes)] == [
-            ('pc', dtype('float64')),
-            ('py', dtype('float64')),
-            ('pmin', dtype('float64')),
-            ('pmax', dtype('float64')),
+            ('pc', dtype(_Float64)),
+            ('py', dtype(_Float64)),
+            ('pmin', dtype(_Float64)),
+            ('pmax', dtype(_Float64)),
             ('tno', dtype('int64')),
             ('tvol', dtype('int64')),
-            ('tval', dtype('float64')),
+            ('tval', dtype(_Float64)),
         ]
         assert trade_history.index.dtype == dtype('<M8[ns]')
         assert trade_history.index.name == 'date'
@@ -205,13 +205,13 @@ async def test_trade_history():
     with warns(DeprecationWarning):
         df0 = await FMELLI.trade_history(2)
     assert [*zip(df0.columns, df0.dtypes)] == [
-        ('pmax', dtype('float64')),
-        ('pmin', dtype('float64')),
-        ('pc', dtype('float64')),
-        ('pl', dtype('float64')),
-        ('pf', dtype('float64')),
-        ('py', dtype('float64')),
-        ('tval', dtype('float64')),
+        ('pmax', dtype(_Float64)),
+        ('pmin', dtype(_Float64)),
+        ('pc', dtype(_Float64)),
+        ('pl', dtype(_Float64)),
+        ('pf', dtype(_Float64)),
+        ('py', dtype(_Float64)),
+        ('tval', dtype(_Float64)),
         ('tvol', dtype('int64')),
         ('tno', dtype('int64')),
     ]
@@ -327,16 +327,16 @@ async def test_client_type_history_no_date():
     assert [*zip(df.columns, df.dtypes)] == [
         ('recDate', dtype('int64')),
         ('insCode', string),
-        ('buy_I_Volume', dtype('float64')),
-        ('buy_N_Volume', dtype('float64')),
-        ('buy_I_Value', dtype('float64')),
-        ('buy_N_Value', dtype('float64')),
+        ('buy_I_Volume', dtype(_Float64)),
+        ('buy_N_Volume', dtype(_Float64)),
+        ('buy_I_Value', dtype(_Float64)),
+        ('buy_N_Value', dtype(_Float64)),
         ('buy_N_Count', dtype('int64')),
-        ('sell_I_Volume', dtype('float64')),
-        ('buy_I_Count', dtype('float64')),
-        ('sell_N_Volume', dtype('float64')),
-        ('sell_I_Value', dtype('float64')),
-        ('sell_N_Value', dtype('float64')),
+        ('sell_I_Volume', dtype(_Float64)),
+        ('buy_I_Count', dtype(_Float64)),
+        ('sell_N_Volume', dtype(_Float64)),
+        ('sell_I_Value', dtype(_Float64)),
+        ('sell_N_Value', dtype(_Float64)),
         ('sell_N_Count', dtype('int64')),
         ('sell_I_Count', dtype('int64')),
     ]
@@ -360,7 +360,7 @@ async def test_holders_holder():
     assert dtypes == {
         'holder': 'string[pyarrow_numpy]',
         'shares/units': dtype('int64'),
-        '%': dtype('float64'),
+        '%': dtype(_Float64),
         'id_cisin': 'string[pyarrow_numpy]',
     }
 
@@ -375,7 +375,7 @@ async def test_holders_holder():
         assert [*zip(oth.columns, oth.dtypes)] == [
             ('name', string),
             ('shares', dtype('int64')),
-            ('percent', dtype('float64')),
+            ('percent', dtype(_Float64)),
         ]
     with warns(DeprecationWarning):
         hist = await AVA.holder('43789,IRT3AVAF0003', True)
@@ -412,10 +412,10 @@ async def test_share_holders_companies_histories():
         ('shareHolderID', dtype('int64')),
         ('shareHolderName', dtype('O')),
         ('cIsin', string),
-        ('numberOfShares', dtype('float64')),
-        ('perOfShares', dtype('float64')),
+        ('numberOfShares', dtype(_Float64)),
+        ('perOfShares', dtype(_Float64)),
         ('change', dtype('int64')),
-        ('changeAmount', dtype('float64')),
+        ('changeAmount', dtype(_Float64)),
         ('shareHolderShareID', dtype('int64')),
     ]
     assert df.index.dtype == dtype('<M8[ns]')
@@ -454,8 +454,8 @@ async def test_price_adjustments_method():
     assert len(df) >= 18
     assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('pClosingNotAdjusted', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
+        ('pClosingNotAdjusted', dtype(_Float64)),
         ('corporateTypeCode', dtype('O')),
         ('instrument', dtype('O')),
     ]
@@ -602,10 +602,10 @@ async def test_dps_history():
         ('publish_date', dtype('O')),
         ('meeting_date', dtype('O')),
         ('fiscal_year', dtype('O')),
-        ('profit_or_loss_after_tax', dtype('float64')),
-        ('distributable_profit', dtype('float64')),
-        ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
-        ('cash_earnings_per_share', dtype('float64')),
+        ('profit_or_loss_after_tax', dtype(_Float64)),
+        ('distributable_profit', dtype(_Float64)),
+        ('accumulated_profit_at_the_end_of_the_period', dtype(_Float64)),
+        ('cash_earnings_per_share', dtype(_Float64)),
     ]
     assert type(df.iat[0, 0]) is jdatetime
     assert type(df.iat[0, 1]) is jdatetime
@@ -660,13 +660,13 @@ async def test_trades():
         ('nTran', dtype('int64')),
         ('hEven', dtype('int64')),
         ('qTitTran', dtype('int64')),
-        ('pTran', dtype('float64')),
+        ('pTran', dtype(_Float64)),
         ('qTitNgJ', dtype('int64')),
         ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype('float64')),
-        ('pPbSeaCotJ', dtype('float64')),
+        ('pPhSeaCotJ', dtype(_Float64)),
+        ('pPbSeaCotJ', dtype(_Float64)),
         ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype('float64')),
+        ('xqVarPJDrPRf', dtype(_Float64)),
         ('canceled', dtype('int64')),
     ]
 
@@ -682,21 +682,21 @@ async def test_codal():
 async def test_daily_closing_price():
     df = await KARIS.daily_closing_price(n=3)
     assert [*zip(df.columns, df.dtypes)] == [
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
+        ('priceChange', dtype(_Float64)),
+        ('priceMin', dtype(_Float64)),
+        ('priceMax', dtype(_Float64)),
+        ('priceYesterday', dtype(_Float64)),
+        ('priceFirst', dtype(_Float64)),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
         ('insCode', string),
-        ('pClosing', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
+        ('pDrCotVal', dtype(_Float64)),
+        ('zTotTran', dtype(_Float64)),
+        ('qTotTran5J', dtype(_Float64)),
+        ('qTotCap', dtype(_Float64)),
         ('datetime', dtype('<M8[ns]')),
     ]
     assert len(df) == 3
@@ -716,8 +716,8 @@ async def test_best_limits():
         ('number', dtype('int64')),
         ('qTitMeDem', dtype('int64')),
         ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype('float64')),
-        ('pMeOf', dtype('float64')),
+        ('pMeDem', dtype(_Float64)),
+        ('pMeOf', dtype(_Float64)),
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
         ('insCode', dtype('O')),
@@ -748,27 +748,27 @@ async def test_related_companies():
         ('instrumentState', dtype('O')),
         ('lastHEven', dtype('int64')),
         ('finalLastDate', dtype('int64')),
-        ('nvt', dtype('float64')),
+        ('nvt', dtype(_Float64)),
         ('mop', dtype('int64')),
-        ('pRedTran', dtype('float64')),
+        ('pRedTran', dtype(_Float64)),
         ('thirtyDayClosingHistory', dtype('O')),
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
+        ('priceChange', dtype(_Float64)),
+        ('priceMin', dtype(_Float64)),
+        ('priceMax', dtype(_Float64)),
+        ('priceYesterday', dtype(_Float64)),
+        ('priceFirst', dtype(_Float64)),
         ('last', dtype('bool')),
         ('id', dtype('int64')),
         ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
+        ('pDrCotVal', dtype(_Float64)),
+        ('zTotTran', dtype(_Float64)),
+        ('qTotTran5J', dtype(_Float64)),
+        ('qTotCap', dtype(_Float64)),
         ('instrument.cValMne', dtype('O')),
         ('instrument.lVal18', dtype('O')),
         ('instrument.cSocCSAC', dtype('O')),
@@ -780,7 +780,7 @@ async def test_related_companies():
         ('instrument.lVal18AFC', string),
         ('instrument.flow', dtype('int64')),
         ('instrument.cIsin', dtype('O')),
-        ('instrument.zTitad', dtype('float64')),
+        ('instrument.zTitad', dtype(_Float64)),
         ('instrument.baseVol', dtype('int64')),
         ('instrument.instrumentID', dtype('O')),
         ('instrument.cgrValCot', dtype('O')),
@@ -795,13 +795,13 @@ async def test_related_companies():
         ('insCode', string),
         ('dEven', dtype('int64')),
         ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
+        ('pClosing', dtype(_Float64)),
         ('iClose', dtype('bool')),
         ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
+        ('pDrCotVal', dtype(_Float64)),
+        ('zTotTran', dtype(_Float64)),
+        ('qTotTran5J', dtype(_Float64)),
+        ('qTotCap', dtype(_Float64)),
     ]
 
     assert h.groupby('insCode')['insCode'].agg(len).mode()[0] > 20
