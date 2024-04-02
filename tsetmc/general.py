@@ -151,12 +151,7 @@ async def market_overview(n=1) -> MarketOverview:
 async def related_companies(cs: str) -> dict[str, _DataFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
     rc = j['relatedCompany']
-    assert rc[0]['instrument'].keys() & rc[0].keys() == {'insCode'}
-    for c in rc:
-        inst = c.pop('instrument')
-        for k, v in inst.items():
-            c[f'instrument.{k}'] = v
-    j['relatedCompany'] = _DataFrame(rc)
+    j['relatedCompany'] = _DataFrame(rc).drop('insCode').unnest('instrument')
     j['relatedCompanyThirtyDayHistory'] = _DataFrame(
         j['relatedCompanyThirtyDayHistory']
     )
