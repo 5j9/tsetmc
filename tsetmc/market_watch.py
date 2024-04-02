@@ -4,7 +4,6 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from typing import Any as _Any
 
 from aiohutils.pd import html_to_df as _html_to_df
-from pandas import concat as _concat
 from polars import (
     Float64 as _Float64,
     Int8 as _Int8,
@@ -12,6 +11,7 @@ from polars import (
     Int32 as _Int32,
     Int64 as _Int64,
     String as _String,
+    concat as _concat,
 )
 
 from tsetmc import (
