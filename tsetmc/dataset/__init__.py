@@ -1,4 +1,4 @@
-from pandas import DataFrame as _Df, concat as _concat
+from polars import DataFrame as _Df, concat as _concat
 
 from tsetmc import _logger
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
@@ -21,9 +21,8 @@ def _dump(df: _Df):
         df = df[~duplicated]
 
     df.sort_values('l18', inplace=True)
-    df.to_csv(
-        LazyDS.path, index=False, encoding='utf-8-sig', lineterminator='\n'
-    )
+    with LazyDS.path.open(encoding='utf-8-sig', mode='w') as f:
+        df.to_csv(f)
 
 
 async def add_instrument(inst: _Instrument) -> None:
