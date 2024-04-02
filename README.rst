@@ -211,7 +211,6 @@ See also
 
 * https://github.com/5j9/fipiran
 
-.. _pandas: https://pandas.pydata.org/
 .. _market_watch: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues
 .. _IPython: https://ipython.org/

@@ -21,17 +21,16 @@ dynamic = [
     'version',
 ]
 dependencies = [
-    'aiohutils >= 0.15.0',
+    'aiohutils[pl] >= 0.17.0',
     'beautifulsoup4',
     'jdatetime',
     'lxml',
     'numpy',
-    'pandas >= 2.1.0',
     'pyarrow',  # pd.options.future.infer_string = True
 ]
 [project.optional-dependencies]
 test = [
-    'aiohutils[test] >= 0.15.0',
+    'aiohutils[pl,test] >= 0.17.0',
 ]
 
 [project.license]
