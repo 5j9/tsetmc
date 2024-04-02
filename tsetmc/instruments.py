@@ -916,10 +916,7 @@ class Instrument:
         )
 
     async def dps_history(self) -> _DataFrame:
-        """Get DPS history.
-
-        :raises pandas.errors.EmptyDataError: No columns to parse from file
-        """
+        """Get dividends per share (DPS) history."""
         # Note: Currently does not have an _api equivalent. The DPS tab is
         # non-functional in the new tsetmc website.
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
