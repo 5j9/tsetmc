@@ -1,5 +1,4 @@
 from aiohutils.tests import assert_dict_type, file
-from numpy import dtype
 from polars import Float64, Int64
 
 from tests import String
@@ -121,7 +120,7 @@ async def test_market_map_data():
     if df.is_empty():
         return
     assert len(df) > 300
-    assert not df.lVal18AFC.str.contains('ي').any()
+    assert not df['lVal18AFC'].str.contains('ي').any()
     assert [*zip(df.columns, df.dtypes)] == [
         ('insCode', String),
         ('dEven', Int64),
@@ -150,12 +149,12 @@ async def test_major_holders_activity():
     df = await major_holders_activity()
     dtypes = [*zip(df.columns, df.dtypes)]
     assert dtypes[:3] == [
-        ('ins_code', Int64),
+        ('ins_code', String),
         ('l30', String),
         ('holder', String),
     ]
     for _, t in dtypes[3:]:
-        assert dtype(t) == Float64
+        assert t == Float64
 
 
 @file('top_industry_groups.html')

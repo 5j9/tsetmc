@@ -5,8 +5,7 @@ from aiohutils.df import from_html as _from_html
 from bs4 import BeautifulSoup as _BeautifulSoup
 from polars import (
     Float64 as _Float64,
-    Null as _Null,
-    concat as _concat,
+    Int64 as _Int64,
 )
 
 from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
@@ -17,15 +16,15 @@ _make_soup = _partial(_BeautifulSoup, features='lxml')
 async def boards() -> dict[int, str]:
     """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913."""
     content = await _get_par_tree('111C1913')
-    iloc = _from_html(content, header=0).iloc
-    return dict(zip(iloc[:, 0], iloc[:, 1]))
+    df = _from_html(content, header=0)
+    return dict(zip(df[:, 0], df[:, 1]))
 
 
 async def cs_codes() -> dict[str, str]:
     """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _get_par_tree('111C1213')
-    iloc = _from_html(content, header=0).iloc
-    return dict(zip(iloc[:, 0], iloc[:, 1]))
+    df = _from_html(content, header=0)
+    return dict(zip(df[:, 0], df[:, 1]))
 
 
 async def industrial_groups_overview() -> _DataFrame:
@@ -36,12 +35,12 @@ async def industrial_groups_overview() -> _DataFrame:
     """
     content = await _get_par_tree('111C1214')
     df = _from_html(content)
-    show = df[1]
-    df.drop(columns=1, inplace=True)
-    percents = show.str.extract(
-        r"showBar\('[^\[]*',(\d+),(\d+),(\d+),(\d+)\)"
-    ).astype('int64')
-    df = _concat((df, percents), copy=False, axis=1)
+    df = df.with_columns(
+        df['1'].str.extract_groups(
+            r"showBar\('[^\[]*',(\d+),(\d+),(\d+),(\d+)\)"
+        )
+    ).unnest('1')
+    df = df.with_columns(df.select(df.columns[1:]).cast(_Int64))
     df.columns = ('group', ':-2', '-2:0', '0:2', '2:')
     return df
 
@@ -60,6 +59,7 @@ async def market_map_data(
 
 
 async def major_holders_activity() -> _DataFrame:
+    # todo: deprecate in favour of https://tsetmc.com/ShareHolderChanges
     text = await _get_par_tree('15131I')
     soup = _make_soup(text)
     trs = soup.select('tr')
@@ -73,25 +73,24 @@ async def major_holders_activity() -> _DataFrame:
         inst_div = td0.select_one('div')
         if inst_div:
             href = inst_div.select_one('a')['href']
-            ins_code = int(href[href.rfind('=') + 1 :])
+            ins_code = href[href.rfind('=') + 1 :]
             l30 = inst_div.text
 
         holder = td0.select_one('li').text
         # noinspection PyUnboundLocalVariable
         append_row([ins_code, l30, holder, *_parse_tds(tds)])
-    return _DataFrame(
-        rows,
-        columns=(
-            'ins_code',
-            'l30',
-            'holder',
-            *(
-                # the first header is 'شرکت - سهامدار'
-                th.text
-                for th in trs[0].select('th')[1:]
-            ),
+    df = _DataFrame(rows)
+    df.columns = [
+        'ins_code',
+        'l30',
+        'holder',
+        *(
+            # the first header is 'شرکت - سهامدار'
+            th.text
+            for th in trs[0].select('th')[1:]
         ),
-    )
+    ]
+    return df
 
 
 async def top_industry_groups() -> _DataFrame:
@@ -103,14 +102,14 @@ async def top_industry_groups() -> _DataFrame:
     return df
 
 
-def _parse_tds(tds):
-    for td in tds[1:]:
-        text = td.text
+def _parse_tds(tds) -> list:
+    parsed = [None] * 5
+    for i, td in enumerate(tds[1:]):
         try:
-            yield float(text.replace(',', ''))
+            parsed[i] = float(td.text.replace(',', ''))
         except ValueError:
-            if td == '\xa0':
-                yield _Null
+            continue
+    return parsed
 
 
 class MarketOverview(_TypedDict):

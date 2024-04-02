@@ -1,7 +1,4 @@
-from pandas import (
-    json_normalize as _json_normalize,
-    to_datetime as _to_datetime,
-)
+from polars import Date as _Date, String as _String, Time as _Time
 
 from tsetmc import _api, _DataFrame
 from tsetmc.instruments import InstrumentInfo
@@ -24,24 +21,24 @@ class Index:
 
     async def last_day_history(self) -> _DataFrame:
         j = await _api(f'Index/GetIndexB1LastDay/{self.code}', fa=True)
-        df = _DataFrame(j['indexB1'])
-        dt = _to_datetime(
-            df.pop('dEven').astype(str) + df.pop('hEven').astype(str),
-            format='%Y%m%d%H%M%S',
+        df = _DataFrame(
+            j['indexB1'], schema_overrides={'dEven': _String, 'hEven': _String}
         )
-        df.set_index(dt, inplace=True)
-        return df
+        return df.with_columns(
+            df['dEven'].str.strptime(_Date, '%Y%m%d'),
+            df['hEven'].str.rjust(6, '0').str.strptime(_Time, '%H%M%S'),
+        )
 
     async def history(self) -> _DataFrame:
         j = await _api(f'Index/GetIndexB2History/{self.code}', fa=True)
-        df = _DataFrame(j['indexB2'])
-        date = _to_datetime(df.pop('dEven'), format='%Y%m%d')
-        df.set_index(date, inplace=True)
-        return df
+        df = _DataFrame(j['indexB2'], schema_overrides={'dEven': _String})
+        return df.with_columns(df['dEven'].str.strptime(_Date, '%Y%m%d'))
 
     async def companies(self) -> dict[str, _DataFrame]:
         j = await _api(f'ClosingPrice/GetIndexCompany/{self.code}', fa=True)
-        j['indexCompany'] = _json_normalize(j['indexCompany'])
+        j['indexCompany'] = (
+            _DataFrame(j['indexCompany']).drop('insCode').unnest('instrument')
+        )
         j['relatedCompanyThirtyDayHistory'] = _DataFrame(
             j['relatedCompanyThirtyDayHistory']
         )

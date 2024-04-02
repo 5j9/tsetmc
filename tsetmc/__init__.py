@@ -231,7 +231,7 @@ def _numerize(
     for col in cols:
         c = df[col]
         if comma is True:
-            c = c.str.replace(',', '')
+            c = c.str.replace_all(',', '', literal=True)
         df = df.with_columns(
             c.str.replace_many([' K', ' M', ' B'], ['e3', 'e6', 'e9'])
             .cast(_Float64)
