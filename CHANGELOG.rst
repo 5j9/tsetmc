@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* BREAKING CHANGE: all DataFrame-returning-methods now return a polars DataFrame instead of pandas.
 
 v0.63.1
 -------
