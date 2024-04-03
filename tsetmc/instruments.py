@@ -108,15 +108,14 @@ class _LazyDS:
     @ClassProperty
     def df(cls) -> _DataFrame:
         if cls.cached_df is None:
-            with cls.path.open('rb') as f:
-                cls.cached_df = _read_csv(
-                    f,
-                    schema={
-                        'ins_code': _String,
-                        'l18': _String,
-                        'l30': _String,
-                    },
-                )
+            cls.cached_df = _read_csv(
+                cls.path,
+                schema={
+                    'ins_code': _String,
+                    'l18': _String,
+                    'l30': _String,
+                },
+            )
         return cls.cached_df
 
     @classmethod
