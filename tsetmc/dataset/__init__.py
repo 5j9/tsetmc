@@ -1,4 +1,5 @@
-from polars import DataFrame as _Df, concat as _concat
+import polars as _pl
+from polars import col as _col
 
 from tsetmc import _logger
 from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
@@ -10,19 +11,17 @@ YVAL_EXCLUSIONS = {
 }
 
 
-def _dump(df: _Df):
+def _dump(df: _pl.DataFrame):
     assert df['l18'].is_unique
-    codes = df['ins_code']
+    codes = df['ins_code'].unique()
     try:
         assert codes.is_unique
     except AssertionError:
-        duplicated = codes.duplicated('last')
+        duplicated = codes.filter(~codes.is_unique()).unique()
         _logger.error('duplicated ins_codes:\n%s', codes[duplicated])
-        df = df[~duplicated]
+        df = df.filter(~_col('ins_code').unique())
 
-    df.sort_values('l18', inplace=True)
-    with LazyDS.path.open(encoding='utf-8-sig', mode='w') as f:
-        df.to_csv(f)
+    df.sort('l18').write_csv(LazyDS.path, include_bom=True)
 
 
 async def add_instrument(inst: _Instrument) -> None:
@@ -39,25 +38,28 @@ async def add_instrument(inst: _Instrument) -> None:
     _dump(df)
 
 
-async def update(df: _Df = None) -> None:
+async def update(df: _pl.DataFrame = None) -> None:
     if df is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
         df = mwi['prices']
-    df = df[
+    df = df.filter(
         ~(
-            df['yval'].isin(YVAL_EXCLUSIONS)
-            | df['l18'].str.slice(-1).str.isdigit()
+            _pl.col('yval').is_in(YVAL_EXCLUSIONS)
+            | _pl.col('l18').str.contains(r'\d$')
         )
-    ]
-    ds = LazyDS.df.set_index('l18')
-    p = df[['l18', 'l30']].reset_index().set_index('l18')
-    ds.update(p)  # update existing l18s/l30s
-    new_items = p[~p.index.isin(ds.index)]
-    merged = LazyDS.cached_df = _concat([ds, new_items]).reset_index()[
-        ['ins_code', 'l18', 'l30']  # fix column order
-    ]
-    if diff := len(new_items):
-        _dump(merged)
+    )
+    og_ds = LazyDS.df
+    new_ds = og_ds.join(
+        df.select(['l18', 'l30', 'ins_code']), on='l18', how='outer'
+    ).with_columns(
+        _pl.col('ins_code_right')
+        .fill_null(_pl.col('ins_code'))
+        .alias('ins_code'),
+        _pl.col('l30_right').fill_null(_pl.col('l30')).alias('l30'),
+    )
+    new_ds = new_ds[['ins_code', 'l18', 'l30']]  # fix column order
+    if diff := len(new_ds) - len(og_ds):
+        _dump(new_ds)
         _logger.info(f'{diff} new entries were added by market watch.')
     else:
         _logger.info('No new entries were added by market watch.')
