@@ -141,7 +141,7 @@ async def test_companies():
 
 @file('no_index_companies.json')
 async def test_no_companies():
-    if OFFLINE_MODE():
+    if OFFLINE_MODE:
         skip()
     d = await Index('29331053506731535').companies()
     assert d['indexCompany'].is_empty()
