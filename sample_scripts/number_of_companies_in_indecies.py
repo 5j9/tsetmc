@@ -16,7 +16,7 @@ async def main():
 
     no = [len(co['indexCompany']) for co in companies]
     df['NoOfCompanies'] = no
-    df.sort_values('NoOfCompanies', inplace=True, ascending=False)
+    df.sort('NoOfCompanies', descending=True)
     print(df[['lVal30', 'NoOfCompanies']])
 
 

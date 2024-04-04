@@ -36,9 +36,12 @@ class Index:
 
     async def companies(self) -> dict[str, _DataFrame]:
         j = await _api(f'ClosingPrice/GetIndexCompany/{self.code}', fa=True)
-        j['indexCompany'] = (
-            _DataFrame(j['indexCompany']).drop('insCode').unnest('instrument')
-        )
+        df = _DataFrame(j['indexCompany']).drop('insCode')
+        if (
+            not df.is_empty()
+        ):  # some indices like 36-مبلمان - بازار بورس may be empty
+            df = df.unnest('instrument')
+        j['indexCompany'] = df
         j['relatedCompanyThirtyDayHistory'] = _DataFrame(
             j['relatedCompanyThirtyDayHistory']
         )

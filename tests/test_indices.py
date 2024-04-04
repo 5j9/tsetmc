@@ -137,3 +137,12 @@ async def test_companies():
         ('qTotTran5J', Float64),
         ('qTotCap', Float64),
     ]
+
+
+@file('no_index_companies.json')
+async def test_no_companies():
+    if OFFLINE_MODE():
+        skip()
+    d = await Index('29331053506731535').companies()
+    assert d['indexCompany'].is_empty()
+    assert d['relatedCompanyThirtyDayHistory'].is_empty()
