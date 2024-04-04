@@ -403,16 +403,16 @@ class MarketWatch:
 
     def _default_plus_callback(self, d: dict):
         bl = d.get('best_limits')
-        if bl is not None:
-            self.df.update(bl)
+        if not bl.is_empty():
+            self.df = self.df.update(bl, on='ins_code')
 
         np = d.get('new_prices')
-        if np is not None:
+        if not np.is_empty():
             self.df = _concat([self.df, np])
 
         pu = d.get('price_updates')
-        if pu is not None:
-            self.df.update(pu)
+        if not pu.is_empty():
+            self.df = self.df.update(pu, on='ins_code')
 
         self.market_state = d.get('market_state')
 
@@ -431,7 +431,7 @@ class MarketWatch:
             break
 
         self.init_callback(mwi)  # noqa: F823
-        heven = mwi['prices'].heven.max()
+        heven = mwi['prices']['heven'].max()
         refid = mwi['refid']
         set_event()
         clear_event()
@@ -450,8 +450,8 @@ class MarketWatch:
 
             refid = mwp['refid']
             heven = max(
-                mwp['price_updates'].heven.max(),
-                mwp['new_prices'].heven.max(),
+                mwp['price_updates']['heven'].max(),
+                mwp['new_prices']['heven'].max() or 0,
             )
             set_event()
             clear_event()
