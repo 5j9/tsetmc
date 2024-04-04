@@ -38,11 +38,11 @@ async def add_instrument(inst: _Instrument) -> None:
     _dump(df)
 
 
-async def update(df: _pl.DataFrame = None) -> None:
-    if df is None:
+async def update(wdf: _pl.DataFrame = None) -> None:
+    if wdf is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
-        df = mwi['prices']
-    df = df.filter(
+        wdf = mwi['prices']
+    wdf = wdf.filter(
         ~(
             _pl.col('yval').is_in(YVAL_EXCLUSIONS)
             | _pl.col('l18').str.contains(r'\d$')
@@ -50,7 +50,7 @@ async def update(df: _pl.DataFrame = None) -> None:
     )
     og_ds = LazyDS.df
     new_ds = og_ds.join(
-        df.select(['l18', 'l30', 'ins_code']), on='l18', how='outer'
+        wdf.select(['l18', 'l30', 'ins_code']), on='l18', how='outer_coalesce'
     ).with_columns(
         _pl.col('ins_code_right')
         .fill_null(_pl.col('ins_code'))
