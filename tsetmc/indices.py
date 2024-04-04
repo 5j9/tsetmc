@@ -26,7 +26,7 @@ class Index:
         )
         return df.with_columns(
             df['dEven'].str.strptime(_Date, '%Y%m%d'),
-            df['hEven'].str.rjust(6, '0').str.strptime(_Time, '%H%M%S'),
+            df['hEven'].str.pad_start(6, '0').str.strptime(_Time, '%H%M%S'),
         )
 
     async def history(self) -> _DataFrame:

@@ -806,7 +806,7 @@ async def test_related_companies():
         ('qTotCap', Float64),
     ]
 
-    assert h.groupby('insCode').len().median()[0, 1] > 20
+    assert h.group_by('insCode').len().median()[0, 1] > 20
 
 
 @file('test_identity.json')

@@ -422,7 +422,7 @@ class Instrument:
             df['dEven'].cast(_String).str.strptime(_Date, '%Y%m%d'),
             df['hEven']
             .cast(_String)
-            .str.rjust(6, '0')
+            .str.pad_start(6, '0')
             .str.strptime(_Time, '%H%M%S'),
         )
         return df
@@ -1104,9 +1104,9 @@ async def price_adjustments(flow: int) -> _DataFrame:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
     text = await _get_par_tree(f'151319&Flow={flow}')
-    df = _from_html(text)
+    df: _DataFrame = _from_html(text)
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
-    return df.with_columns(df['date'].apply(_j_ymd_parse))
+    return df.with_columns(df['date'].map_elements(_j_ymd_parse))
 
 
 _OLD_SEARCH_SCHEMA = {
