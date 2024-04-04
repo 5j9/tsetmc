@@ -1,7 +1,6 @@
 from aiohutils.tests import assert_dict_type, file
-from polars import Float64, Int64
+from polars import Float64, Int64, String
 
-from tests import String
 from tsetmc.general import (
     MarketOverview,
     boards,

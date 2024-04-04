@@ -1,7 +1,7 @@
-from aiohutils.tests import assert_dict_type, file
-from polars import Boolean, Date, Float64, Int64, Null, Time
+from aiohutils.tests import OFFLINE_MODE, assert_dict_type, file
+from polars import Boolean, Date, Float64, Int64, Null, String, Time
+from pytest import skip
 
-from tests import String
 from tsetmc import InstrumentInfo
 from tsetmc.indices import Index, last_state
 

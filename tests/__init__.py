@@ -1,6 +1,5 @@
 from aiohutils.tests import init_tests
 from jdatetime import datetime as jdatetime
-from polars import String
 
 from tsetmc import MarketState
 
