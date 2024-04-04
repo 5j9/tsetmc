@@ -377,7 +377,7 @@ async def test_holders_holder():
         ('date', Date),
         ('shares', Int64),
     ]
-    if not oth.is_empty():
+    if oth is not None:
         assert [*zip(oth.columns, oth.dtypes)] == [
             ('ins_code', String),
             ('name', String),
@@ -386,9 +386,11 @@ async def test_holders_holder():
         ]
     with warns(DeprecationWarning):
         hist = await AVA.holder('43789,IRT3AVAF0003', True)
-    assert type(hist) is DataFrame
+    assert hist is None or type(hist) in DataFrame
     with warns(DeprecationWarning):
         oth = await AVA.holder('43789,IRT3AVAF0003', False, True)
+    if oth is None:
+        return
     assert type(oth) is DataFrame
     with warns(DeprecationWarning):
         result = await AVA.holder('43789,IRT3AVAF0003', False)
@@ -602,6 +604,8 @@ async def test_messages():
 @file('fmelli_dps.txt')
 async def test_dps_history():
     df = await FMELLI.dps_history()
+    if df is None:
+        return
     assert [*zip(df.columns, df.dtypes)] == [
         ('publish_date', Datetime(time_unit='us', time_zone=None)),
         ('meeting_date', Datetime(time_unit='us', time_zone=None)),

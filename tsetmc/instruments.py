@@ -841,7 +841,7 @@ class Instrument:
     @staticmethod
     async def holder(
         id_cisin, history=True, other_holdings=False
-    ) -> _DataFrame | tuple[_DataFrame, _DataFrame]:
+    ) -> _DataFrame | None | tuple[_DataFrame | None, _DataFrame | None]:
         """Return history/other holdings for the given holder id_cisin.
 
         `id_cisin` is usually obtained using `self.holders`.
@@ -857,14 +857,18 @@ class Instrument:
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
-        def history_df() -> _DataFrame:
+        def history_df() -> _DataFrame | None:
+            if not hist:
+                return
             df = _colon_separated(
                 _StringIO(hist),
                 schema={'date': _String, 'shares': _Int64},
             )
             return df.with_columns(df['date'].str.strptime(_Date, '%Y%m%d'))
 
-        def other_holdings_df() -> _DataFrame:
+        def other_holdings_df() -> _DataFrame | None:
+            if not oth:
+                return
             return _colon_separated(
                 _StringIO(oth),
                 schema={
@@ -914,11 +918,13 @@ class Instrument:
             await _get_par_tree(f'15131W&i={self.code}')
         )
 
-    async def dps_history(self) -> _DataFrame:
+    async def dps_history(self) -> _DataFrame | None:
         """Get dividends per share (DPS) history."""
         # Note: Currently does not have an _api equivalent. The DPS tab is
         # non-functional in the new tsetmc website.
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
+        if not content:
+            return
         df = _colon_separated(
             _BytesIO(content),
             schema=_DPS_HIST_SCHEMA,

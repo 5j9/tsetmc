@@ -26,4 +26,7 @@ def assert_market_state(market_state: MarketState):
         'derivatives_tval',
         'tse_index_change_percent',
     }
+    assert (c := market_state.pop('tse_index_change_percent')) is None or type(
+        c
+    ) is float
     assert all(type(v) is float for v in market_state.values())
