@@ -26,7 +26,7 @@ async def main():
     for coro in as_completed([check(l18) for l18 in df['l18']]):
         await coro
     info(f'{len(TO_BE_REMOVED) = }')
-    df = df[~df['l18'].isin(TO_BE_REMOVED)]
+    df = df.filter(~df['l18'].is_in(TO_BE_REMOVED))
     _dump(df)
 
 
