@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* Add ``predtran_dt`` parameter to  ``MarketWatch`` which enables tracking of ``predtran`` update times.
 
 v0.63.1
 -------

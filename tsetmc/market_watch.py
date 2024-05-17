@@ -5,7 +5,12 @@ from typing import Any as _Any
 
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
-from pandas import concat as _concat, to_numeric as _to_numeric
+from pandas import (
+    NaT as _NaT,
+    Timestamp as _Timestamp,
+    concat as _concat,
+    to_numeric as _to_numeric,
+)
 
 from tsetmc import (
     MarketState,
@@ -354,6 +359,8 @@ class MarketWatch:
         'plus_callback',
         'plus_kwargs',
         'update_event',
+        'predtran_dt',
+        '_prev_predtran',
     )
 
     def __init__(
@@ -364,6 +371,7 @@ class MarketWatch:
         init_callback: _Callable[[MarketWatchInit], _Any] = None,
         plus_callback: _Callable[[MarketWatchPlus], _Any] = None,
         interval=1,
+        predtran_dt=False,
     ):
         """Create an object that helps with watching the market watch.
 
@@ -374,6 +382,11 @@ class MarketWatch:
         :param plus_callback: function to be called with the result of
             market_watch_plus.
         :param interval: The sleep interval.
+        :param predtran_dt: if true, the timestamp of predtran change
+            will be saved in self.df['predtran_dt']. Note that predtran_dt
+            will not get updated when predtran gets updated by the ETF but
+            the value remains the same. Also, the initial value of predtran_dt
+            is NaT until the first change.
 
         Each time a callback returns, self.event will be set. Users can wait
         for this event to get notified of new updates.
@@ -401,18 +414,26 @@ class MarketWatch:
             if plus_callback is None
             else plus_callback
         )
+        self.predtran_dt = predtran_dt
 
-    def _default_init_callback(self, d: dict):
-        self.df = d.get('prices')
+    def _default_init_callback(self, d: MarketWatchInit):
+        df = self.df = d.get('prices')
         self.market_state = d.get('market_state')
+        if self.predtran_dt:
+            df['predtran_dt'] = _NaT
+            self._prev_predtran = df['predtran']
 
-    def _default_plus_callback(self, d: dict):
+    def _default_plus_callback(self, d: MarketWatchPlus):
         bl = d.get('best_limits')
         if bl is not None:
             self.df.update(bl)
 
         np = d.get('new_prices')
         if np is not None:
+            if self.predtran_dt:
+                self._prev_predtran = _concat(
+                    [self._prev_predtran, np['predtran']]
+                )
             self.df = _concat([self.df, np])
 
         pu = d.get('price_updates')
@@ -420,6 +441,15 @@ class MarketWatch:
             self.df.update(pu)
 
         self.market_state = d.get('market_state')
+
+        if self.predtran_dt:
+            df = self.df
+            pred = df['predtran']
+            df['predtran_dt'] = df['predtran_dt'].mask(
+                pred.notna() & (pred != self._prev_predtran),
+                _Timestamp.now(),
+            )
+            self._prev_predtran = pred
 
     async def start(self):
         update_event = self.update_event
