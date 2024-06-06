@@ -396,7 +396,10 @@ class Instrument:
         return j['preparedData']
 
     async def daily_closing_price(self, n=0) -> _DataFrame:
-        """n is the number of days. Use 0 (default) to fetch all."""
+        """n is the number of days. Use 0 (default) to fetch all.
+
+        result.index.is_monotonic_decreasing.
+        """
         j = await _api(
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
