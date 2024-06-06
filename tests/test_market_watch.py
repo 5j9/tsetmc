@@ -16,7 +16,6 @@ from tsetmc.market_watch import (
     key_stats,
     market_watch_init,
     market_watch_plus,
-    ombud_messages,
     status_changes,
 )
 
@@ -275,30 +274,6 @@ async def test_status_changes():
         ('date', dtype('O')),
     )
     assert type(df.iat[0, 3]) is jdatetime
-
-
-@file('ombud_messages.html')
-async def test_ombud_messages():
-    df = await ombud_messages(top=3)
-    assert len(df) == 3
-    assert (*df.dtypes.items(),) == (
-        ('header', string),
-        ('date', dtype('O')),
-        ('description', string),
-    )
-    assert type(df.iat[0, 1]) is jdatetime
-
-
-@file('empty_ombud_messages.html')
-async def test_ombud_messages_empty():
-    # `sh_date` cannot be used without `containing`
-    df = await ombud_messages(top=1, sh_date='1400-11-02', flow=0)
-    assert df.empty
-    assert (*df.dtypes.items(),) == (
-        ('header', string),
-        ('date', dtype('O')),
-        ('description', string),
-    )
 
 
 @file('empty_eps_in_mwp.txt')

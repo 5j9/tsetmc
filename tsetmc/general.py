@@ -195,3 +195,24 @@ async def etfs(
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
     j = await _api(f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}')
     return _json_normalize(j['tradeTop'])
+
+
+async def messages(
+    *, flow: FlowType = Flow.GENERAL, top: int | str = 200
+) -> _DataFrame:
+    """See also: ``search_messages`` and ``Instrument.messages``."""
+    j = await _api(f'Msg/GetMsgByFlow/{flow}/{top}', fa=True)
+    df = _DataFrame(j['msg'])
+    return df
+
+
+async def search_messages(*, sh_date: str, term: str) -> _DataFrame:
+    """https://tsetmc.com/MsgTop
+
+    :param term: Only return messages containing this term.
+    :param sh_date: Solar Hijri date string in 'YYYY-mm-dd' format.
+
+    See also: ``messages`` and ``Instrument.messages``.
+    """
+    j = await _api(f'Msg/GetMsgByDevenAndLVal18AFC/{sh_date}/{term}', fa=True)
+    return _DataFrame(j['msg'])

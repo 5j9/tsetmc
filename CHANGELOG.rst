@@ -1,9 +1,12 @@
 Unreleased
 ----------
-* New method: ``tsetmc.general.get_funds``.
-* New method: ``tsetmc.general.commodity_funds``.
-* New method: ``tsetmc.general.etfs``.
-* Changed!: The `n` parameter of `general.market_overview` function was renamed to `flow` and is now keyword-only.
+* New function: ``tsetmc.general.get_funds``.
+* New function: ``tsetmc.general.commodity_funds``.
+* New function: ``tsetmc.general.etfs``.
+* New function: ``tsetmc.general.messages``.
+* New function: ``tsetmc.general.search_messages``.
+* Changed!: The ``n`` parameter of ``general.market_overview`` function was renamed to ``flow`` and is now keyword-only.
+* Removed!: ``market_watch.messages``. The underlying API was not working anymore. Use ``tsetmc.general.messages`` instead which uses the new JSON API.
 * Updated dataset
 
 v0.63.1

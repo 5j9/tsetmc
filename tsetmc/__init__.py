@@ -105,11 +105,19 @@ class InstrumentInfo(_TypedDict):
 
 
 class Flow(_StrEnum):
+    # Most of these values were obtained by checking different tabs on the
+    # main page of tsetmc.com
+    GENERAL = '0'  # Contains both BOURSE and OTC
     BOURSE = '1'
     OTC = '2'  # Over-the-counter, فرابورس
     FUTURES = '3'
+    DERIVATIVES = '3'
+    DEBT = '3'
     UTP = '4'  # Unlisted Trading Privileges, بازار پایه
+    ENERGY = '6'
     MERCANTILE = '7'  # commodities
+    ETFS = '18'
+    PROFESSIONAL = '19'  # professional market
 
 
 FlowType = int | str | Flow
@@ -174,24 +182,6 @@ def _parse_market_state(s: str) -> MarketState:
         'tse_value': float(tse_value) if tse_value else None,
     }
     return result
-
-
-def _parse_ombud_messages(text) -> _DataFrame:
-    headers = _findall(r'<th>(.+?)</th>', text)
-    dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
-    descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
-    df = _DataFrame(
-        {'header': headers, 'date': dates, 'description': descriptions},
-        dtype='string',
-        copy=False,
-    )
-    if dates:  # pandas cannot do ('14' + df['date']) on empty dates
-        df['date'] = ('14' + df['date']).apply(
-            _jstrptime, format='%Y/%m/%d %H:%M'
-        )
-    else:
-        df['date'] = df['date'].astype(object)
-    return df
 
 
 session_manager = SessionManager()

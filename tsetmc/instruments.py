@@ -29,7 +29,6 @@ from tsetmc import (
     _jstrptime,
     _numerize,
     _parse_market_state,
-    _parse_ombud_messages,
     _rc,
     _TypedDict,
 )
@@ -881,6 +880,7 @@ class Instrument:
         return df
 
     async def messages(self) -> list[Message]:
+        """See also: ``general.messages`` and ``general.search_messages``."""
         j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
         return j['msg']
 
@@ -1233,3 +1233,21 @@ def _parse_price_info(price_info):
             result['nav_datetime'] = nav_datetime
 
     return result
+
+
+def _parse_ombud_messages(text) -> _DataFrame:
+    headers = _findall(r'<th>(.+?)</th>', text)
+    dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
+    descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
+    df = _DataFrame(
+        {'header': headers, 'date': dates, 'description': descriptions},
+        dtype='string',
+        copy=False,
+    )
+    if dates:  # pandas cannot do ('14' + df['date']) on empty dates
+        df['date'] = ('14' + df['date']).apply(
+            _jstrptime, format='%Y/%m/%d %H:%M'
+        )
+    else:
+        df['date'] = df['date'].astype(object)
+    return df

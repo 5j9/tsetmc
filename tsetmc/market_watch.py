@@ -8,7 +8,6 @@ from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
 
 from tsetmc import (
-    FlowType,
     MarketState,
     _csv2df,
     _DataFrame,
@@ -17,7 +16,6 @@ from tsetmc import (
     _jstrptime,
     _logger,
     _parse_market_state,
-    _parse_ombud_messages,
     _save_last_content,
     _TypedDict,
 )
@@ -305,34 +303,6 @@ async def key_stats() -> _DataFrame:
     df = df.pivot(columns='n', values='value')
     df.columns = [f'is{c}' for c in df.columns]
     return df
-
-
-async def ombud_messages(
-    *,
-    top: int | str = None,
-    flow: FlowType = None,
-    containing: str = None,
-    sh_date: str = None,
-) -> _DataFrame:
-    """Return ombud messages as a dataframe.
-
-    :param top: How many messages to return.
-    :param flow: Only return messages in the given market flow.
-    :param containing: Only return messages containing this term.
-    :param sh_date: Solar Hijri date string in 'YYYY-mm-dd' format.
-
-    Note: the server ignores the `top` when `deven_persian` is given.
-    """
-    path = '151313'
-    if flow is not None:
-        path += f'&Flow={flow}'
-    if top is not None:
-        path += f'&top={top}'
-    if sh_date is not None:
-        path += f'&DevenPersian={sh_date}'
-    if containing is not None:
-        path += f'&Lval18AFC={containing}'
-    return _parse_ombud_messages(await _get_par_tree(path))
 
 
 async def status_changes(top: int | str) -> _DataFrame:

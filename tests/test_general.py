@@ -2,6 +2,7 @@ from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
 
 from tests import STR
+from tsetmc import Flow
 from tsetmc.general import (
     FundType,
     MarketOverview,
@@ -14,6 +15,8 @@ from tsetmc.general import (
     major_holders_activity,
     market_map_data,
     market_overview,
+    messages,
+    search_messages,
     top_industry_groups,
 )
 
@@ -302,3 +305,29 @@ async def test_etfs():
     df = await etfs(top=3)
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+
+
+MSG_DTYPES = [
+    ('tseMsgIdn', dtype('int64')),
+    ('dEven', dtype('int64')),
+    ('hEven', dtype('int64')),
+    ('tseTitle', STR),
+    ('tseDesc', STR),
+    ('flow', dtype('int64')),
+]
+
+
+@file('messages.json')
+async def test_messages():
+    df = await messages(top=3, flow=Flow.ENERGY)
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == MSG_DTYPES
+    df['tseTitle'].str.contains('بورس انرژی', regex=False)
+
+
+@file('search_messages.json')
+async def test_search_messages():
+    term = 'صندوق'
+    df = await search_messages(sh_date='1400-11-02', term=term)
+    df['tseDesc'].str.contains(term, regex=False)
+    assert [*df.dtypes.items()] == MSG_DTYPES
