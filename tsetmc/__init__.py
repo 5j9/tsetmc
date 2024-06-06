@@ -3,7 +3,7 @@ from enum import StrEnum as _StrEnum
 from functools import partial as _partial
 from json import JSONDecodeError, loads
 from logging import getLogger as _getLogger
-from re import compile as _rc, findall as _findall
+from re import compile as _rc
 from typing import TypedDict as _TypedDict
 
 from aiohutils.session import SessionManager
