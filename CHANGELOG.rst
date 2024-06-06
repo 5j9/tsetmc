@@ -8,6 +8,7 @@ Unreleased
 * Changed!: The ``n`` parameter of ``general.market_overview`` function was renamed to ``flow`` and is now keyword-only.
 * Removed!: ``market_watch.messages``. The underlying API was not working anymore. Use ``tsetmc.general.messages`` instead which uses the new JSON API.
 * Fixed: Errors due to bad server redirects in ``general.boards``, ``general.cs_codes``, and ``general.industrial_groups_overview``.
+* Deprecated: ``general.industrial_groups_overview``; use ``general.sectors_summary`` instead.
 * Updated dataset
 
 v0.63.1

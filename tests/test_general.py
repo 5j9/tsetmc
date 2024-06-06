@@ -1,5 +1,6 @@
 from aiohutils.tests import assert_dict_type, file
 from numpy import dtype
+from pytest import warns
 
 from tests import STR
 from tsetmc import Flow
@@ -17,6 +18,7 @@ from tsetmc.general import (
     market_overview,
     messages,
     search_messages,
+    sectors_summary,
     top_industry_groups,
 )
 
@@ -108,9 +110,24 @@ async def test_cs_codes():
     }
 
 
+@file('sectors_summary.json')
+async def test_sectors_summary():
+    df = await sectors_summary()
+    assert [*df.dtypes.items()] == [
+        ('cSecVal', STR),
+        ('lSecVal', STR),
+        ('c1', dtype('int64')),
+        ('c2', dtype('int64')),
+        ('c3', dtype('int64')),
+        ('c4', dtype('int64')),
+    ]
+    assert len(df) > 40
+
+
 @file('industrial_groups_overview.html')
 async def test_industrial_groups_overview():
-    df = await industrial_groups_overview()
+    with warns(DeprecationWarning):
+        df = await industrial_groups_overview()
     assert [*df.dtypes.items()] == [
         ('group', STR),
         (':-2', dtype('int64')),

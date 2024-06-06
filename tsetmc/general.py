@@ -1,5 +1,6 @@
 from enum import StrEnum as _StrEnum
 from typing import TypedDict as _TypedDict
+from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
 from bs4 import BeautifulSoup as _BeautifulSoup
@@ -11,8 +12,8 @@ from pandas import (
 )
 
 from tsetmc import (
-    Flow,
-    FlowType,
+    Flow as _Flow,
+    FlowType as _FlowType,
     _api,
     _DataFrame,
     _get_par_tree,
@@ -38,12 +39,22 @@ async def cs_codes() -> dict[str, str]:
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
+async def sectors_summary() -> _DataFrame:
+    j = await _api('MarketData/GetSectorsSummary', fa=True)
+    return _DataFrame(j['sectorSummeries'])
+
+
 async def industrial_groups_overview() -> _DataFrame:
     """Return a dataframe of industrial groups.
 
     The result contains info about each group's price change.
     See: http://members.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
+    _warn(
+        'industrial_groups_overview is deprecated; use sectors_summary instead.',
+        DeprecationWarning,
+        2,
+    )
     content = await _mem_par_tree('111C1214')
     df = _html_to_df(content)
     show = df[1]
@@ -143,7 +154,7 @@ class MarketOverview(_TypedDict):
     marketValueBase: float
 
 
-async def market_overview(*, flow: FlowType = Flow.BOURSE) -> MarketOverview:
+async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
     """tsetmc.com > در یک نگاه"""
     j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
@@ -183,7 +194,7 @@ async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
 
 
 async def commodity_funds(
-    *, flow: FlowType = Flow.MERCANTILE, top: int | str = '9999'
+    *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
     j = await _api(f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}')
@@ -191,7 +202,7 @@ async def commodity_funds(
 
 
 async def etfs(
-    *, flow: FlowType = Flow.BOURSE, top: int | str = '9999'
+    *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
     j = await _api(f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}')
@@ -199,7 +210,7 @@ async def etfs(
 
 
 async def messages(
-    *, flow: FlowType = Flow.GENERAL, top: int | str = 200
+    *, flow: _FlowType = _Flow.GENERAL, top: int | str = 200
 ) -> _DataFrame:
     """See also: ``search_messages`` and ``Instrument.messages``."""
     j = await _api(f'Msg/GetMsgByFlow/{flow}/{top}', fa=True)
