@@ -3,9 +3,11 @@ from numpy import dtype
 
 from tests import STR
 from tsetmc.general import (
+    FundType,
     MarketOverview,
     boards,
     cs_codes,
+    get_funds,
     industrial_groups_overview,
     major_holders_activity,
     market_map_data,
@@ -173,3 +175,66 @@ async def test_top_industry_groups():
 async def test_market_overview():
     d = await market_overview()
     assert_dict_type(d, MarketOverview)
+
+
+@file('get_funds_mix.json')
+async def test_get_funds():
+    df = await get_funds(FundType.MIXED)
+    assert [*df.dtypes.items()] == [
+        ('fundProfits', dtype('O')),
+        ('stats', dtype('O')),
+        ('regNo', dtype('float64')),
+        ('fundType', dtype('int64')),
+        ('fundSize', dtype('int64')),
+        ('recordDate', STR),
+        ('navRed', dtype('float64')),
+        ('navSub', dtype('float64')),
+        ('navStat', dtype('float64')),
+        ('initiationDate', STR),
+        ('netAsset', dtype('float64')),
+        ('units', dtype('float64')),
+        ('unitsSub', dtype('float64')),
+        ('unitsRed', dtype('float64')),
+        ('portfolioFiveBest', dtype('float64')),
+        ('portfolioStock', dtype('float64')),
+        ('portfolioBond', dtype('float64')),
+        ('portfolioDeposit', dtype('float64')),
+        ('portfolioOther', dtype('float64')),
+        ('portfolioCash', dtype('float64')),
+        ('custodian', STR),
+        ('custodianEN', dtype('O')),
+        ('guarantor', STR),
+        ('guarantorEN', dtype('O')),
+        ('manager', STR),
+        ('managerEN', dtype('O')),
+        ('investmentManager', STR),
+        ('investmentManagerEN', dtype('O')),
+        ('marketMaker', dtype('O')),
+        ('marketMakerEN', dtype('O')),
+        ('auditor', dtype('O')),
+        ('auditorEN', dtype('O')),
+        ('name', dtype('O')),
+        ('nameEN', dtype('O')),
+        ('webSite', STR),
+        ('webSiteEN', dtype('O')),
+        ('retInvNo', dtype('int64')),
+        ('insInvNo', dtype('int64')),
+        ('retInvPercent', dtype('float64')),
+        ('insInvPercent', dtype('float64')),
+        ('naturalPercent', dtype('float64')),
+        ('legalPercent', dtype('float64')),
+        ('guaranteedEarningRate', dtype('float64')),
+        ('estimatedEarningRate', dtype('float64')),
+        ('dividentIntervalPeriod', dtype('int64')),
+        ('day1Return', dtype('float64')),
+        ('day7Return', dtype('float64')),
+        ('day30Return', dtype('float64')),
+        ('day90Return', dtype('float64')),
+        ('day180Return', dtype('float64')),
+        ('day365Return', dtype('float64')),
+        ('dayFirstReturn', dtype('float64')),
+        ('mfName', STR),
+        ('fixIncome', dtype('int64')),
+        ('mfNameEng', STR),
+    ]
+    assert len(df) > 20

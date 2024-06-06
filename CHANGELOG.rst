@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* New method: ``tsetmc.general.get_funds``.
 
 v0.63.1
 -------
