@@ -6,6 +6,7 @@ from tsetmc.general import (
     FundType,
     MarketOverview,
     boards,
+    commodity_funds,
     cs_codes,
     get_funds,
     industrial_groups_overview,
@@ -180,6 +181,7 @@ async def test_market_overview():
 @file('get_funds_mix.json')
 async def test_get_funds():
     df = await get_funds(FundType.MIXED)
+    assert len(df) > 20
     assert [*df.dtypes.items()] == [
         ('fundProfits', dtype('O')),
         ('stats', dtype('O')),
@@ -237,4 +239,55 @@ async def test_get_funds():
         ('fixIncome', dtype('int64')),
         ('mfNameEng', STR),
     ]
-    assert len(df) > 20
+
+
+@file('commodity_funds.json')
+async def test_commodity_funds():
+    df = await commodity_funds(top=3)
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == [
+        ('instrumentState', dtype('O')),
+        ('lastHEven', dtype('int64')),
+        ('finalLastDate', dtype('int64')),
+        ('nvt', dtype('float64')),
+        ('mop', dtype('int64')),
+        ('pRedTran', dtype('float64')),
+        ('thirtyDayClosingHistory', dtype('O')),
+        ('priceChange', dtype('float64')),
+        ('priceMin', dtype('float64')),
+        ('priceMax', dtype('float64')),
+        ('priceYesterday', dtype('float64')),
+        ('priceFirst', dtype('float64')),
+        ('last', dtype('bool')),
+        ('id', dtype('int64')),
+        ('insCode', STR),
+        ('dEven', dtype('int64')),
+        ('hEven', dtype('int64')),
+        ('pClosing', dtype('float64')),
+        ('iClose', dtype('bool')),
+        ('yClose', dtype('bool')),
+        ('pDrCotVal', dtype('float64')),
+        ('zTotTran', dtype('float64')),
+        ('qTotTran5J', dtype('float64')),
+        ('qTotCap', dtype('float64')),
+        ('instrument.cValMne', dtype('O')),
+        ('instrument.lVal18', dtype('O')),
+        ('instrument.cSocCSAC', dtype('O')),
+        ('instrument.lSoc30', dtype('O')),
+        ('instrument.yMarNSC', dtype('O')),
+        ('instrument.yVal', dtype('O')),
+        ('instrument.insCode', STR),
+        ('instrument.lVal30', STR),
+        ('instrument.lVal18AFC', STR),
+        ('instrument.flow', dtype('int64')),
+        ('instrument.cIsin', dtype('O')),
+        ('instrument.zTitad', dtype('float64')),
+        ('instrument.baseVol', dtype('int64')),
+        ('instrument.instrumentID', dtype('O')),
+        ('instrument.cgrValCot', dtype('O')),
+        ('instrument.cComVal', dtype('O')),
+        ('instrument.lastDate', dtype('int64')),
+        ('instrument.sourceID', dtype('int64')),
+        ('instrument.flowTitle', dtype('O')),
+        ('instrument.cgrValCotTitle', dtype('O')),
+    ]

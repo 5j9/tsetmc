@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * New method: ``tsetmc.general.get_funds``.
+* New method: ``tsetmc.general.commodity_funds``.
 * Updated dataset
 
 v0.63.1
