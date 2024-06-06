@@ -1,4 +1,4 @@
-from enum import IntEnum as _IntEnum
+from enum import StrEnum as _StrEnum
 from typing import TypedDict as _TypedDict
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -159,19 +159,19 @@ async def related_companies(cs: str) -> dict[str, _DataFrame]:
     return j
 
 
-class FundType(_IntEnum):
-    STOCK = 6
-    MIXED = 7
-    FIXED = 4
-    MARKET_MAKING = 11
-    VC = 12
-    REIT = 14
-    PROJECT = 13
-    COMMODITY = 5
-    PRIVATE = 16
-    FUND = 17
+class FundType(_StrEnum):
+    STOCK = '6'
+    MIXED = '7'
+    FIXED = '4'
+    MARKET_MAKING = '11'
+    VC = '12'
+    REIT = '14'
+    PROJECT = '13'
+    COMMODITY = '5'
+    PRIVATE = '16'
+    FUND = '17'
 
 
-async def get_funds(type_: FundType | int, /) -> _DataFrame:
+async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
     j = await _api(f'Fund/GetFunds/{type_}')
     return _DataFrame(j['funds'])
