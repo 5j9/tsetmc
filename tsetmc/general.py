@@ -134,13 +134,19 @@ class MarketOverview(_TypedDict):
     marketValueBase: float
 
 
-async def market_overview(*, flow=1) -> MarketOverview:
-    """Return GetMarketOverview result.
+class Flow(_StrEnum):
+    BOURSE = '1'
+    OTC = '2'  # Over-the-counter, فرابورس
+    FUTURES = '3'
+    UTP = '4'  # Unlisted Trading Privileges, بازار پایه
+    MERCANTILE = '7'  # commodities
 
-    :param flow:
-        1: bourse
-        2: fara-bourse
-    """
+
+FlowType = int | str | Flow
+
+
+async def market_overview(*, flow: FlowType = Flow.BOURSE) -> MarketOverview:
+    """tsetmc.com > در یک نگاه"""
     j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
     overview['marketActivityTimestamp'] = _Timestamp(
@@ -179,7 +185,7 @@ async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
 
 
 async def commodity_funds(
-    *, flow: int | str = '7', top: int | str = '9999'
+    *, flow: FlowType = Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
     j = await _api(f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}')
@@ -187,7 +193,7 @@ async def commodity_funds(
 
 
 async def etfs(
-    *, flow: int | str = '1', top: int | str = '9999'
+    *, flow: FlowType = Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
     j = await _api(f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}')
