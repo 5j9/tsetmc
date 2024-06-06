@@ -10,7 +10,15 @@ from pandas import (
     json_normalize as _json_normalize,
 )
 
-from tsetmc import _api, _DataFrame, _get_par_tree, _numerize, _partial
+from tsetmc import (
+    Flow,
+    FlowType,
+    _api,
+    _DataFrame,
+    _get_par_tree,
+    _numerize,
+    _partial,
+)
 
 _make_soup = _partial(_BeautifulSoup, features='lxml')
 
@@ -132,17 +140,6 @@ class MarketOverview(_TypedDict):
     marketStateTitle: str
     marketValue: float
     marketValueBase: float
-
-
-class Flow(_StrEnum):
-    BOURSE = '1'
-    OTC = '2'  # Over-the-counter, فرابورس
-    FUTURES = '3'
-    UTP = '4'  # Unlisted Trading Privileges, بازار پایه
-    MERCANTILE = '7'  # commodities
-
-
-FlowType = int | str | Flow
 
 
 async def market_overview(*, flow: FlowType = Flow.BOURSE) -> MarketOverview:

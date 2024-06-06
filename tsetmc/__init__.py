@@ -1,5 +1,5 @@
 __version__ = '0.63.2.dev0'
-
+from enum import StrEnum as _StrEnum
 from functools import partial as _partial
 from json import JSONDecodeError, loads
 from logging import getLogger as _getLogger
@@ -102,6 +102,17 @@ class InstrumentInfo(_TypedDict):
     sourceID: int
     flowTitle: str
     cgrValCotTitle: str
+
+
+class Flow(_StrEnum):
+    BOURSE = '1'
+    OTC = '2'  # Over-the-counter, فرابورس
+    FUTURES = '3'
+    UTP = '4'  # Unlisted Trading Privileges, بازار پایه
+    MERCANTILE = '7'  # commodities
+
+
+FlowType = int | str | Flow
 
 
 def _parse_market_state(s: str) -> MarketState:

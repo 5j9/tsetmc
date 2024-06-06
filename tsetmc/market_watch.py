@@ -8,6 +8,7 @@ from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
 
 from tsetmc import (
+    FlowType,
     MarketState,
     _csv2df,
     _DataFrame,
@@ -309,7 +310,7 @@ async def key_stats() -> _DataFrame:
 async def ombud_messages(
     *,
     top: int | str = None,
-    flow: int | str = None,
+    flow: FlowType = None,
     containing: str = None,
     sh_date: str = None,
 ) -> _DataFrame:

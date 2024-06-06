@@ -33,6 +33,7 @@ from tsetmc import (
     _rc,
     _TypedDict,
 )
+from tsetmc.general import FlowType
 
 _j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
 
@@ -1074,7 +1075,7 @@ class InstrumentOnDate:
         return j['instrumentHistory']
 
 
-async def price_adjustments(flow: int) -> _DataFrame:
+async def price_adjustments(flow: FlowType) -> _DataFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:
