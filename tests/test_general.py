@@ -260,6 +260,7 @@ async def test_get_funds():
         ('fixIncome', dtype('int64')),
         ('mfNameEng', STR),
     ]
+    assert not df['mfName'].str.contains('ي', regex=False).any()
 
 
 GET_TRADE_TOP_DTYPES = [
@@ -315,6 +316,7 @@ async def test_commodity_funds():
     df = await commodity_funds(top=3)
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
 
 
 @file('etfs.json')
@@ -322,6 +324,7 @@ async def test_etfs():
     df = await etfs(top=3)
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
 
 
 MSG_DTYPES = [

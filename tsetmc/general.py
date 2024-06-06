@@ -197,7 +197,9 @@ async def commodity_funds(
     *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
-    j = await _api(f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}')
+    j = await _api(
+        f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}', fa=True
+    )
     return _json_normalize(j['tradeTop'])
 
 
@@ -205,7 +207,9 @@ async def etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
-    j = await _api(f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}')
+    j = await _api(
+        f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}', fa=True
+    )
     return _json_normalize(j['tradeTop'])
 
 
