@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * New method: ``tsetmc.general.get_funds``.
+* Updated dataset
 
 v0.63.1
 -------
