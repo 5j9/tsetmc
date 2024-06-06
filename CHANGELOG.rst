@@ -3,6 +3,7 @@ Unreleased
 * New method: ``tsetmc.general.get_funds``.
 * New method: ``tsetmc.general.commodity_funds``.
 * New method: ``tsetmc.general.etfs``.
+* Changed!: The `n` parameter of `general.market_overview` function was renamed to `flow` and is now keyword-only.
 * Updated dataset
 
 v0.63.1

@@ -134,14 +134,14 @@ class MarketOverview(_TypedDict):
     marketValueBase: float
 
 
-async def market_overview(n=1) -> MarketOverview:
+async def market_overview(*, flow=1) -> MarketOverview:
     """Return GetMarketOverview result.
 
-    :param n:
+    :param flow:
         1: bourse
         2: fara-bourse
     """
-    j = await _api(f'MarketData/GetMarketOverview/{n}')
+    j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
     overview['marketActivityTimestamp'] = _Timestamp(
         f"{overview['marketActivityDEven']}"
