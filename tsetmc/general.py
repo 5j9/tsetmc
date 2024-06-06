@@ -16,6 +16,7 @@ from tsetmc import (
     _api,
     _DataFrame,
     _get_par_tree,
+    _mem_par_tree,
     _numerize,
     _partial,
 )
@@ -24,15 +25,15 @@ _make_soup = _partial(_BeautifulSoup, features='lxml')
 
 
 async def boards() -> dict[int, str]:
-    """See http://en.tsetmc.com/Loader.aspx?ParTree=121C1913."""
-    content = await _get_par_tree('111C1913')
+    """See http://members.tsetmc.com/Loader.aspx?ParTree=121C1913."""
+    content = await _mem_par_tree('111C1913')
     iloc = _html_to_df(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
 
 async def cs_codes() -> dict[str, str]:
-    """http://www.tsetmc.com/Loader.aspx?ParTree=111C1213"""
-    content = await _get_par_tree('111C1213')
+    """https://members.tsetmc.com/Loader.aspx?ParTree=111C1213"""
+    content = await _mem_par_tree('111C1213')
     iloc = _html_to_df(content, header=0).iloc
     return dict(zip(iloc[:, 0], iloc[:, 1]))
 
@@ -41,9 +42,9 @@ async def industrial_groups_overview() -> _DataFrame:
     """Return a dataframe of industrial groups.
 
     The result contains info about each group's price change.
-    See: http://old.tsetmc.com/Loader.aspx?ParTree=111C1214
+    See: http://members.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
-    content = await _get_par_tree('111C1214')
+    content = await _mem_par_tree('111C1214')
     df = _html_to_df(content)
     show = df[1]
     df.drop(columns=1, inplace=True)

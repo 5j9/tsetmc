@@ -211,6 +211,7 @@ async def _get(url: str, *, fa=False) -> str | bytes:
 
 
 _DOMAIN = 'http://old.tsetmc.com/'
+_MEMBERS = 'http://members.tsetmc.com/'
 # API does not work on www domain
 _API = 'https://cdn.tsetmc.com/api/'
 
@@ -221,6 +222,10 @@ async def _get_data(path: str, *, fa=False) -> str | bytes:
 
 async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
+
+
+async def _mem_par_tree(path: str, *, fa=True) -> str | bytes:
+    return await _get(f'{_MEMBERS}Loader.aspx?ParTree={path}', fa=fa)
 
 
 async def _api(path: str, *, fa=False):
