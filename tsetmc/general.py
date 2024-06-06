@@ -177,6 +177,15 @@ async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
     return _DataFrame(j['funds'])
 
 
-async def commodity_funds(*, flow: int | str = '7', top: int | str = '9999'):
+async def commodity_funds(
+    *, flow: int | str = '7', top: int | str = '9999'
+) -> _DataFrame:
     j = await _api(f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}')
+    return _json_normalize(j['tradeTop'])
+
+
+async def etfs(
+    *, flow: int | str = '1', top: int | str = '9999'
+) -> _DataFrame:
+    j = await _api(f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}')
     return _json_normalize(j['tradeTop'])

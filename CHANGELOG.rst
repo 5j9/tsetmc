@@ -2,6 +2,7 @@ Unreleased
 ----------
 * New method: ``tsetmc.general.get_funds``.
 * New method: ``tsetmc.general.commodity_funds``.
+* New method: ``tsetmc.general.etfs``.
 * Updated dataset
 
 v0.63.1

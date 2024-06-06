@@ -8,6 +8,7 @@ from tsetmc.general import (
     boards,
     commodity_funds,
     cs_codes,
+    etfs,
     get_funds,
     industrial_groups_overview,
     major_holders_activity,
@@ -241,53 +242,63 @@ async def test_get_funds():
     ]
 
 
+GET_TRADE_TOP_DTYPES = [
+    ('instrumentState', dtype('O')),
+    ('lastHEven', dtype('int64')),
+    ('finalLastDate', dtype('int64')),
+    ('nvt', dtype('float64')),
+    ('mop', dtype('int64')),
+    ('pRedTran', dtype('float64')),
+    ('thirtyDayClosingHistory', dtype('O')),
+    ('priceChange', dtype('float64')),
+    ('priceMin', dtype('float64')),
+    ('priceMax', dtype('float64')),
+    ('priceYesterday', dtype('float64')),
+    ('priceFirst', dtype('float64')),
+    ('last', dtype('bool')),
+    ('id', dtype('int64')),
+    ('insCode', STR),
+    ('dEven', dtype('int64')),
+    ('hEven', dtype('int64')),
+    ('pClosing', dtype('float64')),
+    ('iClose', dtype('bool')),
+    ('yClose', dtype('bool')),
+    ('pDrCotVal', dtype('float64')),
+    ('zTotTran', dtype('float64')),
+    ('qTotTran5J', dtype('float64')),
+    ('qTotCap', dtype('float64')),
+    ('instrument.cValMne', dtype('O')),
+    ('instrument.lVal18', dtype('O')),
+    ('instrument.cSocCSAC', dtype('O')),
+    ('instrument.lSoc30', dtype('O')),
+    ('instrument.yMarNSC', dtype('O')),
+    ('instrument.yVal', dtype('O')),
+    ('instrument.insCode', STR),
+    ('instrument.lVal30', STR),
+    ('instrument.lVal18AFC', STR),
+    ('instrument.flow', dtype('int64')),
+    ('instrument.cIsin', dtype('O')),
+    ('instrument.zTitad', dtype('float64')),
+    ('instrument.baseVol', dtype('int64')),
+    ('instrument.instrumentID', dtype('O')),
+    ('instrument.cgrValCot', dtype('O')),
+    ('instrument.cComVal', dtype('O')),
+    ('instrument.lastDate', dtype('int64')),
+    ('instrument.sourceID', dtype('int64')),
+    ('instrument.flowTitle', dtype('O')),
+    ('instrument.cgrValCotTitle', dtype('O')),
+]
+
+
 @file('commodity_funds.json')
 async def test_commodity_funds():
     df = await commodity_funds(top=3)
     assert len(df) == 3
-    assert [*df.dtypes.items()] == [
-        ('instrumentState', dtype('O')),
-        ('lastHEven', dtype('int64')),
-        ('finalLastDate', dtype('int64')),
-        ('nvt', dtype('float64')),
-        ('mop', dtype('int64')),
-        ('pRedTran', dtype('float64')),
-        ('thirtyDayClosingHistory', dtype('O')),
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('instrument.cValMne', dtype('O')),
-        ('instrument.lVal18', dtype('O')),
-        ('instrument.cSocCSAC', dtype('O')),
-        ('instrument.lSoc30', dtype('O')),
-        ('instrument.yMarNSC', dtype('O')),
-        ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', STR),
-        ('instrument.lVal30', STR),
-        ('instrument.lVal18AFC', STR),
-        ('instrument.flow', dtype('int64')),
-        ('instrument.cIsin', dtype('O')),
-        ('instrument.zTitad', dtype('float64')),
-        ('instrument.baseVol', dtype('int64')),
-        ('instrument.instrumentID', dtype('O')),
-        ('instrument.cgrValCot', dtype('O')),
-        ('instrument.cComVal', dtype('O')),
-        ('instrument.lastDate', dtype('int64')),
-        ('instrument.sourceID', dtype('int64')),
-        ('instrument.flowTitle', dtype('O')),
-        ('instrument.cgrValCotTitle', dtype('O')),
-    ]
+    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+
+
+@file('etfs.json')
+async def test_etfs():
+    df = await etfs(top=3)
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
