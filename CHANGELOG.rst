@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.64.0
+-------
 * New function: ``tsetmc.general.get_funds``.
 * New function: ``tsetmc.general.commodity_funds``.
 * New function: ``tsetmc.general.etfs``.
