@@ -3,7 +3,7 @@ from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
-from re import fullmatch as _fullmatch
+from re import findall as _findall, fullmatch as _fullmatch
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -22,7 +22,6 @@ from tsetmc import (
     _api,
     _csv2df,
     _DataFrame,
-    _findall,
     _get,
     _get_data,
     _get_par_tree,

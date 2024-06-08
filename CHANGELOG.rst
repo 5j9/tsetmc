@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* Fixed: ImportError in instruments module
 
 v0.64.0
 -------
