@@ -193,7 +193,7 @@ async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
     return _DataFrame(j['funds'])
 
 
-async def commodity_funds(
+async def commodity_etfs(
     *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""

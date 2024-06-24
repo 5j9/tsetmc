@@ -8,7 +8,7 @@ from tsetmc.general import (
     FundType,
     MarketOverview,
     boards,
-    commodity_funds,
+    commodity_etfs,
     cs_codes,
     etfs,
     get_funds,
@@ -313,7 +313,7 @@ GET_TRADE_TOP_DTYPES = [
 
 @file('commodity_funds.json')
 async def test_commodity_funds():
-    df = await commodity_funds(top=3)
+    df = await commodity_etfs(top=3)
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
     assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
