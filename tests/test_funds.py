@@ -5,7 +5,8 @@ from tests import STR
 from tsetmc.funds import (
     FundType,
     commodity_etfs,
-    etfs_by_biggest_price_decline,
+    etfs_with_most_price_decrease,
+    etfs_with_most_price_increase,
     funds,
 )
 
@@ -65,9 +66,21 @@ async def test_commodity_funds():
     assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
 
 
-@file('etfs.json')
-async def test_etfs_by_biggest_price_decline():
-    df = await etfs_by_biggest_price_decline(top=3)
+@file('etfs_with_most_price_decrease.json')
+async def test_etfs_with_most_price_decrease():
+    df = await etfs_with_most_price_decrease(top=3)
+    if df.empty:  # early morning
+        return
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+
+@file('etfs_with_most_price_increase.json')
+async def test_etfs_with_most_price_increase():
+    df = await etfs_with_most_price_increase(top=3)
+    if df.empty:  # early morning
+        return
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
     assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
