@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* BREAKING: All ETF/fund related functions were moved from general to funds module.
+* BREAKING: All ETF/fund related functions were moved from ``general`` to ``funds`` module.
 
 v0.64.1
 -------
