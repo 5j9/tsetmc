@@ -44,7 +44,7 @@ async def commodity_etfs(
 async def etfs_with_most_price_decrease(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
+    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین کاهش قیمت"""
     j = await _api(
         f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}', fa=True
     )
@@ -54,7 +54,7 @@ async def etfs_with_most_price_decrease(
 async def etfs_with_most_price_increase(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
+    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین افزایش قیمت"""
     j = await _api(
         f'ClosingPrice/GetTradeTop/PClosingTopETF/{flow}/{top}', fa=True
     )
