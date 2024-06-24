@@ -1,4 +1,3 @@
-from enum import StrEnum as _StrEnum
 from typing import TypedDict as _TypedDict
 from warnings import warn as _warn
 
@@ -172,45 +171,6 @@ async def related_companies(cs: str) -> dict[str, _DataFrame]:
         j['relatedCompanyThirtyDayHistory'], copy=False
     )
     return j
-
-
-class FundType(_StrEnum):
-    STOCK = '6'
-    MIXED = '7'
-    FIXED = '4'
-    MARKET_MAKING = '11'
-    VC = '12'
-    REIT = '14'
-    PROJECT = '13'
-    COMMODITY = '5'
-    PRIVATE = '16'
-    FUND = '17'
-
-
-async def get_funds(type_: FundType | int | str, /) -> _DataFrame:
-    """tsetmc.com > صندوق های سرمایه گذاری"""
-    j = await _api(f'Fund/GetFunds/{type_}')
-    return _DataFrame(j['funds'])
-
-
-async def commodity_etfs(
-    *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
-) -> _DataFrame:
-    """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
-
-
-async def etfs(
-    *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
-) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
 
 
 async def messages(
