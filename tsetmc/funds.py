@@ -59,3 +59,13 @@ async def etfs_with_most_price_increase(
         f'ClosingPrice/GetTradeTop/PClosingTopETF/{flow}/{top}', fa=True
     )
     return _json_normalize(j['tradeTop'])
+
+
+async def most_traded_etfs(
+    *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
+) -> _DataFrame:
+    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین حجم معامله"""
+    j = await _api(
+        f'ClosingPrice/GetTradeTop/MostTradedETF/{flow}/{top}', fa=True
+    )
+    return _json_normalize(j['tradeTop'])

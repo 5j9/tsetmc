@@ -8,6 +8,7 @@ from tsetmc.funds import (
     etfs_with_most_price_decrease,
     etfs_with_most_price_increase,
     funds,
+    most_traded_etfs,
 )
 
 GET_TRADE_TOP_DTYPES = [
@@ -79,6 +80,16 @@ async def test_etfs_with_most_price_decrease():
 @file('etfs_with_most_price_increase.json')
 async def test_etfs_with_most_price_increase():
     df = await etfs_with_most_price_increase(top=3)
+    if df.empty:  # early morning
+        return
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+
+@file('most_traded_etfs.json')
+async def test_most_traded_etfs():
+    df = await most_traded_etfs(top=3)
     if df.empty:  # early morning
         return
     assert len(df) == 3
