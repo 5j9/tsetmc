@@ -5,6 +5,7 @@ from tests import STR
 from tsetmc.funds import (
     FundType,
     commodity_etfs,
+    etfs,
     etfs_with_most_price_decrease,
     etfs_with_most_price_increase,
     funds,
@@ -92,6 +93,14 @@ async def test_most_traded_etfs():
     df = await most_traded_etfs(top=3)
     if df.empty:  # early morning
         return
+    assert len(df) == 3
+    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
+    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+
+@file('etfs.json')
+async def test_etfs():
+    df = await etfs(top=3)
     assert len(df) == 3
     assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
     assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
