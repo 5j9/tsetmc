@@ -1,4 +1,4 @@
-__version__ = '0.64.2.dev0'
+__version__ = '0.65.0'
 from enum import StrEnum as _StrEnum
 from functools import partial as _partial
 from json import JSONDecodeError, loads
