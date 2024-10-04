@@ -37,7 +37,7 @@ def assert_bl_dtypes(df: DataFrame, unstacked=True):
         columns = BL_STACKED_COLUMNS
         index = df.index
         assert index.names == ['ins_code', 'number']
-        assert [*index.dtypes] == [string, 'int64']
+        assert [*index.dtypes] == [string, 'int64']  # type: ignore
 
     for c in columns:
         col = df.pop(c)
@@ -164,7 +164,7 @@ def test_parse_index():
         'tse_index_change': -8155.9,
         'tse_index_change_percent': -0.69,
         'tse_status': 'F',
-        'tse_tno': 34288551133025.0,
+        'tse_tno': 428601.0,
         'tse_tval': 34288551133025.0,
         'tse_tvol': 3055466451.0,
         'tse_value': 4.674381234630472e16,
@@ -186,7 +186,7 @@ def test_parse_index():
         'tse_index_change': 15808.56,
         'tse_index_change_percent': 1.29,
         'tse_status': 'F',
-        'tse_tno': 75828635544957.0,
+        'tse_tno': 830860.0,
         'tse_tval': 75828635544957.0,
         'tse_tvol': 9682732949.0,
         'tse_value': 4.973605456635374e16,

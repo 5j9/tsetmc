@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiohutils.tests import init_tests
 from jdatetime import datetime as jdatetime
 
@@ -9,6 +11,7 @@ STR = 'string[pyarrow_numpy]'
 
 def assert_market_state(market_state: MarketState):
     assert type(market_state.pop('datetime')) is jdatetime
+    k: Any
     for k in ('tse_status', 'fb_status', 'derivatives_status'):
         assert type(market_state.pop(k)) is str
     for k in ('fb_tno', 'derivatives_tno'):

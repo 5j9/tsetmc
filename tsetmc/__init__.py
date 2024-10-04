@@ -3,7 +3,7 @@ from enum import StrEnum as _StrEnum
 from functools import partial as _partial
 from json import JSONDecodeError, loads
 from logging import getLogger as _getLogger
-from re import compile as _rc
+from re import Match as _Match, compile as _rc
 from typing import TypedDict as _TypedDict
 
 from aiohutils.session import SessionManager
@@ -17,8 +17,8 @@ from pandas import (
 
 _logger = _getLogger(__name__)
 _o.mode.copy_on_write = True
-_o.future.infer_string = True
-_o.future.no_silent_downcasting = True
+_o.future.infer_string = True  # type: ignore
+_o.future.no_silent_downcasting = True  # type: ignore
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 
@@ -32,9 +32,10 @@ _jstrptime = _jdatetime.strptime
 
 class MarketState(_TypedDict, total=False):
     datetime: _jdatetime
-    tset_status: str
-    tset_index: float
-    tset_index_change: float
+    tse_status: str
+    tse_index: float
+    tse_index_change: float | None
+    tse_index_change_percent: float | None
     tse_tvol: float
     tse_tval: float
     tse_tno: float
@@ -42,7 +43,11 @@ class MarketState(_TypedDict, total=False):
     fb_tvol: float
     fb_tval: float
     fb_tno: int
-    derivatives_status: int
+    tse_value: float | None
+    derivatives_status: str
+    derivatives_tval: float
+    derivatives_tvol: float
+    derivatives_tno: int
 
 
 class Eps(_TypedDict):
@@ -144,7 +149,7 @@ def _parse_market_state(s: str) -> MarketState:
         _,
     ) = s.split(',')
     if tse_index_change:  # can be '' before market start
-        index_change_match = _INDEX_CHANGE_MATCH(tse_index_change)
+        index_change_match: _Match = _INDEX_CHANGE_MATCH(tse_index_change)  # type: ignore
         tse_index_change = float(index_change_match[2])
         if index_change_match[1] is not None:  # negative value
             tse_index_change *= -1
@@ -154,8 +159,9 @@ def _parse_market_state(s: str) -> MarketState:
             tse_index_change_percent = None
     else:
         tse_index_change_percent = None
-    timestamp_match = _INDEX_TIMESTAMP_MATCH(datetime)
-    result = {
+        tse_index_change = None
+    timestamp_match: _Match = _INDEX_TIMESTAMP_MATCH(datetime)  # type: ignore
+    return {
         'datetime': _jdatetime(
             1400 + int(timestamp_match[1]),
             int(timestamp_match[2]),
@@ -169,7 +175,7 @@ def _parse_market_state(s: str) -> MarketState:
         'tse_index_change': tse_index_change,
         'tse_tvol': float(tse_tvol),
         'tse_tval': float(tse_tval),
-        'tse_tno': float(tse_tval),
+        'tse_tno': float(tse_tno),
         'fb_status': fb_status,
         'fb_tvol': float(fb_tvol),
         'fb_tval': float(fb_tval),
@@ -181,7 +187,6 @@ def _parse_market_state(s: str) -> MarketState:
         'tse_index_change_percent': tse_index_change_percent,
         'tse_value': float(tse_value) if tse_value else None,
     }
-    return result
 
 
 session_manager = SessionManager()
