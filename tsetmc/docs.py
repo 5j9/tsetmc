@@ -76,6 +76,7 @@ async def instrument() -> dict:
     soup = _make_soup(text)
 
     t0 = soup.select_one('table')
+    assert t0 is not None
     t1, t2, t3 = t0.select('table')
 
     flow = {k: v for k, v in [i.text.split(' : ') for i in t1.select('li')]}
@@ -103,6 +104,7 @@ async def best_limits_all_ins() -> dict:
     soup = _make_soup(text)
 
     t0 = soup.select_one('table')
+    assert t0 is not None
     t1, t2 = t0.select('table')
 
     flow = {
@@ -129,7 +131,8 @@ async def trade_last_day() -> dict:
     flow = {
         int(k): v
         for k, v in [
-            i.text.split(' : ') for i in soup.select_one('ul').select('li')
+            i.text.split(' : ')
+            for i in soup.select_one('ul').select('li')  # type: ignore
         ]
     }
     out = {
