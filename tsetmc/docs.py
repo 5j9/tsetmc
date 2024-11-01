@@ -4,15 +4,8 @@ https://tsetmc.com/StaticContent/WebServiceHelp
 
 from aiohutils.pd import html_to_df as _html_to_df
 
-from tsetmc import _DOMAIN, _api, _get
+from tsetmc import _api
 from tsetmc.general import _make_soup
-
-
-async def _site_partree(params: str):
-    return await _get(
-        f'{_DOMAIN}Site.aspx?ParTree={params}',
-        fa=True,
-    )
 
 
 async def _static_content(key: str):
