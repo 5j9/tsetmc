@@ -1,9 +1,11 @@
 Unreleased
 ----------
-* Improved type hints
-* Updated dataset
-* Migrated some functions from `docs` module to the new API
-* yval column in market_watch is now of type string instead of int16
+* Improved type hints.
+* Updated dataset.
+* Migrated functions of ``docs`` module to the new tsetmc API.
+* ``yval`` column in ``market_watch`` is now of type ``string`` instead of ``int16``.
+* ``ins_code`` column in ``major_holders_activity`` is now of type ``string`` instead of ``int64``.
+* Dependency on ``bs4`` package was removed.
 
 v0.65.0
 -------

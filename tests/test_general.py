@@ -168,11 +168,7 @@ async def test_market_map_data():
 async def test_major_holders_activity():
     df = await major_holders_activity()
     dtypes = [*df.dtypes.items()]
-    assert dtypes[:3] == [
-        ('ins_code', dtype('int64')),
-        ('l30', STR),
-        ('holder', STR),
-    ]
+    assert dtypes[:3] == [('ins_code', STR), ('l30', STR), ('holder', STR)]
     for _, t in dtypes[3:]:
         assert dtype(t) == dtype('float64')
 

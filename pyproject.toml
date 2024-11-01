@@ -22,7 +22,6 @@ dynamic = [
 ]
 dependencies = [
     'aiohutils >= 0.15.0',
-    'beautifulsoup4',
     'jdatetime',
     'lxml',
     'numpy',

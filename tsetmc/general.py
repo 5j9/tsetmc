@@ -2,7 +2,7 @@ from typing import TypedDict as _TypedDict
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
-from bs4 import BeautifulSoup as _BeautifulSoup
+from lxml.html import fromstring as _html
 from pandas import (
     NA as _NA,
     Timestamp as _Timestamp,
@@ -18,10 +18,7 @@ from tsetmc import (
     _get_par_tree,
     _mem_par_tree,
     _numerize,
-    _partial,
 )
-
-_make_soup = _partial(_BeautifulSoup, features='lxml')
 
 
 async def boards() -> dict[int, str]:
@@ -81,22 +78,23 @@ async def market_map_data(
 
 async def major_holders_activity() -> _DataFrame:
     text = await _get_par_tree('15131I')
-    soup = _make_soup(text)
-    trs = soup.select('tr')
+    html = _html(text)
+    trs = html.xpath('//tr')
 
     rows = []
     append_row = rows.append
     for tr in trs[1:]:
-        tds = tr.select('td')
+        tds = tr.xpath('.//td')
         td0 = tds[0]
 
-        inst_div = td0.select_one('div')
+        inst_div = td0.xpath('.//div[1]')
         if inst_div:
-            href = inst_div.select_one('a')['href']
-            ins_code = int(href[href.rfind('=') + 1 :])
-            l30 = inst_div.text
+            inst_div = inst_div[0]
+            href = inst_div.xpath('.//a[1]/@href')[0]
+            ins_code = href[href.rfind('=') + 1 :]
+            l30 = inst_div.text_content()
 
-        holder = td0.select_one('li').text
+        holder = td0.xpath('.//li[1]/text()')[0]
         # noinspection PyUnboundLocalVariable
         append_row([ins_code, l30, holder, *_parse_tds(tds)])
     return _DataFrame(
@@ -109,7 +107,7 @@ async def major_holders_activity() -> _DataFrame:
             *(
                 # the first header is 'شرکت - سهامدار'
                 th.text
-                for th in trs[0].select('th')[1:]
+                for th in trs[0].xpath('.//th')[1:]
             ),
         ),
     )
