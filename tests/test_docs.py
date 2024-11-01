@@ -31,10 +31,10 @@ async def test_instrument_state():
     assert d['output']['CEtaVal']['I '] == 'ممنوع'
 
 
-@file('instrument.html')
+@file('instrument.json')
 async def test_instrument():
     d = await instrument()
-    assert d['output']['YVal'][69] == ('شاخص', 'شاخص فرابورس')
+    assert d['output']['YVal']['69'] == ('شاخص', 'شاخص فرابورس')
 
 
 @file('best_limits_all_ins.json')

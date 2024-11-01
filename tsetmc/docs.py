@@ -78,20 +78,20 @@ async def instrument_state() -> dict:
 
 
 async def instrument() -> dict:
-    """http://tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83"""
-    text = await _site_partree('1114111116&LnkIdn=83')
+    """https://tsetmc.com/StaticContent/WS-Instrument"""
+    text = await _static_content('Instrument')
     soup = _make_soup(text)
 
     t0 = soup.select_one('table')
     t1, t2, t3 = t0.select('table')
 
-    flow = {
-        int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]
-    }
+    flow = {k: v for k, v in [i.text.split(' : ') for i in t1.select('li')]}
 
+    yval_tds = [
+        tr.select('td') for tr in t3.select('tr') if not tr.select('hr')
+    ]
     yval = {
-        int(k.text): (v1.text.strip(), v2.text.strip())
-        for k, v1, v2 in [tr.select('td') for tr in t3.select('tr')]
+        k.text: (v1.text.strip(), v2.text.strip()) for k, v1, v2 in yval_tds
     }
 
     return {
