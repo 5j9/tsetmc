@@ -19,7 +19,7 @@ async def test_client_type():
     assert [*out.dtypes.items()] == [(0, STR), (1, STR), (2, STR)]
 
 
-@file('instrument_filter_by_date.html')
+@file('instrument_filter_by_date.json')
 async def test_instrument_filter_by_date():
     d = await instrument_filter_by_date()
     assert d['output']['YVal']['068'] == 'شاخص'

@@ -30,8 +30,8 @@ async def client_type() -> dict:
 
 
 async def instrument_filter_by_date() -> dict:
-    """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111Z&LnkIdn=834"""
-    text = await _site_partree('1114111116&LnkIdn=834')
+    """https://tsetmc.com/StaticContent/WS-InstrumentFilterByDate"""
+    text = await _static_content('InstrumentFilterByDate')
     soup = _make_soup(text)
 
     ul0, ul1, ul2 = soup.select('td > ul')
