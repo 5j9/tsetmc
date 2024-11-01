@@ -11,7 +11,7 @@ from tsetmc.docs import (
 )
 
 
-@file('client_type.html')
+@file('client_type.json')
 async def test_client_type():
     d = await client_type()
     out = d['output']

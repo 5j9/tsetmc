@@ -21,8 +21,8 @@ async def _static_content(key: str):
 
 
 async def client_type() -> dict:
-    """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111116&LnkIdn=3568"""
-    text = await _site_partree('1114111116&LnkIdn=3568')
+    """https://tsetmc.com/StaticContent/WS-ClientType"""
+    text = await _static_content('ClientType')
     out = _html_to_df(text, 2)
     return {
         'output': out,
