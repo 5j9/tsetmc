@@ -3,9 +3,9 @@ https://tsetmc.com/StaticContent/WebServiceHelp
 """
 
 from aiohutils.pd import html_to_df as _html_to_df
+from lxml.html import fromstring as _html
 
 from tsetmc import _api
-from tsetmc.general import _make_soup
 
 
 async def _static_content(key: str):
@@ -25,14 +25,14 @@ async def client_type() -> dict:
 async def instrument_filter_by_date() -> dict:
     """https://tsetmc.com/StaticContent/WS-InstrumentFilterByDate"""
     text = await _static_content('InstrumentFilterByDate')
-    soup = _make_soup(text)
+    html = _html(text)
 
-    ul0, ul1, ul2 = soup.select('td > ul')
+    ul0, ul1, ul2 = html.xpath('//td/ul')
 
     flow = {
-        int(k): v for k, v in [i.text.split(' : ') for i in ul0.select('li')]
+        int(k): v for k, v in [i.text.split(' : ') for i in ul0.xpath('.//li')]
     }
-    yval = {k: v for k, v in [i.text.split(': ') for i in ul1.select('li')]}
+    yval = {k: v for k, v in [i.text.split(': ') for i in ul1.xpath('.//li')]}
 
     return {
         'input': {
@@ -48,16 +48,21 @@ async def instrument_filter_by_date() -> dict:
 async def instrument_state() -> dict:
     """https://tsetmc.com/StaticContent/WS-InstrumentsState"""
     text = await _static_content('InstrumentsState')
-    soup = _make_soup(text)
+    html = _html(text)
 
-    tds = soup.select('td')
+    tds = html.xpath('//td')
     flow = {
         int(k): v
-        for k, v in [i.text.strip().split(' : ') for i in tds[7].select('li')]
+        for k, v in [
+            i.text_content().strip().split(' : ')
+            for i in tds[7].xpath('.//li')
+        ]
     }
     cetaval = {
         k.strip('"'): v.strip('"')
-        for k, v in [i.text.strip().split(':') for i in tds[-1].select('p')]
+        for k, v in [
+            i.text_content().strip().split(':') for i in tds[-1].xpath('.//p')
+        ]
     }
 
     return {
@@ -73,17 +78,15 @@ async def instrument_state() -> dict:
 async def instrument() -> dict:
     """https://tsetmc.com/StaticContent/WS-Instrument"""
     text = await _static_content('Instrument')
-    soup = _make_soup(text)
+    html = _html(text)
 
-    t0 = soup.select_one('table')
+    t0 = html.xpath('//table[1]')[0]
     assert t0 is not None
-    t1, t2, t3 = t0.select('table')
+    t1, t2, t3 = t0.xpath('.//table')
 
-    flow = {k: v for k, v in [i.text.split(' : ') for i in t1.select('li')]}
+    flow = {k: v for k, v in [i.text.split(' : ') for i in t1.xpath('.//li')]}
 
-    yval_tds = [
-        tr.select('td') for tr in t3.select('tr') if not tr.select('hr')
-    ]
+    yval_tds = [tr.xpath('.//td') for tr in t3.xpath('.//tr[not(.//hr)]')]
     yval = {
         k.text: (v1.text.strip(), v2.text.strip()) for k, v1, v2 in yval_tds
     }
@@ -101,18 +104,19 @@ async def instrument() -> dict:
 async def best_limits_all_ins() -> dict:
     """https://tsetmc.com/StaticContent/WS-BestLimitsAllIns"""
     text = await _static_content('BestLimitsAllIns')
-    soup = _make_soup(text)
+    html = _html(text)
 
-    t0 = soup.select_one('table')
+    t0 = html.xpath('//table[1]')[0]
     assert t0 is not None
-    t1, t2 = t0.select('table')
+    t1, t2 = t0.xpath('.//table')
 
     flow = {
-        int(k): v for k, v in [i.text.split(' : ') for i in t1.select('li')]
+        int(k): v
+        for k, v in [i.text_content().split(' : ') for i in t1.xpath('.//li')]
     }
     out = {
-        k.text.strip(): v.text.strip()
-        for k, v in [tr.select('td') for tr in t2.select('tr')]
+        k.text_content().strip(): v.text_content().strip()
+        for k, v in [tr.xpath('.//td') for tr in t2.xpath('.//tr')]
     }
 
     return {
@@ -126,19 +130,20 @@ async def best_limits_all_ins() -> dict:
 async def trade_last_day() -> dict:
     """https://tsetmc.com/StaticContent/WS-TradeLastDay"""
     text = await _static_content('TradeLastDay')
-    soup = _make_soup(text)
+    html = _html(text)
 
     flow = {
         int(k): v
         for k, v in [
-            i.text.split(' : ')
-            for i in soup.select_one('ul').select('li')  # type: ignore
+            i.text_content().split(' : ')
+            for i in html.xpath('//ul[1]')[0].xpath('.//li')
         ]
     }
     out = {
-        k.text.strip(): v.text.strip()
+        k.text_content().strip(): v.text_content().strip()
         for k, v in [
-            tr.select('td') for tr in soup.select('table:last-child tr')
+            tr.xpath('.//td')
+            for tr in html.xpath('.//table[not(following-sibling::*)]//tr')
         ]
     }
 

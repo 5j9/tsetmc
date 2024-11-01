@@ -35,6 +35,7 @@ async def test_instrument_state():
 async def test_instrument():
     d = await instrument()
     assert d['output']['YVal']['69'] == ('شاخص', 'شاخص فرابورس')
+    assert len(d['output']['YVal']) >= 40  # curently 50
 
 
 @file('best_limits_all_ins.json')
