@@ -1,10 +1,8 @@
 Unreleased
 ----------
-* 
-
-v0.66.0
--------
-* 
+* Improved type hints
+* Updated dataset
+* yval column in market_watch is now of type string instead of int16
 
 v0.65.0
 -------

@@ -50,7 +50,7 @@ _PRICE_DTYPES_23 = {
     'tmin': 'float64',
     'z': 'int64',
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'yval': 'int16',
+    'yval': 'string',
 }
 _PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
 _PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
@@ -154,7 +154,7 @@ async def market_watch_plus(
             update_fast_view,
             inst_price,
             best_limit,
-            refid,
+            str_refid,
         ) = text.split('@')
     except ValueError as e:
         _save_last_content(f'{e!r}')
@@ -215,7 +215,7 @@ async def market_watch_plus(
         if best_limits_prepare_join:
             bl = _unstack_best_limits(bl)
         result['best_limits'] = bl
-    result['refid'] = int(refid)
+    result['refid'] = int(str_refid)
     return result
 
 
@@ -335,10 +335,10 @@ class MarketWatch:
     def __init__(
         self,
         *,
-        init_kwargs: dict = None,
-        plus_kwargs: dict = None,
-        init_callback: _Callable[[MarketWatchInit], _Any] = None,
-        plus_callback: _Callable[[MarketWatchPlus], _Any] = None,
+        init_kwargs: dict | None = None,
+        plus_kwargs: dict | None = None,
+        init_callback: _Callable[[MarketWatchInit], _Any] | None = None,
+        plus_callback: _Callable[[MarketWatchPlus], _Any] | None = None,
         interval=1,
     ):
         """Create an object that helps with watching the market watch.

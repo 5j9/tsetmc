@@ -5,8 +5,8 @@ from tsetmc.instruments import Instrument as _Instrument, _LazyDS as LazyDS
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 YVAL_EXCLUSIONS = {
-    306,  # مهرایران
-    327,  # شیشه01ن
+    '306',  # مهرایران
+    '327',  # شیشه01ن
 }
 
 
@@ -40,10 +40,10 @@ async def add_instrument(inst: _Instrument) -> None:
     _dump(df)
 
 
-async def update(df: _Df = None) -> None:
+async def update(df: _Df | None = None) -> None:
     if df is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
-        df = mwi['prices']
+        df = mwi['prices']  # type: ignore
     df = df[
         ~(
             df['yval'].isin(YVAL_EXCLUSIONS)

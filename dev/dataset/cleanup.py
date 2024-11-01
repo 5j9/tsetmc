@@ -7,7 +7,7 @@ from tsetmc.instruments import Instrument
 basicConfig(level='INFO', force=True)
 
 TO_BE_REMOVED = []
-CHECKED = {*()}
+CHECKED: set = {*()}
 
 
 async def check(l18: str):
