@@ -43,7 +43,7 @@ async def test_best_limits_all_ins():
     assert d['output']['QTitMeOf'] == 'حجم عرضه'
 
 
-@file('trade_last_day.html')
+@file('trade_last_day.json')
 async def test_trade_last_day():
     d = await trade_last_day()
     assert d['output']['HEven'] == 'ساعت'

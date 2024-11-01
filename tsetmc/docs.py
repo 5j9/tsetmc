@@ -15,6 +15,11 @@ async def _site_partree(params: str):
     )
 
 
+async def _static_content(key: str):
+    j = await _api(f'StaticData/GetStaticContent/WS-{key}')
+    return j['staticContent'][0]['content']
+
+
 async def client_type() -> dict:
     """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111116&LnkIdn=3568"""
     text = await _site_partree('1114111116&LnkIdn=3568')
@@ -49,8 +54,7 @@ async def instrument_filter_by_date() -> dict:
 
 async def instrument_state() -> dict:
     """https://tsetmc.com/StaticContent/WS-InstrumentsState"""
-    j = await _api('StaticData/GetStaticContent/WS-InstrumentsState')
-    text = j['staticContent'][0]['content']
+    text = await _static_content('InstrumentsState')
     soup = _make_soup(text)
 
     tds = soup.select('td')
@@ -102,8 +106,7 @@ async def instrument() -> dict:
 
 async def best_limits_all_ins() -> dict:
     """https://tsetmc.com/StaticContent/WS-BestLimitsAllIns"""
-    j = await _api('StaticData/GetStaticContent/WS-BestLimitsAllIns')
-    text = j['staticContent'][0]['content']
+    text = await _static_content('BestLimitsAllIns')
     soup = _make_soup(text)
 
     t0 = soup.select_one('table')
@@ -126,8 +129,8 @@ async def best_limits_all_ins() -> dict:
 
 
 async def trade_last_day() -> dict:
-    """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111113&LnkIdn=84"""
-    text = await _site_partree('1114111113&LnkIdn=84')
+    """https://tsetmc.com/StaticContent/WS-TradeLastDay"""
+    text = await _static_content('TradeLastDay')
     soup = _make_soup(text)
 
     flow = {
