@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.67.0 (2024-11-01)
+--------------------
 * Improved type hints.
 * Updated dataset.
 * Migrated functions of ``docs`` module to the new tsetmc API.
