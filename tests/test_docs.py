@@ -25,7 +25,7 @@ async def test_instrument_filter_by_date():
     assert d['output']['YVal']['068'] == 'شاخص'
 
 
-@file('instrument_state.html')
+@file('instrument_state.json')
 async def test_instrument_state():
     d = await instrument_state()
     assert d['output']['CEtaVal']['I '] == 'ممنوع'
@@ -37,7 +37,7 @@ async def test_instrument():
     assert d['output']['YVal'][69] == ('شاخص', 'شاخص فرابورس')
 
 
-@file('best_limits_all_ins.html')
+@file('best_limits_all_ins.json')
 async def test_best_limits_all_ins():
     d = await best_limits_all_ins()
     assert d['output']['QTitMeOf'] == 'حجم عرضه'

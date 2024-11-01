@@ -1,8 +1,10 @@
-"""http://redirectcdn.tsetmc.com/Site.aspx?ParTree=11141111"""
+"""
+https://tsetmc.com/StaticContent/WebServiceHelp
+"""
 
 from aiohutils.pd import html_to_df as _html_to_df
 
-from tsetmc import _DOMAIN, _get
+from tsetmc import _DOMAIN, _api, _get
 from tsetmc.general import _make_soup
 
 
@@ -46,8 +48,9 @@ async def instrument_filter_by_date() -> dict:
 
 
 async def instrument_state() -> dict:
-    """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833"""
-    text = await _site_partree('1114111116&LnkIdn=833')
+    """https://tsetmc.com/StaticContent/WS-InstrumentsState"""
+    j = await _api('StaticData/GetStaticContent/WS-InstrumentsState')
+    text = j['staticContent'][0]['content']
     soup = _make_soup(text)
 
     tds = soup.select('td')
@@ -98,8 +101,9 @@ async def instrument() -> dict:
 
 
 async def best_limits_all_ins() -> dict:
-    """http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111P&LnkIdn=97"""
-    text = await _site_partree('111411111P&LnkIdn=97')
+    """https://tsetmc.com/StaticContent/WS-BestLimitsAllIns"""
+    j = await _api('StaticData/GetStaticContent/WS-BestLimitsAllIns')
+    text = j['staticContent'][0]['content']
     soup = _make_soup(text)
 
     t0 = soup.select_one('table')

@@ -2,6 +2,7 @@ Unreleased
 ----------
 * Improved type hints
 * Updated dataset
+* Migrated some functions from `docs` module to the new API
 * yval column in market_watch is now of type string instead of int16
 
 v0.65.0
