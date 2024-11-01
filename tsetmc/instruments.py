@@ -3,7 +3,7 @@ from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
-from re import findall as _findall, fullmatch as _fullmatch
+from re import Match as _Match, findall as _findall, fullmatch as _fullmatch
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -155,7 +155,6 @@ class LiveData(_TypedDict, total=False):
     py: int
     status: str
     timestamp: _Ts
-    timestamp: str
     tno: int
     tval: int
     tvol: int
@@ -306,7 +305,9 @@ class Codal(_TypedDict):
 class Instrument:
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
-    def __init__(self, code: str | int, l18: str = None, l30: str = None):
+    def __init__(
+        self, code: str | int, l18: str | None = None, l30: str | None = None
+    ):
         self.code = f'{code}'
         self._l18 = l18
         self._l30 = l30
@@ -470,8 +471,8 @@ class Instrument:
 
         text = await _get_par_tree(f'151311&i={self.code}')
         if general:
-            m = _PAGE_VARS(text)
-            title_match = _TITLE_FULLMATCH(m['Title'])
+            m: _Match[str] = _PAGE_VARS(text)  # type: ignore
+            title_match: _Match[str] = _TITLE_FULLMATCH(m['Title'])  # type: ignore
             free_float = m['KAjCapValCpsIdx']
             eps = m['EstimatedEPS']
             sps = m['PSR']  # PSR = P/S = P / (sps: sales per share)
@@ -506,9 +507,8 @@ class Instrument:
             }
         else:
             result = {}
-            m = None
         if trade_history:
-            m = _TRADE_HISTORY(text, m.end())
+            m = _TRADE_HISTORY(text, pos=m.end())  # type: ignore
             th = _literal_eval(_STR_TO_NUM(m[1]))
             th = _DataFrame(
                 th,
@@ -528,7 +528,7 @@ class Instrument:
             th.set_index('date', inplace=True)
             result['trade_history'] = th
         if related_companies:
-            m = _RELATED_COMPANIES(text, m.end())
+            m = _RELATED_COMPANIES(text, m.end())  # type: ignore
             result['related_companies'] = [
                 Instrument(code, l18, l30)
                 for (code, l18, l30) in _literal_eval(_STR_TO_NUM(m[1]))
@@ -692,7 +692,7 @@ class Instrument:
         )
 
     async def client_type_history(
-        self, date: int | str = None
+        self, date: int | str | None = None
     ) -> _DataFrame | dict:
         """Return natural/legal client type history.
 

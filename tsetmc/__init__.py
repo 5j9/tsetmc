@@ -4,7 +4,11 @@ from functools import partial as _partial
 from json import JSONDecodeError, loads
 from logging import getLogger as _getLogger
 from re import Match as _Match, compile as _rc
-from typing import TypedDict as _TypedDict
+from typing import (
+    Literal as _Literal,
+    TypedDict as _TypedDict,
+    overload as _overload,
+)
 
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
@@ -207,7 +211,15 @@ async def _session_get(url: str) -> bytes:
 _LAST_CONTENT: bytes
 
 
-async def _get(url: str, *, fa=False) -> str | bytes:
+@_overload
+async def _get(url: str, *, fa: _Literal[True]) -> str: ...
+
+
+@_overload
+async def _get(url: str, *, fa=False) -> bytes: ...
+
+
+async def _get(url: str, *, fa: _Literal[True, False] = False) -> str | bytes:
     global _LAST_CONTENT
     _LAST_CONTENT = content = await _session_get(url)
     if fa is True:
@@ -221,14 +233,26 @@ _MEMBERS = 'http://members.tsetmc.com/'
 _API = 'https://cdn.tsetmc.com/api/'
 
 
+@_overload
+async def _get_data(path: str, *, fa: _Literal[True]) -> str: ...
+@_overload
+async def _get_data(path: str, *, fa=False) -> bytes: ...
 async def _get_data(path: str, *, fa=False) -> str | bytes:
     return await _get(f'{_DOMAIN}tsev2/data/' + path, fa=fa)
 
 
+@_overload
+async def _get_par_tree(path: str, *, fa: _Literal[False]) -> bytes: ...
+@_overload
+async def _get_par_tree(path: str, *, fa=True) -> str: ...
 async def _get_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_DOMAIN}Loader.aspx?ParTree={path}', fa=fa)
 
 
+@_overload
+async def _mem_par_tree(path: str, *, fa: _Literal[False]) -> bytes: ...
+@_overload
+async def _mem_par_tree(path: str, *, fa=True) -> str: ...
 async def _mem_par_tree(path: str, *, fa=True) -> str | bytes:
     return await _get(f'{_MEMBERS}Loader.aspx?ParTree={path}', fa=fa)
 
