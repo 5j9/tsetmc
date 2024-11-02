@@ -288,9 +288,14 @@ def _numerize(
 
 
 def _save_last_content(msg: str, /):
-    from pathlib import Path
+    if (
+        'دسترسی شما بدلیل مسائل امنیتی مسدود شده است.'.encode()
+        in _LAST_CONTENT
+    ):
+        _logger.error('Your access has been blocked due to security issues.')
+        return
 
-    f = Path(__file__).parent / '~last_response.html'
-    with f.open('wb'):
-        f.write_bytes(_LAST_CONTENT)
-    _logger.error(f'{msg}; _LAST_CONTENT saved in {f}', stacklevel=2)
+    file = __file__.removesuffix('__init__.py') + '~last_response.html'
+    with open(file, 'wb') as f:
+        f.write(_LAST_CONTENT)
+    _logger.error(f'{msg}; _LAST_CONTENT saved in {file}', stacklevel=2)
