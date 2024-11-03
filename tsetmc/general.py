@@ -95,8 +95,8 @@ async def major_holders_activity() -> _DataFrame:
             l30 = inst_div.text_content()
 
         holder = td0.xpath('.//li[1]/text()')[0]
-        # noinspection PyUnboundLocalVariable
-        append_row([ins_code, l30, holder, *_parse_tds(tds)])
+        # ins_code and l30 are expected to be bound at this point
+        append_row([ins_code, l30, holder, *_parse_tds(tds)])  # type: ignore
     return _DataFrame(
         rows,
         copy=False,

@@ -4,6 +4,7 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
 from re import Match as _Match, findall as _findall, fullmatch as _fullmatch
+from typing import overload as _overload
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -93,9 +94,9 @@ class ClassProperty:
 
 # note: this class is public through dataset module
 class _LazyDS:
-    l18s_to_l30_code: dict[str, tuple[str, str]] = None
-    l30s_to_l18_code: dict[str, tuple[str, str]] = None
-    cached_df: _DataFrame = None
+    l18s_to_l30_code: dict[str, tuple[str, str]] | None = None
+    l30s_to_l18_code: dict[str, tuple[str, str]] | None = None
+    cached_df: _DataFrame | None = None
     path = Path(__file__).parent / 'dataset/dataset.csv'
 
     @ClassProperty
@@ -116,8 +117,8 @@ class _LazyDS:
         d = cls.l18s_to_l30_code = dict(
             zip(df['l18'], [*zip(df['l30'], df['ins_code'])])
         )
-        g = cls.l30_code = d.get
-        return g(l18)
+        g = cls.l30_code = d.get  # type: ignore
+        return g(l18)  # type: ignore
 
     @classmethod
     def l18_l130(cls, code: str) -> tuple[str, str]:
@@ -125,8 +126,8 @@ class _LazyDS:
         d = cls.l30s_to_l18_code = dict(
             zip(df['ins_code'], [*zip(df['l18'], df['l30'])])
         )
-        g = cls.l18_l130 = d.get
-        return g(code)
+        g = cls.l18_l130 = d.get  # type: ignore
+        return g(code)  # type: ignore
 
 
 class IntraDay(_TypedDict, total=False):
@@ -302,6 +303,23 @@ class Codal(_TypedDict):
     tracingNo: str
 
 
+class ClientTypeOnDate(_TypedDict):
+    recDate: int
+    insCode: str
+    buy_I_Volume: float
+    buy_N_Volume: float
+    buy_I_Value: float
+    buy_N_Value: float
+    buy_N_Count: int
+    sell_I_Volume: float
+    buy_I_Count: float
+    sell_N_Volume: float
+    sell_I_Value: float
+    sell_N_Value: float
+    sell_N_Count: int
+    sell_I_Count: int
+
+
 class Instrument:
     __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
 
@@ -334,7 +352,7 @@ class Instrument:
             self._l18, self._l30 = _LazyDS.l18_l130(self.code)
         except TypeError:  # cannot unpack non-iterable NoneType object
             await self.info()
-        return self._l18
+        return self._l18  # type: ignore
 
     @property
     async def _arabic_l18(self) -> str:
@@ -348,7 +366,7 @@ class Instrument:
             self._l18, self._l30 = _LazyDS.l18_l130(self.code)
         except TypeError:  # cannot unpack non-iterable NoneType object
             await self.info()
-        return self._l30
+        return self._l30  # type: ignore
 
     @property
     async def cisin(self) -> str:
@@ -597,7 +615,7 @@ class Instrument:
                 names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
                 lineterminator=',',
             )
-        return result
+        return result  # type: ignore
 
     async def trade_history(self, top: int, all_=False) -> _DataFrame:
         """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
@@ -691,9 +709,15 @@ class Instrument:
             dtype='int64',
         )
 
+    @_overload
+    async def client_type_history(self, date: None) -> _DataFrame: ...
+    @_overload
+    async def client_type_history(
+        self, date: int | str
+    ) -> ClientTypeOnDate: ...
     async def client_type_history(
         self, date: int | str | None = None
-    ) -> _DataFrame | dict:
+    ) -> _DataFrame | ClientTypeOnDate:
         """Return natural/legal client type history.
 
         :param date: Gregorian date in YYYYMMDD format. If None, return the
@@ -868,7 +892,7 @@ class Instrument:
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _html_to_df(content.decode())
         df.columns = ('date', 'adj_pc', 'pc')
-        df['date'] = df['date'].apply(_j_ymd_parse)
+        df['date'] = [_j_ymd_parse(d) for d in df['date']]
         return df
 
     async def price_adjustments(self) -> _DataFrame:
@@ -917,7 +941,7 @@ class Instrument:
         ]
         df.columns = cols
         for col in cols[:3]:
-            df[col] = df[col].map(_partial(_jstrptime, format='%Y/%m/%d'))
+            df[col] = [_jstrptime(d, '%Y/%m/%d') for d in df[col]]
         return df
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
@@ -949,23 +973,6 @@ class ClosingPrice(_TypedDict):
     zTotTran: float
     qTotTran5J: float
     qTotCap: float
-
-
-class ClientTypeOnDate(_TypedDict):
-    recDate: int
-    insCode: str
-    buy_I_Volume: float
-    buy_N_Volume: float
-    buy_I_Value: float
-    buy_N_Value: float
-    buy_N_Count: int
-    sell_I_Volume: float
-    buy_I_Count: float
-    sell_N_Volume: float
-    sell_I_Value: float
-    sell_N_Value: float
-    sell_N_Count: int
-    sell_I_Count: int
 
 
 class InstrumentOnDate:
@@ -1020,7 +1027,7 @@ class InstrumentOnDate:
     async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
 
-    async def client_types(self) -> dict:
+    async def client_types(self) -> ClientTypeOnDate:
         _warn(
             '`InstrumentOnDate.client_types` is deprecated; use `InstrumentOnDate.client_type` instead.',
             DeprecationWarning,
@@ -1083,7 +1090,7 @@ async def price_adjustments(flow: _FlowType) -> _DataFrame:
     text = await _get_par_tree(f'151319&Flow={flow}')
     df = _html_to_df(text)
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
-    df['date'] = df['date'].apply(_j_ymd_parse)
+    df['date'] = [_j_ymd_parse(d) for d in df['date']]
     return df
 
 
@@ -1244,9 +1251,9 @@ def _parse_ombud_messages(text) -> _DataFrame:
         copy=False,
     )
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
-        df['date'] = ('14' + df['date']).apply(
-            _jstrptime, format='%Y/%m/%d %H:%M'
-        )
+        df['date'] = [
+            _jstrptime(d, format='%Y/%m/%d %H:%M') for d in ('14' + df['date'])
+        ]
     else:
         df['date'] = df['date'].astype(object)
     return df
