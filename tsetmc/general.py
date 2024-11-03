@@ -118,7 +118,7 @@ async def top_industry_groups() -> _DataFrame:
     text = await _get_par_tree('15131O')
     df = _html_to_df(text)
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
-    _numerize(df, ('mv', 'tvol', 'tval'), float, comma=True)
+    _numerize(df, ('mv', 'tvol', 'tval'), 'float64', comma=True)
     return df
 
 

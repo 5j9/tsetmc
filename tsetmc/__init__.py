@@ -267,7 +267,10 @@ async def _api(path: str, *, fa=False):
 
 
 def _numerize(
-    df: _DataFrame, cols: tuple[str, ...], astype=float, comma=False
+    df: _DataFrame,
+    cols: tuple[str, ...],
+    astype: _Literal['float64', 'int64', 'Int64'] = 'float64',
+    comma=False,
 ):
     for col in cols:
         c = df[col]
