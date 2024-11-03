@@ -94,22 +94,24 @@ class ClassProperty:
 
 # note: this class is public through dataset module
 class _LazyDS:
-    l18s_to_l30_code: dict[str, tuple[str, str]] | None = None
-    l30s_to_l18_code: dict[str, tuple[str, str]] | None = None
-    cached_df: _DataFrame | None = None
+    l18s_to_l30_code: dict[str, tuple[str, str]]
+    l30s_to_l18_code: dict[str, tuple[str, str]]
+    cached_df: _DataFrame
     path = Path(__file__).parent / 'dataset/dataset.csv'
 
     @ClassProperty
     def df(cls) -> _DataFrame:
-        if cls.cached_df is None:
-            cls.cached_df = _read_csv(
+        try:
+            return cls.cached_df
+        except AttributeError:
+            df = cls.cached_df = _read_csv(
                 cls.path,
                 low_memory=False,
                 lineterminator='\n',
                 dtype='string',
                 encoding='utf-8-sig',
             )
-        return cls.cached_df
+            return df
 
     @classmethod
     def l30_code(cls, l18: str) -> tuple[str, str]:
