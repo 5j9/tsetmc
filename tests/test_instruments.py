@@ -88,7 +88,7 @@ def assert_page_data(
 @file('fmelli.html')
 async def test_page_data():
     ins = Instrument(35425587644337450)
-    assert ins._l18 is ins._l30 is None
+    assert getattr(ins, '_l18', None) is getattr(ins, '_l30', None) is None
     with warns(DeprecationWarning):
         d = await ins.page_data(True, True, True)
     assert_page_data(d, True, True, True)
@@ -430,8 +430,9 @@ async def test_holders_without_cisin():
     with patch.object(
         Instrument, 'info', side_effect=NotImplementedError
     ) as info:
-        with raises(NotImplementedError), warns(DeprecationWarning):
-            await inst.holders()
+        with patch.object(Instrument, '_ds_or_info', Instrument.info):
+            with raises(NotImplementedError), warns(DeprecationWarning):
+                await inst.holders()
     info.assert_called_once()
 
 

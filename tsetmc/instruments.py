@@ -84,49 +84,51 @@ _TRADE_HISTORY = _rc(r'var TradeHistory=(\[.*\]);').search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
-class ClassProperty:
+class _ClassProperty:
     def __init__(self, method):
         self.method = method
 
-    def __get__(self, owner_self, owner_cls):
+    def __get__(self, owner_self, owner_cls) -> _DataFrame:
         return self.method(owner_cls)
+
+    def __set__(self, instance, value):
+        pass
 
 
 # note: this class is public through dataset module
 class _LazyDS:
     l18s_to_l30_code: dict[str, tuple[str, str]]
     l30s_to_l18_code: dict[str, tuple[str, str]]
-    cached_df: _DataFrame
     path = Path(__file__).parent / 'dataset/dataset.csv'
 
-    @ClassProperty
+    @_ClassProperty
     def df(cls) -> _DataFrame:
-        try:
-            return cls.cached_df
-        except AttributeError:
-            df = cls.cached_df = _read_csv(
-                cls.path,
-                low_memory=False,
-                lineterminator='\n',
-                dtype='string',
-                encoding='utf-8-sig',
-            )
-            return df
+        df = _read_csv(
+            cls.path,
+            low_memory=False,
+            lineterminator='\n',
+            dtype='string',
+            encoding='utf-8-sig',
+            index_col='ins_code',
+        )
+        cls.df = df
+        return df
 
     @classmethod
     def l30_code(cls, l18: str) -> tuple[str, str]:
         df = cls.df
         d = cls.l18s_to_l30_code = dict(
-            zip(df['l18'], [*zip(df['l30'], df['ins_code'])])
+            zip(df['l18'], [*zip(df['l30'], df.index)])
         )
         g = cls.l30_code = d.get  # type: ignore
         return g(l18)  # type: ignore
 
+    # todo: see if this method can be removed
     @classmethod
     def l18_l130(cls, code: str) -> tuple[str, str]:
         df = cls.df
         d = cls.l30s_to_l18_code = dict(
-            zip(df['ins_code'], [*zip(df['l18'], df['l30'])])
+            zip(df.index, [*zip(df['l18'], df['l30'])])
         )
         g = cls.l18_l130 = d.get  # type: ignore
         return g(code)  # type: ignore
@@ -323,22 +325,26 @@ class ClientTypeOnDate(_TypedDict):
 
 
 class Instrument:
-    __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs'
+    __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs', '_isin'
 
     def __init__(
         self, code: str | int, l18: str | None = None, l30: str | None = None
     ):
         self.code = f'{code}'
-        self._l18 = l18
-        self._l30 = l30
+        if l18 is not None:
+            self._l18 = l18
+        if l30 is not None:
+            self._l30 = l30
 
     def __repr__(self):
         # not using self.l18 because it may require a web request
-        if self._l18 is not None:
+        try:
             return f'Instrument({self.code}, {self._l18!r})'
-        if self._l30 is not None:
-            return f'Instrument({self.code}, l30={self._l30!r})'
-        return f'Instrument({self.code})'
+        except AttributeError:
+            try:
+                return f'Instrument({self.code}, l30={self._l30!r})'
+            except AttributeError:
+                return f'Instrument({self.code})'
 
     def __eq__(self, other):
         return self.code == other.code
@@ -348,13 +354,7 @@ class Instrument:
 
     @property
     async def l18(self) -> str:
-        if (l18 := self._l18) is not None:
-            return l18
-        try:
-            self._l18, self._l30 = _LazyDS.l18_l130(self.code)
-        except TypeError:  # cannot unpack non-iterable NoneType object
-            await self.info()
-        return self._l18  # type: ignore
+        return await self._ds_or_info('l18')
 
     @property
     async def _arabic_l18(self) -> str:
@@ -362,21 +362,29 @@ class Instrument:
 
     @property
     async def l30(self) -> str:
-        if (l30 := self._l30) is not None:
-            return l30
+        return await self._ds_or_info('l30')
+
+    async def _ds_or_info(self, col: str) -> str:
         try:
-            self._l18, self._l30 = _LazyDS.l18_l130(self.code)
-        except TypeError:  # cannot unpack non-iterable NoneType object
+            return getattr(self, f'_{col}')
+        except AttributeError:
+            pass
+        try:
+            v = _LazyDS.df.at[self.code, col]
+        except KeyError:
             await self.info()
-        return self._l30  # type: ignore
+            return getattr(self, f'_{col}')
+        else:
+            setattr(self, f'_{col}', v)
+            return v
 
     @property
     async def cisin(self) -> str:
-        try:
-            return self._cisin
-        except AttributeError:
-            await self.info()
-        return self._cisin
+        return await self._ds_or_info('cisin')
+
+    @property
+    async def isin(self) -> str:
+        return await self._ds_or_info('isin')
 
     @property
     async def cs(self) -> str:
@@ -400,6 +408,7 @@ class Instrument:
         # cache for properties
         self._cs = d['sector']['cSecVal']
         self._cisin = d['cIsin']
+        self._isin = d['instrumentID']
         self._l18 = d['lVal18AFC']
         self._l30 = d['lVal30']
         return j['instrumentInfo']

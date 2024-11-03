@@ -1,3 +1,5 @@
+from asyncio import gather as _gather
+
 from pandas import DataFrame as _Df, concat as _concat
 
 from tsetmc import _logger
@@ -36,7 +38,7 @@ async def add_instrument(inst: _Instrument) -> None:
         if l1830 == (l18, l30):
             _logger.warning(f'{l18 = } already exists in dataset')
             return
-    df.loc[len(df)] = [code, l18, l30]
+    df.loc[len(df)] = [code, await inst.isin, await inst.cisin, l18, l30]
     _dump(df)
 
 
@@ -50,15 +52,22 @@ async def update(df: _Df | None = None) -> None:
             | df['l18'].str.slice(-1).str.isdigit()
         )
     ]
-    ds = LazyDS.df.set_index('l18')
+    ds = LazyDS.df.reset_index().set_index('l18')
     p = df[['l18', 'l30']].reset_index().set_index('l18')
     ds.update(p)  # update existing l18s/l30s
     new_items = p[~p.index.isin(ds.index)]
-    merged = LazyDS.cached_df = _concat([ds, new_items]).reset_index()[
-        ['ins_code', 'l18', 'l30']  # fix column order
-    ]
-    if diff := len(new_items):
-        _dump(merged)
-        _logger.info(f'{diff} new entries were added by market watch.')
-    else:
+
+    if new_items.empty:
         _logger.info('No new entries were added by market watch.')
+
+    # add isin and cisin to new_items
+    new_insts = [_Instrument(code) for code in new_items['ins_code']]
+    await _gather(*[i.info() for i in new_insts])
+    new_items['isin'] = [i._isin for i in new_insts]
+    new_items['cisin'] = [i._cisin for i in new_insts]
+
+    merged = LazyDS.df = _concat([ds, new_items]).reset_index()[
+        ['ins_code', 'isin', 'cisin', 'l18', 'l30']  # fix column order
+    ]
+    _dump(merged)
+    _logger.info(f'{len(new_items)} new entries were added by market watch.')
