@@ -816,8 +816,7 @@ async def test_identity():
 
 def test_lazy_dataset():
     # check cache
-    assert _LazyDS.l18_l130('35425587644337450')[0] == 'فملی'
+    assert _LazyDS.df.loc['35425587644337450', 'l18'] == 'فملی'
     assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
     with patch.object(_LazyDS, 'df'):
-        assert _LazyDS.l18_l130('35425587644337450')[0] == 'فملی'
         assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'

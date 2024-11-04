@@ -123,16 +123,6 @@ class _LazyDS:
         g = cls.l30_code = d.get  # type: ignore
         return g(l18)  # type: ignore
 
-    # todo: see if this method can be removed
-    @classmethod
-    def l18_l130(cls, code: str) -> tuple[str, str]:
-        df = cls.df
-        d = cls.l30s_to_l18_code = dict(
-            zip(df.index, [*zip(df['l18'], df['l30'])])
-        )
-        g = cls.l18_l130 = d.get  # type: ignore
-        return g(code)  # type: ignore
-
 
 class IntraDay(_TypedDict, total=False):
     general: dict
