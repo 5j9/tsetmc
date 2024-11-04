@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.68.0 (2024-11-04)
+--------------------
 * The dataset now includes ``isin`` and ``cisin`` columns.
 * Added ``Instrument.from_isin`` method.
 * Improved type hints.
