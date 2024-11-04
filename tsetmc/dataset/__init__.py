@@ -14,7 +14,7 @@ YVAL_EXCLUSIONS = {
 
 def _dump(df: _Df):
     assert df['l18'].is_unique
-    codes = df['ins_code']
+    codes = df.index
     try:
         assert codes.is_unique
     except AssertionError:
@@ -23,9 +23,7 @@ def _dump(df: _Df):
         df = df[~duplicated]
 
     df.sort_values('l18', inplace=True)
-    df.to_csv(
-        LazyDS.path, index=False, encoding='utf-8-sig', lineterminator='\n'
-    )
+    df.to_csv(LazyDS.path, encoding='utf-8-sig', lineterminator='\n')
 
 
 async def add_instrument(inst: _Instrument) -> None:
@@ -34,11 +32,16 @@ async def add_instrument(inst: _Instrument) -> None:
     info = await inst.info()
     df = LazyDS.df
     l18, l30 = info['lVal18AFC'], info['lVal30']
-    if (l1830 := LazyDS.l18_l130(code)) is not None:
-        if l1830 == (l18, l30):
+    new_row = [await inst.isin, await inst.cisin, l18, l30]
+    try:
+        row = df.loc[code]
+    except KeyError:
+        pass
+    else:
+        if row.to_list() == new_row:
             _logger.warning(f'{l18 = } already exists in dataset')
             return
-    df.loc[len(df)] = [code, await inst.isin, await inst.cisin, l18, l30]
+    df.loc[code] = new_row
     _dump(df)
 
 
@@ -52,22 +55,23 @@ async def update(df: _Df | None = None) -> None:
             | df['l18'].str.slice(-1).str.isdigit()
         )
     ]
-    ds = LazyDS.df.reset_index().set_index('l18')
-    p = df[['l18', 'l30']].reset_index().set_index('l18')
-    ds.update(p)  # update existing l18s/l30s
+    ds = LazyDS.df
+    p = df[['l18', 'l30']]
+    ds.update(other=p)  # update existing l18s/l30s
     new_items = p[~p.index.isin(ds.index)]
 
     if new_items.empty:
         _logger.info('No new entries were added by market watch.')
+        return
 
     # add isin and cisin to new_items
-    new_insts = [_Instrument(code) for code in new_items['ins_code']]
+    new_insts = [_Instrument(code) for code in new_items.index]
     await _gather(*[i.info() for i in new_insts])
     new_items['isin'] = [i._isin for i in new_insts]
     new_items['cisin'] = [i._cisin for i in new_insts]
 
-    merged = LazyDS.df = _concat([ds, new_items]).reset_index()[
-        ['ins_code', 'isin', 'cisin', 'l18', 'l30']  # fix column order
+    merged = LazyDS.df = _concat([ds, new_items])[
+        ['isin', 'cisin', 'l18', 'l30']  # fix column order
     ]
     _dump(merged)
     _logger.info(f'{len(new_items)} new entries were added by market watch.')
