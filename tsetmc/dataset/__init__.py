@@ -38,7 +38,7 @@ async def add_instrument(inst: _Instrument) -> None:
     except KeyError:
         pass
     else:
-        if row.to_list() == new_row:
+        if [*row] == new_row:
             _logger.warning(f'{l18 = } already exists in dataset')
             return
     df.loc[code] = new_row
