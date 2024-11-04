@@ -4,7 +4,7 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
 from re import Match as _Match, findall as _findall, fullmatch as _fullmatch
-from typing import overload as _overload
+from typing import Literal as _Literal, overload as _overload
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -729,7 +729,7 @@ class Instrument:
         )
 
     @_overload
-    async def client_type_history(self, date: None) -> _DataFrame: ...
+    async def client_type_history(self, date: None = None) -> _DataFrame: ...
     @_overload
     async def client_type_history(
         self, date: int | str
@@ -859,6 +859,18 @@ class Instrument:
             _numerize(df, ('change',), 'Int64')
         _numerize(df, ('shares/units',), 'int64')
         return df
+
+    @_overload
+    @staticmethod
+    async def holder(
+        id_cisin, history: _Literal[True], other_holdings: _Literal[True]
+    ) -> tuple[_DataFrame, _DataFrame]: ...
+
+    @_overload
+    @staticmethod
+    async def holder(
+        id_cisin, history: bool = True, other_holdings: bool = False
+    ) -> _DataFrame: ...
 
     @staticmethod
     async def holder(

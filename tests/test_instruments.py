@@ -218,7 +218,7 @@ async def test_trade_history():
     assert df0.index.name == 'date'
     assert isinstance(df0.index, DatetimeIndex)
     with warns(DeprecationWarning):
-        df1 = await FMELLI.trade_history(2, 1)
+        df1 = await FMELLI.trade_history(2, True)
     assert len(df1) >= len(df0)
 
 
@@ -614,7 +614,7 @@ async def test_dps_history():
 
 
 def test_hash():
-    assert hash(Instrument(int64(1))) == 1
+    assert hash(Instrument(int64(1))) == 1  # type: ignore
 
 
 def test_parse_price_info():
