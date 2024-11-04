@@ -392,6 +392,24 @@ class Instrument:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
+    @staticmethod
+    async def from_isin(isin: str, /) -> 'Instrument':
+        """Create Instrument from ISIN.
+
+        Raises KeyError if isin is not found in dataset.
+        ISIN can be fetched using Instrument.info()['instrumentID'].
+        """
+        df = _LazyDS.df
+        try:
+            row = df[df['isin'] == isin].iloc[0]
+        except KeyError as e:
+            e.add_note('isin not found in dataset, try updating the dataset.')
+            raise e
+        inst = Instrument(row.name, row['l18'], row['l30'])  # type: ignore
+        inst._isin = isin
+        inst._cisin = row['cisin']
+        return inst
+
     async def info(self) -> InstrumentInfo:
         j = await _api(f'Instrument/GetInstrumentInfo/{self.code}', fa=True)
         d = j['instrumentInfo']

@@ -820,3 +820,11 @@ def test_lazy_dataset():
     assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
     with patch.object(_LazyDS, 'df'):
         assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
+
+
+async def test_from_isin():
+    inst = await Instrument.from_isin('IRO1MSMI0001')
+    assert inst.code == '35425587644337450'
+    assert await inst.l18 == 'فملی'
+    assert await inst.isin == 'IRO1MSMI0001'
+    assert await inst.cisin == 'IRO1MSMI0000'

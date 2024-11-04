@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * The dataset now includes ``isin`` and ``cisin`` columns.
+* Added ``Instrument.from_isin`` method.
 * Improved type hints.
 * Removed ``dataste.LazyDS.l18_l130`` method.
 
