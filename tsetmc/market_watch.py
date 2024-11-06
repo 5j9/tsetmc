@@ -424,7 +424,7 @@ class MarketWatch:
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
             except Exception as e:
-                _logger.error(f'{e!r} while awaiting market_watch_plus')
+                _logger.exception(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
 
             self.plus_callback(mwp)

@@ -133,25 +133,29 @@ FlowType = int | str | Flow
 
 
 def _parse_market_state(s: str) -> MarketState:
-    (
-        datetime,
-        tse_status,
-        tse_index,
-        tse_index_change,
-        tse_value,
-        tse_tvol,
-        tse_tval,
-        tse_tno,
-        fb_status,
-        fb_tvol,
-        fb_tval,
-        fb_tno,
-        derivatives_status,
-        derivatives_tvol,
-        derivatives_tval,
-        derivatives_tno,
-        _,
-    ) = s.split(',')
+    try:
+        (
+            datetime,
+            tse_status,
+            tse_index,
+            tse_index_change,
+            tse_value,
+            tse_tvol,
+            tse_tval,
+            tse_tno,
+            fb_status,
+            fb_tvol,
+            fb_tval,
+            fb_tno,
+            derivatives_status,
+            derivatives_tvol,
+            derivatives_tval,
+            derivatives_tno,
+            _,
+        ) = s.split(',')
+    except ValueError as e:
+        e.add_note(f'{s=}')
+        raise
     if tse_index_change:  # can be '' before market start
         index_change_match: _Match = _INDEX_CHANGE_MATCH(tse_index_change)  # type: ignore
         tse_index_change = float(index_change_match[2])
