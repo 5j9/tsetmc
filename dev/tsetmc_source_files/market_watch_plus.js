@@ -38,7 +38,8 @@ var TemplateBackground = [
     ["rgba(255,212,212,0.5)", "قرمز"],
     ["rgba(212,212,255,0.5)", "آبی"],
     ["rgba(212,255,212,0.5)", "سبز"]
-]; + ".t0c2{background-color:;}.t0c3{background-color:;}.t0c4{background-color:;}";
+]; +
+    ".t0c2{background-color:;}.t0c3{background-color:;}.t0c4{background-color:;}";
 var TemplateAlign = [
     ["left", "چپ چین"],
     ["center", "وسط چین"],
@@ -233,7 +234,7 @@ function MarketWatchPlus() {
             cfield1: "cfield1",
             cfield2: "cfield2"
         },
-        SetPreviewDefault: function() {
+        SetPreviewDefault: function () {
             var MarketWatchPreview = localStorage.getItem("MarketWatchPreview");
             if (MarketWatchPreview == null) {
                 var ismobile = navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
@@ -245,7 +246,7 @@ function MarketWatchPlus() {
             }
             mw.ShowHidePreview(MarketWatchPreview)
         },
-        ShowHidePreview: function(mode) {
+        ShowHidePreview: function (mode) {
             if (typeof mode == "undefined") {
                 mode = $(document.getElementById("infop")).css("display");
                 if (mode == "block") {
@@ -263,7 +264,7 @@ function MarketWatchPlus() {
                 $(".other").css("left", "283px")
             }
         },
-        ShowVol: function(vol, base) {
+        ShowVol: function (vol, base) {
             if (mw.Settings.BigNumberSymbol == 1) {
                 var iVal = parseInt(vol, 10);
                 var sVal;
@@ -342,7 +343,7 @@ function MarketWatchPlus() {
         refid: 0,
         heven: 0,
         preOpen: true,
-        RenderPreviewOne: function(row) {
+        RenderPreviewOne: function (row) {
             if (row == 0) {
                 return ""
             }
@@ -357,14 +358,14 @@ function MarketWatchPlus() {
             }
             return data.preview
         },
-        RenderPreview: function() {
+        RenderPreview: function () {
             if (mw.SelectedRow == 0) {
                 $(document.getElementById("infos")).html("<div style='color:red;font-weight:bold'>در صورتی که فیلترهای شما در نسخه قبلی، صرفا در کش مرورگر ذخیره شده بود، جهت دسترسی به متن فیلترها روش زیر را امتحان فرمایید :<br/>در صفحه اول سایت(آدرس www.tsetmc.com)، دکمه F12 را زده و در بخش console دستور زیر را وارد نمایید :<br/><br/><div style='direction:ltr;text-align:left;'>JSON.parse( localStorage.MarketWatchSettings)['Filters']</div><br/>سپس با استفاده از دکمه سمت چپ جواب ظاهر شده، متن فیلترها را مشاهده نمایید </div><hr/><div style='color:red'>امکان ساخت ستون جدید بر اساس فرمول شما فراهم شد. به راهنما مراجعه کنید.</div><hr/><div>اطلاعات سایقه تا 3 ماه قبل (60 روز معاملاتی) فراهم شد</div><div>امکان استفاده از تابع، حلقه، شرط و ... در فیلتر اضافه شد. به راهنما مراجعه کنید.</div><div>امکان استفاده از سابقه قیمت ها در ساخت فیلتر اضافه شد</div><div>امکان استفاده از اطلاعات حقیقی و حقوقی و آمارهای کلیدی در ساخت فیلتر اضافه شد</div>")
             } else {
                 $(document.getElementById("infos")).html(mw.RenderPreviewOne(mw.SelectedRow) + mw.RenderPreviewOne(mw.PreSelectedRow))
             }
         },
-        SelectRow: function(row, InsCode) {
+        SelectRow: function (row, InsCode) {
             if (mw.SelectedRow == InsCode) {
                 return
             }
@@ -379,7 +380,7 @@ function MarketWatchPlus() {
             mw.SelectedRow = InsCode;
             window.setTimeout("mw.RenderPreview()", 25)
         },
-        ChSortF: function(field) {
+        ChSortF: function (field) {
             if (mw.Settings.sortField == field) {
                 mw.ChangeSortDir(-mw.Settings.sortDirection);
                 return
@@ -389,13 +390,13 @@ function MarketWatchPlus() {
             mw.SortData();
             mw.ShowSettings()
         },
-        ChangeSortDir: function(dir) {
+        ChangeSortDir: function (dir) {
             mw.Settings.sortDirection = dir;
             mw.SaveParams();
             mw.SortData();
             mw.ShowSettings()
         },
-        changeTemplate: function(index) {
+        changeTemplate: function (index) {
             mw.Settings.ActiveTemplate = index;
             $("#display").html(MWTemplates[mw.Settings.ActiveTemplate].all);
             for (var key in mw.AllRows) {
@@ -406,12 +407,12 @@ function MarketWatchPlus() {
             mw.SaveParams();
             mw.RenderData()
         },
-        SortData: function() {
+        SortData: function () {
             switch (mw.Settings.sortField) {
                 case "l18":
                 case "l30":
                     var list = $(document.getElementById("main").childNodes).get();
-                    list.sort(function(a, b) {
+                    list.sort(function (a, b) {
                         var a1;
                         var b1;
                         if (mw.Settings.sortDirection == 1) {
@@ -460,7 +461,7 @@ function MarketWatchPlus() {
                     break;
                 case "mv":
                     var list = $(document.getElementById("main").childNodes).get();
-                    list.sort(function(a, b) {
+                    list.sort(function (a, b) {
                         var a1;
                         var b1;
                         if (mw.Settings.sortDirection == 1) {
@@ -501,7 +502,7 @@ function MarketWatchPlus() {
                     break;
                 default:
                     var list = $(document.getElementById("main").childNodes).get();
-                    list.sort(function(a, b) {
+                    list.sort(function (a, b) {
                         var a1;
                         var b1;
                         if (mw.Settings.sortDirection == 1) {
@@ -542,7 +543,7 @@ function MarketWatchPlus() {
                     break
             }
         },
-        NumberOfInstruments: function(BasketCode) {
+        NumberOfInstruments: function (BasketCode) {
             var list = mw.Settings.Baskets[BasketCode].Instruments;
             if (list.length == 0) {
                 return 0
@@ -550,10 +551,10 @@ function MarketWatchPlus() {
                 return list.split(",").length
             }
         },
-        SaveParams: function() {
+        SaveParams: function () {
             setData("MarketWatchSettings", JSON.stringify(mw.Settings))
         },
-        ShowSettings: function() {
+        ShowSettings: function () {
             var html;
             html = "<div style='display:inline-block;vertical-align:bottom;margin-top:6px;margin-right:9px'><a class='TopIcon MwIcon' href='/Loader.aspx?ParTree=15' id='home' desc='خانه,دسترسي سريع به صفحه اول سايت' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' aria-label='خانه' ></a><a class='TopIcon MwIcon' href='javascript:ShowSearchWindow()' id='search' desc='جستجو, جستجوی نمادها' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' aria-label='جستجو' ></a><a class='TopIcon MwIcon MwSetting' id='id1' href='#' onclick='mw.ShowAllSettings()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='تنظیم ها, سرعت بروز رسانی - انتخاب بازار - انتخاب سبد - انتخاب گروه ' aria-label='تنظیمات دیده بان' ></a><a class='TopIcon MwIcon MwSort' href='#' onclick='mw.ShowSortWindow()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='مرتب سازی, انتخاب ترتیب نمایش اطلاعات' aria-label='مرتب سازی' ></a><a class='TopIcon MwIcon MwTemplate' href='#' onclick='mw.ShowTemplateWindow()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='قالب نمایش, انتخاب نحوه نمایش اطلاعات' aria-label='قالب نمایش' ></a><a class='TopIcon MwIcon MwPreview' href='#' onclick='mw.ShowHidePreview()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='مشاهده سریع, نمایش / عدم نمایش مشاهده سریع. با این امکان با انتخاب هر نماد اطلاعات آن در سمت چپ نمایش داده می شود' aria-label='مشاهده سریع' ></a><a class='TopIcon MwIcon MwQuery' href='#' onclick='mw.QueryWindow()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='فیلتر,مدیریت و ساخت فیلتر' aria-label='فیلتر نویسی' ></a><a class='TopIcon MwIcon MwExcel' href='#' onclick='mw.ExportWindow()' onmouseover='ShowTooltip(this)' onmouseout='HideTooltip()' desc='خروجی, ساخت فایل از اطلاعات معاملات' aria-label='تهیه خروجی' ></a><a class=\"TopIcon\" href=\"javascript:ShowHelpWindow('151715',true)\" id=\"book\" desc=\"راهنما,آموزش امکانات دیده بان بازار\" onmouseover=\"ShowTooltip(this)\" onmouseout=\"HideTooltip()\" aria-label=\"راهنما\" ></a></div><div style='width:330px;display:inline-block;padding:0px;margin;0px;height:38px;vertical-align:top;'>&nbsp;<div class='MwText' style='width:130px;height:30px'>ترتیب:" + mw.field[mw.Settings.sortField] + "&nbsp;(" + (mw.Settings.sortDirection == 1 ? "صعودی" : "نزولی") + ")</div>";
             var filter = "";
@@ -577,17 +578,17 @@ function MarketWatchPlus() {
             html += filter + "</div>";
             $("#SettingsDesc").html(html)
         },
-        ExportWindow: function() {
-            var html = "<div style='text-align:right'><div>خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی (با فرمت عددی)<br/>لینک: http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0<div onclick='mw.ExportClick(\"lastexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی با فرمت عددی' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی (بدون فرمت عددی)<br/>لینک: http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0&format=0<div onclick='mw.ExportClick(\"lastexcelwf\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی با فرمت عددی' >تهیه خروجی</div><br/></div><br/><hr/><div>خروجی HTML از دیده بان بازار شما<div onclick='mw.ExportClick(\"yourmw\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی HTML از دیده بان بازار شما' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از دیده بان بازار شما<div onclick='mw.ExportClick(\"yourmwexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از دیده بان بازار شما' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از اطلاعات روزهای معاملاتی قبل<input id='exceldate' class='awesome tra' placeholder='تاریخ' aria-label='تاریخ' title='تاریخ' style='cursor:text'><div onclick='mw.ExportClick(\"dateexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات روزهای معاملاتی قبل' >تهیه خروجی</div></div><br/><hr/></div>";
+        ExportWindow: function () {
+            var html = "<div style='text-align:right'><div>خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی (با فرمت عددی)<br/>لینک: https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0<div onclick='mw.ExportClick(\"lastexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی با فرمت عددی' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی (بدون فرمت عددی)<br/>لینک: https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0&format=0<div onclick='mw.ExportClick(\"lastexcelwf\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات لحظه ای آخرین روز معاملاتی با فرمت عددی' >تهیه خروجی</div><br/></div><br/><hr/><div>خروجی HTML از دیده بان بازار شما<div onclick='mw.ExportClick(\"yourmw\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی HTML از دیده بان بازار شما' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از دیده بان بازار شما<div onclick='mw.ExportClick(\"yourmwexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از دیده بان بازار شما' >تهیه خروجی</div></div><br/><hr/><div>خروجی اکسل از اطلاعات روزهای معاملاتی قبل<input id='exceldate' class='awesome tra' placeholder='تاریخ' aria-label='تاریخ' title='تاریخ' style='cursor:text'><div onclick='mw.ExportClick(\"dateexcel\")' style='float:left' class='awesome tra' role='button' aria-label='خروجی اکسل از اطلاعات روزهای معاملاتی قبل' >تهیه خروجی</div></div><br/><hr/></div>";
             var WinNo = ShowModalStaticPro("تهیه خروجی", html, 480, 320)
         },
-        ExportClick: function(type) {
+        ExportClick: function (type) {
             switch (type) {
                 case "lastexcel":
-                    window.location.href = "http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0";
+                    window.location.href = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0";
                     break;
                 case "lastexcelwf":
-                    window.location.href = "http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0&format=0";
+                    window.location.href = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0&format=0";
                     break;
                 case "yourmw":
                     var html = "<html><head><meta charset='utf-8'></head><body style='direction:rtl;font-family:tahoma'>" + $("#display").html() + "</body></html>";
@@ -605,7 +606,7 @@ function MarketWatchPlus() {
                     break;
                 case "yourmwexcel":
                     if (typeof MWTemplates[mw.Settings.ActiveTemplate].excel == "undefined") {
-                        window.location.href = "http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0";
+                        window.location.href = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=0";
                         break
                     }
                     var html = "<html><head><meta charset='utf-8'></head><body style='direction:rtl;font-family:tahoma'><table>" + MWTemplates[mw.Settings.ActiveTemplate].excel.header + mw.RenderExcelData() + "</table></body></html>";
@@ -620,11 +621,11 @@ function MarketWatchPlus() {
                     if (!validDate(d)) {
                         return
                     }
-                    window.location.href = "http://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=" + d;
+                    window.location.href = "https://members.tsetmc.com/tsev2/excel/MarketWatchPlus.aspx?d=" + d;
                     break
             }
         },
-        RenderOneExcel: function(row) {
+        RenderOneExcel: function (row) {
             var rowHTML = MWTemplates[mw.Settings.ActiveTemplate].excel.row;
             rowHTML = rowHTML.replace(/{i}/g, row.inscode);
             rowHTML = rowHTML.replace("{l18}", row.l18);
@@ -669,7 +670,7 @@ function MarketWatchPlus() {
             rowHTML = rowHTML.replace("{cfield2}", row.cfield2);
             return rowHTML
         },
-        RenderExcelData: function() {
+        RenderExcelData: function () {
             var flow;
             var BodyHTML = [];
             var RenderNo = 0;
@@ -753,7 +754,7 @@ function MarketWatchPlus() {
             }
             return html
         },
-        QueryWindow: function() {
+        QueryWindow: function () {
             if ($("#FilterIndex").length != 0) {
                 return
             }
@@ -761,7 +762,7 @@ function MarketWatchPlus() {
             var WinNo = ShowModalStaticPro("فیلتر", "<div id='FilterIndex' style='direction:ltr;text-align:right;overflow-y:scroll;overflow-x:none;display:inline-block;width:200px;height:" + height + "px'></div><div id='FilterContent' style='text-align:right;overflow:hidden;padding:5px;display:inline-block;width:765zpx;height:" + height + "px'></div>", 1000);
             mw.QueryWindowFilterNames()
         },
-        QueryWindowFilterNames: function() {
+        QueryWindowFilterNames: function () {
             var html = "";
             if (mw.Settings.FilterNo != -1) {
                 html += "<div class='awesome red' style='display:inline-block;width:150px' onclick=\"mw.SelectFilter(-1);mw.ShowSettings();mw.SaveParams();mw.QueryWindowFilterNames()\" role='button' >نمایش اطلاعات بدون فیلتر</div>"
@@ -777,7 +778,7 @@ function MarketWatchPlus() {
             $("#FilterIndex").html(html);
             mw.QueryWindowEditFilter()
         },
-        QueryWindowEditFilter: function() {
+        QueryWindowEditFilter: function () {
             var html = "";
             if (mw.Settings.FilterNo != -1) {
                 var height = $(window).height() - 250;
@@ -790,7 +791,7 @@ function MarketWatchPlus() {
                 html += "<div>نام فیلتر</div><input id='InputFilterName' style='width:750px' value='" + mw.Settings.Filters[mw.Settings.FilterNo].FilterName + "'/><br/><div>شرط</div><textarea id='InputFilterCode' style='border:0px;overflow:scroll;font:12px tahoma;direction:ltr;width:750px;height:" + height + "px;'>" + mw.Settings.Filters[mw.Settings.FilterNo].FilterCode + "</textarea>"
             }
             $("#FilterContent").html(html);
-            $("#InputFilterCode").keydown(function(e) {
+            $("#InputFilterCode").keydown(function (e) {
                 if (e.keyCode === 9) {
                     var start = this.selectionStart;
                     var end = this.selectionEnd;
@@ -802,9 +803,9 @@ function MarketWatchPlus() {
                 }
             })
         },
-        QueryWindowConfirmDeleteFilter: function() {
+        QueryWindowConfirmDeleteFilter: function () {
             ShowConfirm({
-                FireFunction: function() {
+                FireFunction: function () {
                     mw.Settings.Filters.splice(mw.Settings.FilterNo, 1);
                     mw.SaveParams();
                     mw.Settings.FilterNo = -1;
@@ -812,7 +813,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        QueryWindowCheckFilter: function() {
+        QueryWindowCheckFilter: function () {
             var filterRaw = $("#InputFilterCode").val();
             var filter = mw.PrepareFilterCode(filterRaw);
             var CheckResult = "خطایی در کد مشاهده نشد";
@@ -854,7 +855,7 @@ function MarketWatchPlus() {
             }
             var WinNo = ShowModalStaticPro("اعتبار سنجی", CheckResult, 320, 240)
         },
-        QueryWindowSaveFilter: function() {
+        QueryWindowSaveFilter: function () {
             var inputFilterName = $("#InputFilterName").val();
             inputFilterName = $("<div />").text(inputFilterName).html();
             mw.Settings.Filters[mw.Settings.FilterNo].FilterName = inputFilterName;
@@ -864,14 +865,14 @@ function MarketWatchPlus() {
             mw.ShowSettings();
             mw.QueryWindowFilterNames()
         },
-        QueryWindowNewFilter: function() {
+        QueryWindowNewFilter: function () {
             mw.Settings.Filters.push({
                 FilterCode: "",
                 FilterName: "فیلتر شماره " + mw.Settings.Filters.length
             });
             mw.SaveParams()
         },
-        SectorName: function(SectorCode) {
+        SectorName: function (SectorCode) {
             for (var ipos = 0; ipos < Sectors.length; ipos++) {
                 if (SectorCode == Sectors[ipos][0]) {
                     return Sectors[ipos][1]
@@ -879,7 +880,7 @@ function MarketWatchPlus() {
             }
             return ""
         },
-        ListBasket: function() {
+        ListBasket: function () {
             $.ajax({
                 url: MembersSite() + "/tsev2/data/Baskets.aspx",
                 type: "POST",
@@ -893,8 +894,8 @@ function MarketWatchPlus() {
                     dt: 0
                 },
                 dataType: "html",
-                error: function() {},
-                success: function(data) {
+                error: function () { },
+                success: function (data) {
                     var html = "";
                     if (data == "login") {
                         html = "<a href='" + MembersSite() + "/userloginnew.aspx?http://old.tsetmc.com/loader.aspx?ParTree=15131F' target='_top'> برای استفاده از این امکان می بایست عضو شوید و با نام کاربری خود وارد سایت شوید. برای ثبت نام یا ورود به سیستم کلیک کنید</a>";
@@ -913,7 +914,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        LoadBasket: function(BasketIdn) {
+        LoadBasket: function (BasketIdn) {
             $.ajax({
                 url: MembersSite() + "/tsev2/data/Baskets.aspx",
                 type: "POST",
@@ -927,7 +928,7 @@ function MarketWatchPlus() {
                     b: BasketIdn
                 },
                 dataType: "html",
-                success: function(data) {
+                success: function (data) {
                     if (data == "login") {
                         var html = "<a style='text-decoration:underline' href='" + MembersSite() + "/userloginnew.aspx?http://old.tsetmc.com/loader.aspx?ParTree=15131F' target='_top'> برای استفاده از این امکان می بایست عضو شوید و با نام کاربری خود وارد سایت شوید. برای ثبت نام یا ورود به سیستم کلیک کنید</a>";
                         ShowModalStaticPro("بازیابی تنظیم", html, 300, 100)
@@ -939,7 +940,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        SaveBasket: function() {
+        SaveBasket: function () {
             $.ajax({
                 url: MembersSite() + "/tsev2/data/Baskets.aspx",
                 type: "POST",
@@ -954,7 +955,7 @@ function MarketWatchPlus() {
                     dt: 0
                 },
                 dataType: "html",
-                success: function(data) {
+                success: function (data) {
                     if (data == "login") {
                         var html = "<a style='text-decoration:underline' href='" + MembersSite() + "/userloginnew.aspx?http://old.tsetmc.com/loader.aspx?ParTree=15131F' target='_top'> برای استفاده از این امکان می بایست عضو شوید و با نام کاربری خود وارد سایت شوید. برای ثبت نام یا ورود به سیستم کلیک کنید</a>";
                         ShowModalStaticPro("ذخیره تنظیم", html, 300, 100)
@@ -964,7 +965,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        BuildTemplate: function() {
+        BuildTemplate: function () {
             HideAllWindow();
             var SettingHTML = "<table class='table1'><tr><th>تعداد ستون ها</th><td><input id='TemplateColNo' style='width:50px' value='" + mw.Settings.CustomTemplate.colNo + "'></td><th>اندازه فونت</th><td><input id='TemplateFontSize' style='width:50px' value='" + mw.Settings.CustomTemplate.fontSize + "'></td><th>ارتفاع سطر ها</th><td><input id='TemplateRowHeight' style='width:50px' value='" + mw.Settings.CustomTemplate.rowHeight + "'></td></tr></table><table class='table1'><tr><th>#</th><th>Title</th><th>Data</th><th>Align</th><th>Color</th><th>Bg Color</th><th>Width</th><th>Style</th><th>Border</th></tr>";
             var ColTitle = "";
@@ -1056,7 +1057,7 @@ function MarketWatchPlus() {
             SettingHTML += "</table><a class='awesome green' href='javascript:mw.SaveTemplate()'>ذخیره قالب شخصی</a>";
             var WinNo = ShowModalStaticPro("ساخت قالب نمایش", SettingHTML)
         },
-        SaveTemplate: function() {
+        SaveTemplate: function () {
             var TemplateColNoVal = $("#TemplateColNo").val();
             TemplateColNoVal = $("<div />").text(TemplateColNoVal).html();
             mw.Settings.CustomTemplate.colNo = parseInt(TemplateColNoVal, 10);
@@ -1142,7 +1143,7 @@ function MarketWatchPlus() {
             mw.SaveParams();
             HideAllWindow()
         },
-        ShowTemplateWindow: function() {
+        ShowTemplateWindow: function () {
             var SettingHTML = "";
             for (var ipos = 0; ipos < MWTemplates.length; ipos++) {
                 SettingHTML += '<div class="SlideItem" onclick="mw.changeTemplate(' + ipos + ')">' + MWTemplates[ipos].title + "</div>"
@@ -1150,10 +1151,10 @@ function MarketWatchPlus() {
             SettingHTML += "<div style='display:inline-block' class='SlideItem' onclick='mw.BuildTemplate()'>ساخت قالب</div><br/>";
             var WinNo = ShowModalStaticPro("قالب نمایش", SettingHTML, 300, 400)
         },
-        ShowSortWindow: function() {
+        ShowSortWindow: function () {
             var WinNo = ShowModalStaticPro("مرتب سازی بر اساس", "<div style='direction:rtl;text-align:right;font-size:12px'><ul><li><a href='#' onclick=\"mw.ChSortF('l18');HideAllWindow()\">نماد</a> - <a href='#' onclick=\"mw.ChSortF('l30');HideAllWindow()\">نام</a></li><li><a href='#' onclick=\"mw.ChSortF('tno');HideAllWindow()\">تعداد</a> - <a href='#' onclick=\"mw.ChSortF('tvol');HideAllWindow()\">حجم</a> - <a href='#' onclick=\"mw.ChSortF('tval');HideAllWindow()\">ارزش</a></li><li><a href='#' onclick=\"mw.ChSortF('mv');HideAllWindow()\">ارزش بازار</a></li><li><a href='#' onclick=\"mw.ChSortF('py');HideAllWindow()\">قیمت دیروز</a></li><li><a href='#' onclick=\"mw.ChSortF('pf');HideAllWindow()\">اولین قیمت</a></li><li><a href='#' onclick=\"mw.ChSortF('pl');HideAllWindow()\">آخرین قیمت</a>&nbsp;-&nbsp;<a href='#' onclick=\"mw.ChSortF('plc');HideAllWindow()\">تغییر</a>&nbsp;-&nbsp;<a href='#' onclick=\"mw.ChSortF('plp');HideAllWindow()\">درصد تغییر</a></li><li><a href='#' onclick=\"mw.ChSortF('pc');HideAllWindow()\">قیمت پایانی</a>&nbsp;-&nbsp;<a href='#' onclick=\"mw.ChSortF('pcc');HideAllWindow()\">تغییر</a>&nbsp;-&nbsp;<a href='#' onclick=\"mw.ChSortF('pcp');HideAllWindow()\">درصد تغییر</a></li><li><a href='#' onclick=\"mw.ChSortF('pmin');HideAllWindow()\">کمترین قیمت</a></li><li><a href='#' onclick=\"mw.ChSortF('pmax');HideAllWindow()\">بیشترین قیمت</a></li><li><a href='#' onclick=\"mw.ChSortF('eps');HideAllWindow()\">EPS</a> - <a href='#' onclick=\"mw.ChSortF('pe');HideAllWindow()\">P/E</a></li><li><a href='#' onclick=\"mw.ChSortF('pd1');HideAllWindow()\">قیمت خرید</a> - <a href='#' onclick=\"mw.ChSortF('qd1');HideAllWindow()\">حجم خرید</a></li><li><a href='#' onclick=\"mw.ChSortF('po1');HideAllWindow()\">قیمت فروش</a> - <a href='#' onclick=\"mw.ChSortF('qo1');HideAllWindow()\">حجم فروش</a></li><li><a href='#' onclick=\"mw.ChSortF('visitcount');HideAllWindow()\">تعداد بازدید - پربیننده</a></li><li><a href='#' onclick=\"mw.ChSortF('heven');HideAllWindow()\">زمان آخرین معامله</a></li><li>فیلدهای کاربر <a href='#' onclick=\"mw.ChSortF('cfield0');HideAllWindow()\">cfield0</a> - <a href='#' onclick=\"mw.ChSortF('cfield1');HideAllWindow()\">cfield1</a> -<a href='#' onclick=\"mw.ChSortF('cfield2');HideAllWindow()\">cfield2</a></li></ul>جهت مرتب سازی:<ul><li><a href='#' onclick=\"mw.ChangeSortDir(1);HideAllWindow()\">صعودی</a></li><li><a href='#' onclick=\"mw.ChangeSortDir(-1);HideAllWindow()\">نزولی</a></li></ul></div>", 300, 400)
         },
-        ShowAllSettings: function() {
+        ShowAllSettings: function () {
             HideAllWindow();
             var WinNo = ShowModalStaticPro("تنظیمات", "");
             var SettingHTML = "<div class=\"box3\"><div class=\"header\">ذخیره و بازیابی تنظیم ها</div><div style='text-align:center' class=\"content\"><div style='display:inline-block;width:145px' class='awesome red' onclick=\"mw.SaveBasket();\">ذخیره تنظیم ها</div>&nbsp;<div style='display:inline-block;width:145px' class='awesome blue' onclick=\"mw.ListBasket();\">بازیابی تنظیم ها</div>&nbsp;</div><div class=\"header\">سرعت بروز رسانی</div><div class=\"content\"><dl class='ZoomBox'><dd style='width:50px;text-align:center;display:inline-block;vertical-align:top;direction:ltr;'>1 ثانیه</dd><dd style='vertical-align:bottom;display:inline-block;width:750px;direction:ltr'><input type='text' id='UpdateSpeedZoom' width='750px' min='1' max='60'></dd><dd style='width:50px;display:inline-block;text-align:center;vertical-align:top;direction:ltr'>60 ثانیه</dd></dl>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;بروز رسانی هر <input aria-label='سرعت بروزرسانی' type='text' style='width:30px;' id='UpdateSpeedL3'> ثانیه<br/>&nbsp;<input onchange='mw.Settings.ColorChangeEnable=$(\"#ColorChangeEnable\").prop(\"checked\")==true?1:0;mw.SaveParams()' type='checkbox' id='ColorChangeEnable' aria-label='تغییر رنگ زمینه اطلاعات جدید' /> تغییر رنگ زمینه اطلاعات جدید<br/></div><div class=\"header\" style='display:inline-block;'>نحوه نمایش دیده بان بازار؟</div>";
@@ -1247,8 +1248,8 @@ function MarketWatchPlus() {
                 range: false,
                 passedID: "UpdateSpeedZoomCursor",
                 values: [mw.Settings.UpdateSpeed / 1000],
-                change: function() {},
-                blur: function() {
+                change: function () { },
+                blur: function () {
                     mw.Settings.UpdateSpeed = parseInt($("#UpdateSpeedZoom").val(), 10) * 1000;
                     mw.SaveParams();
                     $("#UpdateSpeedL3").val(mw.Settings.UpdateSpeed / 1000);
@@ -1261,16 +1262,16 @@ function MarketWatchPlus() {
             } else {
                 $("#ColorChangeEnable").prop("checked", false)
             }
-            $("#UpdateSpeedL3").on("keyup", function() {
+            $("#UpdateSpeedL3").on("keyup", function () {
                 this.value = this.value.replace(/[^0-9]/gi, "")
             });
-            $("#UpdateSpeedL3").change(function() {
+            $("#UpdateSpeedL3").change(function () {
                 mw.Settings.UpdateSpeed = parseInt($("#UpdateSpeedL3").val(), 10) * 1000;
                 mw.SaveParams();
                 mw.ShowSettings()
             })
         },
-        SelectFilter: function(FilterNo) {
+        SelectFilter: function (FilterNo) {
             if (FilterNo == -1 || FilterNo >= mw.Settings.Filters.length || mw.Settings.Filters.length == 0) {
                 mw.FilterCode = "";
                 mw.Settings.FilterNo = -1;
@@ -1283,8 +1284,9 @@ function MarketWatchPlus() {
             mw.RemoveAllData();
             mw.RenderData()
         },
-        PrepareFilterCode: function(RawCode) {
+        PrepareFilterCode: function (RawCode) {
             var FilterCode = RawCode;
+            alert(FilterCode);
             FilterCode = FilterCode.replace(/\x28l18\x29/g, 'row["l18"]');
             FilterCode = FilterCode.replace(/\x28l30\x29/g, 'row["l30"]');
             FilterCode = FilterCode.replace(/\x28tno\x29/g, 'parseInt(row["tno"],10)');
@@ -1348,8 +1350,8 @@ function MarketWatchPlus() {
             FilterCode = FilterCode.replace(/\x5Bih\x5D/g, 'mw.InstHistory[row["inscode"]]');
             return FilterCode
         },
-        StartMarketWatch: function() {
-            $(document).keypress(function(event) {
+        StartMarketWatch: function () {
+            $(document).keypress(function (event) {
                 if ((event.which == 83 || event.which == 115) && (document.activeElement == null || (document.activeElement.tagName != "INPUT" && document.activeElement.tagName != "TEXTAREA"))) {
                     mw.ShowAllSettings()
                 }
@@ -1397,7 +1399,7 @@ function MarketWatchPlus() {
             $(document.body).append("<div id='SettingsDesc' class='slideStatic' style='width:650px;left:330px;margin-left:0px;background-color:#ccddff;text-align:right'></div>");
             mw.ShowSettings();
             setData("ActiveTab", "MW");
-            $(window).focus(function() {
+            $(window).focus(function () {
                 setData("ActiveTab", "MW")
             });
             MWTemplates[MWTemplates.length - 1] = {
@@ -1429,7 +1431,7 @@ function MarketWatchPlus() {
                 mw.AutoScroll(true)
             }
         },
-        PrepareForMobile: function() {
+        PrepareForMobile: function () {
             var ismobile = navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
             for (var ipos = 0; ipos < MWTemplates.length; ipos++) {
                 if (ismobile == null) {
@@ -1439,7 +1441,7 @@ function MarketWatchPlus() {
                 }
             }
         },
-        AddNewRowToStore: function(RowID, defaultData) {
+        AddNewRowToStore: function (RowID, defaultData) {
             if (typeof mw.AllRows[RowID] == "undefined") {
                 mw.AllRows[RowID] = defaultData
             }
@@ -1447,7 +1449,7 @@ function MarketWatchPlus() {
         PreSelectedRow: 0,
         SelectedRow: 0,
         ChangeRowList: [],
-        AddDataToStore: function(RowID, data) {
+        AddDataToStore: function (RowID, data) {
             if (typeof mw.AllRows[RowID] == "undefined") {
                 return
             }
@@ -1460,7 +1462,7 @@ function MarketWatchPlus() {
                 mw.AllRows[RowID][key] = data[key]
             }
         },
-        ResetChangeInStore: function() {
+        ResetChangeInStore: function () {
             var ipos;
             var elm;
             for (ipos = 0; ipos < mw.ChangeRowList.length; ipos++) {
@@ -1514,7 +1516,7 @@ function MarketWatchPlus() {
             }
             mw.ChangeRowList = []
         },
-        SaveSettings: function(all, basketNo, WinNo) {
+        SaveSettings: function (all, basketNo, WinNo) {
             mw.Settings.AllTrade = all;
             mw.Settings.BasketNo = basketNo;
             mw.heven = 0;
@@ -1529,7 +1531,7 @@ function MarketWatchPlus() {
             mw.SaveParams();
             mw.RenderData()
         },
-        logOutUser: function() {
+        logOutUser: function () {
             $.ajax({
                 url: MembersSite() + "/tsev2/data/MarketWatchInit.aspx",
                 data: {
@@ -1543,12 +1545,12 @@ function MarketWatchPlus() {
                 dataType: "html",
                 timeout: 10000,
                 crossDomain: true,
-                success: function() {
+                success: function () {
                     mw.userFullName = undefined
                 }
             })
         },
-        getUser: function() {
+        getUser: function () {
             console.log("entrance of getUser 5");
             $.ajax({
                 url: MembersSite() + "/tsev2/data/Baskets.aspx",
@@ -1564,19 +1566,19 @@ function MarketWatchPlus() {
                 timeout: 10000,
                 crossDomain: true,
                 async: true,
-                success: function(data) {
+                success: function (data) {
                     console.log(data);
                     mw.userFullName = data;
                     console.log("success")
                 },
-                error: function(data) {
+                error: function (data) {
                     console.log(data);
                     console.log("error")
                 }
             });
             console.log("exit of getUser 5")
         },
-        UpdateMarketWatch: function() {
+        UpdateMarketWatch: function () {
             mw.UpdateCounter++;
             if (getData("ActiveTab") != "MW" && mw.FilterCode.length == 0 && mw.UpdateCounter % 5 != 0) {
                 var t1 = mw.Settings.UpdateSpeed;
@@ -1596,13 +1598,13 @@ function MarketWatchPlus() {
                 },
                 dataType: "html",
                 timeout: 10000,
-                error: function() {
+                error: function () {
                     if (typeof timer1 != "undefined") {
                         window.clearTimeout(timer1)
                     }
                     timer1 = window.setTimeout("mw.UpdateMarketWatch()", 600)
                 },
-                success: function(data) {
+                success: function (data) {
                     if (++mw.RoundNo > 8) {
                         mw.RoundNo = 1
                     }
@@ -1617,7 +1619,7 @@ function MarketWatchPlus() {
                         var col = InstPrice[ipos].split(",");
                         var RowID = col[0];
                         if (col.length == 10) {
-                            if (typeof mw.AllRows[RowID] == "undefined") {} else {
+                            if (typeof mw.AllRows[RowID] == "undefined") { } else {
                                 var py = parseInt(mw.AllRows[RowID]["py"]);
                                 var eps = mw.AllRows[RowID]["eps"];
                                 mw.AddDataToStore(RowID, {
@@ -1835,7 +1837,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        GetOneInstrument: function(InsCode) {
+        GetOneInstrument: function (InsCode) {
             $.ajax({
                 url: "tsev2/data/MarketWatchPlus.aspx",
                 cache: true,
@@ -1843,7 +1845,7 @@ function MarketWatchPlus() {
                     i: InsCode
                 },
                 dataType: "html",
-                success: function(data) {
+                success: function (data) {
                     var all = data.split("@");
                     var col = all[0].split(",");
                     var RowID = col[0];
@@ -2009,7 +2011,7 @@ function MarketWatchPlus() {
             })
         },
         LoadClientTypeTimer: null,
-        LoadClientType: function() {
+        LoadClientType: function () {
             if (mw.Settings.LoadClientType == 0) {
                 return
             }
@@ -2018,7 +2020,7 @@ function MarketWatchPlus() {
                 url: "tsev2/data/ClientTypeAll.aspx",
                 cache: true,
                 dataType: "text",
-                success: function(data) {
+                success: function (data) {
                     if (data.length == 0) {
                         return
                     }
@@ -2043,7 +2045,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        LoadInstStat: function() {
+        LoadInstStat: function () {
             if (mw.Settings.LoadInstStat == 0) {
                 return
             }
@@ -2054,7 +2056,7 @@ function MarketWatchPlus() {
                 },
                 cache: true,
                 dataType: "text",
-                success: function(data) {
+                success: function (data) {
                     var InsCode = "";
                     var rows = data.split(";");
                     var cols;
@@ -2077,7 +2079,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        LoadInstHistory: function() {
+        LoadInstHistory: function () {
             if (mw.Settings.LoadInstHistory == 0) {
                 return
             }
@@ -2085,7 +2087,7 @@ function MarketWatchPlus() {
                 url: MembersSite() + "/tsev2/data/ClosingPriceAll.aspx",
                 cache: true,
                 dataType: "text",
-                success: function(data) {
+                success: function (data) {
                     var InsCode = "";
                     var rows = data.split(";");
                     var cols;
@@ -2119,7 +2121,7 @@ function MarketWatchPlus() {
                 }
             })
         },
-        RemoveAllData: function() {
+        RemoveAllData: function () {
             document.getElementById("main").innerHTML = "";
             mw.FirstTime = true;
             for (var key in mw.AllRows) {
@@ -2128,7 +2130,7 @@ function MarketWatchPlus() {
                 }
             }
         },
-        RenderOne: function(row) {
+        RenderOne: function (row) {
             var rowHTML = MWTemplates[mw.Settings.ActiveTemplate].row;
             rowHTML = rowHTML.replace(/{i}/g, row.inscode);
             rowHTML = rowHTML.replace("{l18}", row.l18);
@@ -2207,7 +2209,7 @@ function MarketWatchPlus() {
             }
             return rowHTML
         },
-        RenderData: function() {
+        RenderData: function () {
             var flow;
             var BodyHTML = [];
             var RenderNo = 0;
@@ -2341,7 +2343,7 @@ function MarketWatchPlus() {
             }
             mw.FirstTime = false
         },
-        showNotification: function(title, body) {
+        showNotification: function (title, body) {
             var notification = new Notification(title, {
                 dir: "auto",
                 lang: "",
@@ -2350,7 +2352,7 @@ function MarketWatchPlus() {
                 icon: ""
             })
         },
-        AutoScroll: function(status) {
+        AutoScroll: function (status) {
             if (!status) {
                 if (typeof AutoScrollTimer != "undefined") {
                     window.clearTimeout(AutoScrollTimer)
@@ -2365,7 +2367,7 @@ function MarketWatchPlus() {
                 AutoScrollTimer = window.setTimeout("mw.AutoScroll(true)", 7000)
             }
         },
-        ClearChangeStatus: function() {
+        ClearChangeStatus: function () {
             var CleanNo = mw.RoundNo + 2;
             if (CleanNo > 8) {
                 CleanNo = CleanNo - 8
