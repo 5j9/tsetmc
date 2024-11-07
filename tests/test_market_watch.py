@@ -7,6 +7,7 @@ from pandas.api.types import is_numeric_dtype
 from tests import assert_market_state
 
 # noinspection PyProtectedMember
+from tsetmc import MarketState
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
     _PRICE_DTYPES_25,
@@ -48,7 +49,7 @@ def assert_bl_dtypes(df: DataFrame, unstacked=True):
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
     assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
-    assert [*mwi['best_limits'].index.dtypes.items()] == [
+    assert [*mwi['best_limits'].index.dtypes.items()] == [  # type: ignore
         ('ins_code', string),
         ('number', dtype('int64')),
     ]
@@ -67,7 +68,7 @@ async def test_market_watch_init():
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
-    assert [*mwi['best_limits'].index.dtypes.items()] == [
+    assert [*mwi['best_limits'].index.dtypes.items()] == [  # type: ignore
         ('ins_code', string),
         ('number', dtype('int64')),
     ]
@@ -88,7 +89,7 @@ async def test_closing_price_all():
         'py',
         'pf',
     ]
-    assert [*df.index.dtypes.items()] == [
+    assert [*df.index.dtypes.items()] == [  # type: ignore
         ('ins_code', string),
         ('n', dtype('int64')),
     ]
@@ -243,7 +244,7 @@ async def test_market_watch_plus_update():
     assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
     assert price_updates.index.dtype == string
 
-    market_state = mwp.pop('market_state', None)
+    market_state: MarketState = mwp.pop('market_state', None)  # type: ignore
     if market_state is not None:
         assert_market_state(market_state)
 

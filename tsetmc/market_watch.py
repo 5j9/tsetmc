@@ -1,7 +1,7 @@
 from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from typing import Any as _Any
+from typing import Any as _Any, TypedDict as _TypedDict
 
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
@@ -17,7 +17,6 @@ from tsetmc import (
     _logger,
     _parse_market_state,
     _save_last_content,
-    _TypedDict,
 )
 
 _BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
@@ -56,7 +55,7 @@ _PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
 _PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
 
 
-class MarketWatchInit(_TypedDict, total=False):
+class MarketWatchInit(_TypedDict):
     prices: _DataFrame
     best_limits: _DataFrame
     market_state: MarketState
@@ -119,10 +118,10 @@ async def market_watch_init(
         result['prices'] = joined
     if market_state:
         result['market_state'] = _parse_market_state(market_state_str)
-    return result
+    return result  # type: ignore
 
 
-class MarketWatchPlus(_TypedDict, total=False):
+class MarketWatchPlus(_TypedDict):
     new_prices: _DataFrame
     price_updates: _DataFrame
     best_limits: _DataFrame
@@ -216,7 +215,7 @@ async def market_watch_plus(
             bl = _unstack_best_limits(bl)
         result['best_limits'] = bl
     result['refid'] = int(str_refid)
-    return result
+    return result  # type: ignore
 
 
 def _split_id_rows(content: bytes, id_row_len: int) -> list:
@@ -227,9 +226,8 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list:
             id_ = items[0]
         else:
             # noinspection PyUnboundLocalVariable
-            items.insert(0, id_)
-        # noinspection PyTypeChecker
-        data[i] = items
+            items.insert(0, id_)  # type: ignore
+        data[i] = items  # type: ignore
     return data
 
 
@@ -313,9 +311,10 @@ async def key_stats() -> _DataFrame:
 async def status_changes(top: int | str) -> _DataFrame:
     text = await _get_par_tree(f'15131L&top={top}')
     df = _html_to_df(text)
-    df['date'] = (df['تاریخ'] + ' ' + df['زمان']).apply(
-        _jstrptime, format='%Y/%m/%d %H:%M:%S'
-    )
+    df['date'] = [
+        _jstrptime(i, format='%Y/%m/%d %H:%M:%S')
+        for i in (df['تاریخ'] + ' ' + df['زمان'])
+    ]
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df
 
@@ -378,11 +377,11 @@ class MarketWatch:
             else plus_callback
         )
 
-    def _default_init_callback(self, d: dict):
+    def _default_init_callback(self, d: MarketWatchInit):
         self.df = d.get('prices')
         self.market_state = d.get('market_state')
 
-    def _default_plus_callback(self, d: dict):
+    def _default_plus_callback(self, d: MarketWatchPlus):
         bl = d.get('best_limits')
         if bl is not None:
             self.df.update(bl)
