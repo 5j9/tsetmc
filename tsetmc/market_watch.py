@@ -66,7 +66,7 @@ class MarketWatchInit(_TypedDict, total=False):
 def _unstack_best_limits(bl: _DataFrame) -> _DataFrame:
     # merge multiple rows sharing the same `row` number into one row.
     # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    bl = bl.unstack()
+    bl = bl.unstack()  # type: ignore
     bl.columns = [f'{name}{number}' for name, number in bl.columns]
     return bl
 
@@ -95,11 +95,11 @@ async def market_watch_init(
         _logger.error(text)
         raise
 
-    result = {'refid': int(refid)}
+    result: dict = {'refid': int(refid)}
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
-            names=_PRICE_DTYPES_25,
+            names=_PRICE_DTYPES_25,  # type: ignore
             index_col='ins_code',
             dtype=_PRICE_DTYPES_25,
         )
@@ -112,9 +112,9 @@ async def market_watch_init(
         )
     if join and prices and best_limits:
         # noinspection PyUnboundLocalVariable
-        bl = _unstack_best_limits(bl)
+        bl = _unstack_best_limits(bl)  # type: ignore
         # noinspection PyUnboundLocalVariable
-        joined = bl.join(price_df)
+        joined = bl.join(price_df)  # type: ignore
         # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
         result['prices'] = joined
     if market_state:
