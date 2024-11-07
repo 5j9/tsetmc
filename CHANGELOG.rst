@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.68.1 (2024-11-07)
+--------------------
 * Updated dataset.
 * Fixed a bug in parsing market_state. (#7)
 * Improved type hints.
