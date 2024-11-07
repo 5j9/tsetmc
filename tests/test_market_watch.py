@@ -294,3 +294,27 @@ async def test_23_cols():
         return
     mwp = await market_watch_plus(0, 0)
     assert len(mwp['new_prices'].columns) == 22  # ins_code has become index
+
+
+def test_parse_market_state_with_18_values():
+    assert _parse_market_state(
+        "03/8/16 14:45:32,03/8/16 14:45:54,F,2017876.67,<div class='mn'>(7117.86)</div> -0.35%,64564137991027954.00,9693911361.00,66402811342027.00,268952,N,4799475515.00,97382008102240.00,145397,N,12015232.00,2042707692000.00,61240,"
+    ) == {
+        'datetime': jdatetime(1403, 8, 16, 14, 45, 54),
+        'tse_status': 'F',
+        'tse_index': 2017876.67,
+        'tse_index_change': -7117.86,
+        'tse_tvol': 9693911361.0,
+        'tse_tval': 66402811342027.0,
+        'tse_tno': 268952.0,
+        'fb_status': 'N',
+        'fb_tvol': 4799475515.0,
+        'fb_tval': 97382008102240.0,
+        'fb_tno': 145397,
+        'derivatives_status': 'N',
+        'derivatives_tvol': 12015232.0,
+        'derivatives_tval': 2042707692000.0,
+        'derivatives_tno': 61240,
+        'tse_index_change_percent': -0.35,
+        'tse_value': 6.456413799102795e16,
+    }

@@ -133,6 +133,13 @@ FlowType = int | str | Flow
 
 
 def _parse_market_state(s: str) -> MarketState:
+    splits = s.split(',')
+    # Sometimes splits start with two timestamps. it is not clear what it is, the
+    # UpdateFastView function in market_watch.js is not designed to handle this
+    # situation. It could be that the first timestamp is last transaction time
+    # and the second one is server time.
+    if len(splits) == 18:
+        splits.pop(0)
     try:
         (
             datetime,
@@ -152,7 +159,7 @@ def _parse_market_state(s: str) -> MarketState:
             derivatives_tval,
             derivatives_tno,
             _,
-        ) = s.split(',')
+        ) = splits
     except ValueError as e:
         e.add_note(f'{s=}')
         raise
