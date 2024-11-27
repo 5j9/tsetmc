@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Fixed a bug in ``dataset.update()`` not being able to handle duplicate l18 values.
+* Updated dataset.
 
 v0.68.1 (2024-11-07)
 --------------------

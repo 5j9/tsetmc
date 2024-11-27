@@ -13,14 +13,16 @@ YVAL_EXCLUSIONS = {
 
 
 def _dump(df: _Df):
-    assert df['l18'].is_unique
-    codes = df.index
-    try:
-        assert codes.is_unique
-    except AssertionError:
-        duplicated = codes.duplicated('last')
-        _logger.error('duplicated ins_codes:\n%s', codes[duplicated])
+    if not (l18 := df['l18']).is_unique:
+        # happens when a symbol is promoted/demoted to another flow
+        duplicated = l18.duplicated('last')
         df = df[~duplicated]
+        _logger.info('Removed duplicated l18 values:\n%s', l18[duplicated])
+
+    if not (codes := df.index).is_unique:
+        duplicated = codes.duplicated('last')
+        df = df[~duplicated]
+        _logger.error('Removed duplicated codes:\n%s', codes[duplicated])
 
     df.sort_values('l18', inplace=True)
     df.to_csv(LazyDS.path, encoding='utf-8-sig', lineterminator='\n')
@@ -48,17 +50,16 @@ async def add_instrument(inst: _Instrument) -> None:
 async def update(df: _Df | None = None) -> None:
     if df is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
-        df = mwi['prices']  # type: ignore
-    df = df[
+        df = mwi['prices']
+    df = df[['l18', 'l30']][
         ~(
             df['yval'].isin(YVAL_EXCLUSIONS)
             | df['l18'].str.slice(-1).str.isdigit()
         )
     ]
     ds = LazyDS.df
-    p = df[['l18', 'l30']]
-    ds.update(other=p)  # update existing l18s/l30s
-    new_items = p[~p.index.isin(ds.index)]
+    ds.update(df)  # update existing l18s/l30s
+    new_items = df[~df.index.isin(ds.index)]
 
     if new_items.empty:
         _logger.info('No new entries were added by market watch.')
