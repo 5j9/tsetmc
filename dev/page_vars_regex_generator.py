@@ -7,7 +7,7 @@ strings = [
     "<script>var TopInst='1',LVal18AFC='دی',DEven='0',LSecVal='بانکها و موسسات اعتباری',CgrValCot='Z1',Flow='2',InstrumentID='IRO3BDYZ0001',InsCode='44818950263583523',BaseVol=2231446,EstimatedEPS='4326',ZTitad=6400000000,CIsin='IRO3BDYZ0003',LVal18AFC='دی',CSecVal='57 ',PdrCotVal='',PClosing='',PSGelStaMax='48324.00',PSGelStaMin='43722.00',Title='بانک دی (دی) - بازار دوم فرابورس',FaraDesc ='',MinWeek='43722.00',MaxWeek='49934.00',MinYear='2674.00',MaxYear='83000.00',QTotTran5JAvg='25836324',SectorPE='16.69',KAjCapValCpsIdx='',PriceMin=0,PriceMax=0,PriceYesterday=0;ThemeCount='5';ContractSize='0';</script>",
 ]
 
-pattern = None
+pattern: str = ''
 for string in strings:
     string = string.removeprefix('<script>var ').removesuffix('</script>')
     # FaraDesc has a space before = otherwise \s* is not needed
@@ -25,7 +25,7 @@ for string in strings:
 
     assert match(pat, string)
 
-    if pattern is not None:
+    if pattern:
         try:
             assert pattern == pat
         except AssertionError:
@@ -36,5 +36,6 @@ for string in strings:
     pattern = pat
 
 
-pattern_lines = '\n    '.join(map(repr, findall(r'.*?[,;]\b', pattern)))
+findings = findall(r'.*?[,;]\b', pattern)
+pattern_lines = '\n    '.join(map(repr, findings))
 print(f'PAGE_VARS = rc(\n    {pattern_lines}\n).search')
