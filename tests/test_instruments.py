@@ -1,5 +1,6 @@
 from datetime import datetime
 from types import NoneType
+from typing import cast
 from unittest.mock import patch
 
 from aiohutils.tests import assert_dict_type, file, files
@@ -116,8 +117,9 @@ async def test_page_data_negative_sector_pe():
 
 
 def assert_live_data(
-    d: LiveData, best_limits=False, market_state=False, nav=False
+    ld: LiveData, best_limits=False, market_state=False, nav=False
 ):
+    d = cast(dict, ld)
     if best_limits:
         best_limits = d.pop('best_limits')
         assert [*best_limits.dtypes.items()] == [
