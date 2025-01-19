@@ -155,6 +155,7 @@ async def test_market_map_data():
         ('lVal18AFC', STR),
         ('lVal30', STR),
         ('lSecVal', STR),
+        ('marketCap', dtype('float64')),
         ('percent', dtype('float64')),
         ('priceChangePercent', dtype('float64')),
         ('hEvenShow', STR),
