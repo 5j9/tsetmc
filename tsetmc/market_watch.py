@@ -3,6 +3,10 @@ from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from typing import Any as _Any, TypedDict as _TypedDict
 
+from aiohttp import (
+    ClientConnectorDNSError as _ClientConnectorDNSError,
+    ClientResponseError as _ClientResponseError,
+)
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import concat as _concat, to_numeric as _to_numeric
@@ -422,6 +426,9 @@ class MarketWatch:
                 mwp = await market_watch_plus(
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
+            except (_ClientConnectorDNSError, _ClientResponseError) as e:
+                _logger.warning(f'{e!r} while awaiting market_watch_plus')
+                continue
             except Exception as e:
                 _logger.exception(f'{e!r} while awaiting market_watch_plus')
                 continue  # _sleep and retry
