@@ -308,6 +308,9 @@ def _save_last_content(msg: str, /):
     ):
         _logger.error('Your access has been blocked due to security issues.')
         return
+    if b'General Error Detected' in _LAST_CONTENT:
+        _logger.error('General Error Detected.')
+        return
 
     file = __file__.removesuffix('__init__.py') + '~last_response.html'
     with open(file, 'wb') as f:
