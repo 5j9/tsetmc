@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.68.2 (2025-01-19)
+--------------------
 * Improved error-handling in MarketWatch.
 * Fixed a bug in ``dataset.update()`` not being able to handle duplicate l18 values.
 * Updated dataset.
