@@ -37,4 +37,4 @@ for string in strings:
 
 
 pattern_lines = '\n    '.join(map(repr, findall(r'.*?[,;]\b', pattern)))
-print(f'PAGE_VARS = rc(\n' f'    {pattern_lines}\n' f').search')
+print(f'PAGE_VARS = rc(\n    {pattern_lines}\n).search')

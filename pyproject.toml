@@ -51,12 +51,12 @@ line-length = 79
 format.quote-style = 'single'
 lint.isort.combine-as-imports = true
 lint.extend-select = [
+    'W605', # invalid-escape-sequence
     'FA',  # flake8-future-annotations
     'I',  # isort
     'UP',  # pyupgrade
 ]
 lint.ignore = [
-    'UP027',  # list comprehensions are faster than generator expressions
     'E721',  # Do not compare types, use `isinstance()`
 ]
 
@@ -72,3 +72,7 @@ reportUnnecessaryCast = "warning"
 reportUnnecessaryContains = "warning"
 reportUnnecessaryIsInstance = "warning"
 reportUnnecessaryTypeIgnoreComment = true
+reportInvalidStringEscapeSequence = false
+reportConstantRedefinition = 'error'
+reportTypeCommentUsage = 'warning'
+reportUnnecessaryComparison = 'warning'
