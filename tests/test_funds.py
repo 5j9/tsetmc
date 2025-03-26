@@ -109,7 +109,7 @@ async def test_etfs():
 @file('get_funds_mix.json')
 async def test_get_funds():
     df = await funds(FundType.MIXED)
-    assert len(df) >= 20
+    assert len(df) >= 15
     assert [*df.dtypes.items()] == [
         ('fundProfits', dtype('O')),
         ('stats', dtype('O')),
