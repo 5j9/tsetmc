@@ -30,7 +30,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 test = [
-    'aiohutils[test] >= 0.20.0',
+    'aiohutils[test] >= 0.21.0',
 ]
 
 [project.license]
@@ -62,7 +62,9 @@ lint.ignore = [
 
 [tool.pytest.ini_options]
 addopts = '--quiet --tb=short'
-
+asyncio_mode = 'auto'
+asyncio_default_fixture_loop_scope = 'session'
+asyncio_default_test_loop_scope = 'session'
 
 [tool.pyright]
 typeCheckingMode = 'standard'
