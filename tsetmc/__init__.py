@@ -219,7 +219,7 @@ async def _session_get(url: str) -> bytes:
     return await r.read()
 
 
-_LAST_CONTENT: bytes
+_last_content: bytes
 
 
 @_overload
@@ -231,8 +231,8 @@ async def _get(url: str, *, fa=False) -> bytes: ...
 
 
 async def _get(url: str, *, fa: _Literal[True, False] = False) -> str | bytes:
-    global _LAST_CONTENT
-    _LAST_CONTENT = content = await _session_get(url)
+    global _last_content
+    _last_content = content = await _session_get(url)
     if fa is True:
         content = content.decode().translate(_FARSI_NORM)
     return content
@@ -304,15 +304,15 @@ def _numerize(
 def _save_last_content(msg: str, /):
     if (
         'دسترسی شما بدلیل مسائل امنیتی مسدود شده است.'.encode()
-        in _LAST_CONTENT
+        in _last_content
     ):
         _logger.error('Your access has been blocked due to security issues.')
         return
-    if b'General Error Detected' in _LAST_CONTENT:
+    if b'General Error Detected' in _last_content:
         _logger.error('General Error Detected.')
         return
 
     file = __file__.removesuffix('__init__.py') + '~last_response.html'
     with open(file, 'wb') as f:
-        f.write(_LAST_CONTENT)
+        f.write(_last_content)
     _logger.error(f'{msg}; _LAST_CONTENT saved in {file}', stacklevel=2)
