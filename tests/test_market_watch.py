@@ -244,7 +244,7 @@ async def test_market_watch_plus_update():
     assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
     assert price_updates.index.dtype == string
 
-    market_state: MarketState = mwp.pop('market_state', None)  # type: ignore
+    market_state = mwp.pop('market_state', None)
     if market_state is not None:
         assert_market_state(market_state)
 

@@ -1,7 +1,11 @@
 from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
-from typing import Any as _Any, TypedDict as _TypedDict
+from typing import (
+    Any as _Any,
+    NotRequired as _NotRequired,
+    TypedDict as _TypedDict,
+)
 
 from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
@@ -9,10 +13,14 @@ from aiohttp import (
 )
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
-from pandas import concat as _concat, to_numeric as _to_numeric
+from pandas import (
+    concat as _concat,
+    to_numeric as _to_numeric,
+)
 
 from tsetmc import (
     MarketState,
+    _api,
     _csv2df,
     _DataFrame,
     _get_data,
@@ -130,7 +138,7 @@ class MarketWatchPlus(_TypedDict):
     price_updates: _DataFrame
     best_limits: _DataFrame
     messages: list[str]
-    market_state: MarketState
+    market_state: _NotRequired[MarketState]
     refid: int
 
 
@@ -320,6 +328,33 @@ async def status_changes(top: int | str) -> _DataFrame:
         for i in (df['تاریخ'] + ' ' + df['زمان'])
     ]
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
+    return df
+
+
+async def get_market_watch(
+    h_even=0, ref_id=0, with_best_limits=True, show_traded=False
+):
+    j = await _api(
+        'ClosingPrice/GetMarketWatch'
+        '?market=0'
+        '&industrialGroup='
+        '&paperTypes%5B0%5D=1'
+        '&paperTypes%5B1%5D=2'
+        '&paperTypes%5B2%5D=3'
+        '&paperTypes%5B3%5D=4'
+        '&paperTypes%5B4%5D=5'
+        '&paperTypes%5B5%5D=6'
+        '&paperTypes%5B6%5D=7'
+        '&paperTypes%5B7%5D=8'
+        '&paperTypes%5B8%5D=9'
+        f'&showTraded={show_traded}'
+        f'&withBestLimits={with_best_limits}'
+        f'&hEven={h_even}'
+        f'&RefID={ref_id}'
+    )
+    # assert len(j) == 1
+    df = _DataFrame(j['marketwatch'])
+    df['pe'] = df['pe'].replace('-', None).astype('float64')
     return df
 
 
