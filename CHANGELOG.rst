@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Implemented ``market_watch.get_market_watch``.
 * Updated dataset.
 * Minor code improvements.
 
