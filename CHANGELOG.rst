@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Minor code improvements.
 
 v0.68.3 (2025-03-26)
 --------------------

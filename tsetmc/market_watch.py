@@ -386,19 +386,18 @@ class MarketWatch:
         self.market_state = d.get('market_state')
 
     def _default_plus_callback(self, d: MarketWatchPlus):
-        bl = d.get('best_limits')
-        if bl is not None:
-            self.df.update(bl)
+        kwget = self.plus_kwargs.get
+        dget = d.get
+        if kwget('best_limits'):
+            self.df.update(dget('best_limits'))
 
-        np = d.get('new_prices')
-        if np is not None:
-            self.df = _concat([self.df, np])
+        if kwget('new_prices'):
+            self.df = _concat([self.df, dget('new_prices')])
 
-        pu = d.get('price_updates')
-        if pu is not None:
-            self.df.update(pu)
+        if kwget('price_updates'):
+            self.df.update(dget('price_updates'))
 
-        self.market_state = d.get('market_state')
+        self.market_state = dget('market_state')
 
     async def start(self):
         update_event = self.update_event
