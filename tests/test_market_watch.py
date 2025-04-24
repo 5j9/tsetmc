@@ -7,13 +7,13 @@ from pandas.api.types import is_numeric_dtype
 from tests import assert_market_state
 
 # noinspection PyProtectedMember
-from tsetmc import MarketState
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
     _PRICE_DTYPES_25,
     _parse_market_state,
     client_type_all,
     closing_price_all,
+    get_market_watch,
     key_stats,
     market_watch_init,
     market_watch_plus,
@@ -319,3 +319,154 @@ def test_parse_market_state_with_18_values():
         'tse_index_change_percent': -0.35,
         'tse_value': 6.456413799102795e16,
     }
+
+
+@file('get_market_watch_0.json')
+async def test_get_market_watch():
+    df = await get_market_watch()
+    assert [*df.dtypes.items()] == [
+        (
+            'lva',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'lvc',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'eps',
+            dtype('float64'),
+        ),
+        (
+            'pe',
+            dtype('float64'),
+        ),
+        (
+            'pmd',
+            dtype('float64'),
+        ),
+        (
+            'pmo',
+            dtype('float64'),
+        ),
+        (
+            'qtj',
+            dtype('float64'),
+        ),
+        (
+            'pdv',
+            dtype('float64'),
+        ),
+        (
+            'ztt',
+            dtype('float64'),
+        ),
+        (
+            'qtc',
+            dtype('float64'),
+        ),
+        (
+            'bv',
+            dtype('float64'),
+        ),
+        (
+            'pc',
+            dtype('float64'),
+        ),
+        (
+            'pcpc',
+            dtype('float64'),
+        ),
+        (
+            'pmn',
+            dtype('float64'),
+        ),
+        (
+            'pmx',
+            dtype('float64'),
+        ),
+        (
+            'py',
+            dtype('float64'),
+        ),
+        (
+            'pf',
+            dtype('float64'),
+        ),
+        (
+            'pcl',
+            dtype('float64'),
+        ),
+        (
+            'vc',
+            dtype('int64'),
+        ),
+        (
+            'csv',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'insID',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'pMax',
+            dtype('float64'),
+        ),
+        (
+            'pMin',
+            dtype('int64'),
+        ),
+        (
+            'ztd',
+            dtype('float64'),
+        ),
+        (
+            'blDs',
+            dtype('O'),
+        ),
+        (
+            'id',
+            dtype('int64'),
+        ),
+        (
+            'insCode',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'dEven',
+            dtype('int64'),
+        ),
+        (
+            'hEven',
+            dtype('int64'),
+        ),
+        (
+            'pClosing',
+            dtype('float64'),
+        ),
+        (
+            'iClose',
+            dtype('bool'),
+        ),
+        (
+            'yClose',
+            dtype('bool'),
+        ),
+        (
+            'pDrCotVal',
+            dtype('float64'),
+        ),
+        (
+            'zTotTran',
+            dtype('float64'),
+        ),
+        (
+            'qTotTran5J',
+            dtype('float64'),
+        ),
+        (
+            'qTotCap',
+            dtype('float64'),
+        ),
+    ]
