@@ -5,8 +5,6 @@ from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
 
 from tests import assert_market_state
-
-# noinspection PyProtectedMember
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
     _PRICE_DTYPES_25,
