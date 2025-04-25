@@ -1,3 +1,7 @@
+.. image:: https://github.com/5j9/tsetmc/actions/workflows/pytest.yml/badge.svg
+   :alt: Pytest Status
+   :target: https://github.com/5j9/tsetmc/actions/workflows/pytest.yml
+
 An ``async`` Python library to fetch data from https://tsetmc.com/.
 
 Note: The API is provisional and may change rapidly without deprecation.
