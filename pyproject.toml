@@ -30,7 +30,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 test = [
-    'aiohutils[test] >= 0.21.0',
+    'aiohutils[test] >= 0.21.2',
 ]
 
 [project.license]
