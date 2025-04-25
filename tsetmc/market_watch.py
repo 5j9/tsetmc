@@ -14,6 +14,7 @@ from aiohttp import (
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import (
+    DataFrame,
     concat as _concat,
     to_numeric as _to_numeric,
 )
@@ -333,7 +334,8 @@ async def status_changes(top: int | str) -> _DataFrame:
 
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
-):
+) -> DataFrame:
+    """This function uses the new experimental market watch end-point."""
     j = await _api(
         'ClosingPrice/GetMarketWatch'
         '?market=0'
