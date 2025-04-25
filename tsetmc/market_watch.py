@@ -14,7 +14,6 @@ from aiohttp import (
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import (
-    DataFrame,
     concat as _concat,
     to_numeric as _to_numeric,
 )
@@ -343,7 +342,7 @@ async def status_changes(top: int | str) -> _DataFrame:
 
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
-) -> DataFrame:
+) -> _DataFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api(
         'ClosingPrice/GetMarketWatch'
@@ -369,7 +368,7 @@ async def get_market_watch(
     return df
 
 
-async def get_client_type_all() -> DataFrame:
+async def get_client_type_all() -> _DataFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('ClientType/GetClientTypeAll')
     if len(j.keys()) > 1:
@@ -379,14 +378,14 @@ async def get_client_type_all() -> DataFrame:
     return _DataFrame(j['clientTypeAllDto'])
 
 
-async def get_inst_value_all_inst_all_param() -> DataFrame:
+async def get_inst_value_all_inst_all_param() -> _DataFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('MarketData/GetInstValueAllInstAllParam')
     if len(j.keys()) > 1:
         _logger.warning(
             f'Unexpected keys in get_inst_value_all_inst_all_param response: {j.keys()=}'
         )
-    return DataFrame(j['instValueAllInstAllParam'])
+    return _DataFrame(j['instValueAllInstAllParam'])
 
 
 class MarketWatch:
