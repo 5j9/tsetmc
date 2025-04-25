@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* Implemented new (yet still experimental) ``market_watch`` API functions: ``get_market_watch``, ``get_client_type_all``, and ``get_inst_value_all_inst_all_param``.
+* Implemented some of the new experimental ``market_watch`` API functions: ``get_market_watch``, ``get_client_type_all``, and ``get_inst_value_all_inst_all_param``.
 * Updated dataset.
 * Minor code improvements.
 
