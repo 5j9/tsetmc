@@ -98,6 +98,9 @@ async def market_watch_init(
         For persian translation of `flow` and `yval` codes use
         `tsetmc.docs.instrument`.
         `heven` is the time of the last transaction in HHMMSS format.
+
+    See also the new experimental equivallent of this function:
+        ``get_market_watch``
     """
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
     try:
@@ -283,7 +286,9 @@ async def client_type_all() -> _DataFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
-    See also: ``get_client_type_all``.
+
+    See also the new experimental equivallent of this function:
+        ``get_client_type_all``
     """
     content = await _get_data('ClientTypeAll.aspx')
     df = _csv2df(
@@ -311,6 +316,9 @@ async def key_stats() -> _DataFrame:
     For the meaning of column names refer to
         http://www.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
         http://cdn.tsetmc.com/Site.aspx?ParTree=151713
+
+    See also the new experimental equivallent of this function:
+        ``get_inst_value_all_inst_all_param``
     """
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
@@ -336,7 +344,7 @@ async def status_changes(top: int | str) -> _DataFrame:
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
 ) -> DataFrame:
-    """This function uses the new experimental market watch end-point."""
+    """This function uses the new *experimental* market watch API."""
     j = await _api(
         'ClosingPrice/GetMarketWatch'
         '?market=0'
@@ -362,13 +370,23 @@ async def get_market_watch(
 
 
 async def get_client_type_all() -> DataFrame:
-    """This function uses the new experimental market watch end-point."""
+    """This function uses the new *experimental* market watch API."""
     j = await _api('ClientType/GetClientTypeAll')
     if len(j.keys()) > 1:
         _logger.warning(
             f'Unexpected keys in get_client_type_all response: {j.keys()=}'
         )
     return _DataFrame(j['clientTypeAllDto'])
+
+
+async def get_inst_value_all_inst_all_param() -> DataFrame:
+    """This function uses the new *experimental* market watch API."""
+    j = await _api('MarketData/GetInstValueAllInstAllParam')
+    if len(j.keys()) > 1:
+        _logger.warning(
+            f'Unexpected keys in get_inst_value_all_inst_all_param response: {j.keys()=}'
+        )
+    return DataFrame(j['instValueAllInstAllParam'])
 
 
 class MarketWatch:

@@ -12,6 +12,7 @@ from tsetmc.market_watch import (
     client_type_all,
     closing_price_all,
     get_client_type_all,
+    get_inst_value_all_inst_all_param,
     get_market_watch,
     key_stats,
     market_watch_init,
@@ -518,5 +519,29 @@ async def test_get_client_type_all():
         (
             'sell_CountN',
             dtype('int64'),
+        ),
+    ]
+
+
+@file('get_inst_value_all_inst_all_param.json')
+async def test_get_inst_value_all_inst_all_param():
+    df = await get_inst_value_all_inst_all_param()
+    assert len(df) > 20e3
+    assert [*df.dtypes.items()] == [
+        (
+            'insCode',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'dataType',
+            dtype('int64'),
+        ),
+        (
+            'dEven',
+            dtype('int64'),
+        ),
+        (
+            'dataValue',
+            'string[pyarrow_numpy]',
         ),
     ]
