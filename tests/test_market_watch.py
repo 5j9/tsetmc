@@ -11,6 +11,7 @@ from tsetmc.market_watch import (
     _parse_market_state,
     client_type_all,
     closing_price_all,
+    get_client_type_all,
     get_market_watch,
     key_stats,
     market_watch_init,
@@ -466,5 +467,56 @@ async def test_get_market_watch():
         (
             'qTotCap',
             dtype('float64'),
+        ),
+    ]
+
+
+@file('get_client_type_all.json')
+async def test_get_client_type_all():
+    df = await get_client_type_all()
+    assert [*df.dtypes.items()] == [
+        (
+            'insCode',
+            'string[pyarrow_numpy]',
+        ),
+        (
+            'buy_I_Volume',
+            dtype('float64'),
+        ),
+        (
+            'buy_N_Volume',
+            dtype('float64'),
+        ),
+        (
+            'buy_DDD_Volume',
+            dtype('float64'),
+        ),
+        (
+            'buy_CountI',
+            dtype('int64'),
+        ),
+        (
+            'buy_CountN',
+            dtype('int64'),
+        ),
+        (
+            'buy_CountDDD',
+            dtype('int64'),
+        ),
+        (
+            'sell_I_Volume',
+            dtype('float64'),
+        ),
+        (
+            'sell_N_Volume',
+            dtype('float64'),
+        ),
+        (
+            'sell_CountI',
+            dtype('int64'),
+        ),
+        (
+            'sell_CountN',
+            dtype('int64'),
         ),
     ]

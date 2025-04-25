@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* Implemented ``market_watch.get_market_watch``.
+* Implemented new (still experimental) ``market_watch`` functions: ``get_market_watch`` and ``get_client_type_all``.
 * Updated dataset.
 * Minor code improvements.
 

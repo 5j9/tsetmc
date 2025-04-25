@@ -283,6 +283,7 @@ async def client_type_all() -> _DataFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
+    See also: ``get_client_type_all``.
     """
     content = await _get_data('ClientTypeAll.aspx')
     df = _csv2df(
@@ -358,6 +359,16 @@ async def get_market_watch(
     df = _DataFrame(j['marketwatch'])
     df['pe'] = df['pe'].replace('-', None).astype('float64')
     return df
+
+
+async def get_client_type_all() -> DataFrame:
+    """This function uses the new experimental market watch end-point."""
+    j = await _api('ClientType/GetClientTypeAll')
+    if len(j.keys()) > 1:
+        _logger.warning(
+            f'Unexpected keys in get_client_type_all response: {j.keys()=}'
+        )
+    return _DataFrame(j['clientTypeAllDto'])
 
 
 class MarketWatch:
