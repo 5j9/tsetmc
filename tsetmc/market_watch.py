@@ -451,15 +451,16 @@ class MarketWatch:
         self.market_state = d.get('market_state')
 
     def _default_plus_callback(self, d: MarketWatchPlus):
+        # Note that None and True both translate to True
         kwget = self.plus_kwargs.get
         dget = d.get
-        if kwget('best_limits'):
+        if kwget('best_limits') is not False:
             self.df.update(dget('best_limits'))
 
-        if kwget('new_prices'):
+        if kwget('new_prices') is not False:
             self.df = _concat([self.df, dget('new_prices')])
 
-        if kwget('price_updates'):
+        if kwget('price_updates') is not False:
             self.df.update(dget('price_updates'))
 
         self.market_state = dget('market_state')
