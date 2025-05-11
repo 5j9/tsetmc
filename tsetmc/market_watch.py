@@ -479,7 +479,7 @@ class MarketWatch:
                 continue
             break
 
-        self.init_callback(mwi)  # noqa: F823
+        self.init_callback(mwi)
         heven = mwi['prices'].heven.max()
         refid = mwi['refid']
         set_event()

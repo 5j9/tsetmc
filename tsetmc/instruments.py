@@ -315,7 +315,7 @@ class ClientTypeOnDate(_TypedDict):
 
 
 class Instrument:
-    __slots__ = 'code', '_l18', '_l30', '_cisin', '_cs', '_isin'
+    __slots__ = '_cisin', '_cs', '_isin', '_l18', '_l30', 'code'
 
     def __init__(
         self, code: str | int, l18: str | None = None, l30: str | None = None
@@ -1007,7 +1007,7 @@ class ClosingPrice(_TypedDict):
 
 
 class InstrumentOnDate:
-    __slots__ = 'date', 'code', 'inst'
+    __slots__ = 'code', 'date', 'inst'
 
     def __init__(self, /, *, _inst: Instrument, _date: int | str):
         """Return an object resembling Instrument on a specific date.
