@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.69.0 (2025-05-11)
+--------------------
 * Implemented some of the new experimental ``market_watch`` API functions: ``get_market_watch``, ``get_client_type_all``, and ``get_inst_value_all_inst_all_param``.
 * Updated dataset.
 * Minor code improvements.
