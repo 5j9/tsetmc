@@ -190,7 +190,9 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 .. code-block:: python
 
     from asyncio import new_event_loop
+
     from tsetmc.market_watch import MarketWatch
+
 
     async def listen_to_update_events():
         while True:
@@ -201,8 +203,9 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
     market_watch = MarketWatch()
     loop = new_event_loop()
-    loop.create_task(listen_to_update_events())
+    watch_task = loop.create_task(listen_to_update_events())
     loop.run_until_complete(market_watch.start())
+
 
 
 There are many other functions and methods that are not covered here. Explore the codebase to learn more.
