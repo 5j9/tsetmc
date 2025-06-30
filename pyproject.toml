@@ -57,7 +57,9 @@ lint.extend-select = [
 lint.ignore = [
     'E721',  # Do not compare types, use `isinstance()`
     'RUF001',  # ambiguous-unicode-character-string	
+    'RUF002',  # ambiguous-unicode-character-docstring
     'RUF003',  # ambiguous-unicode-character-comment
+    'RUF012',  # mutable-class-default
 ]
 
 [tool.pytest.ini_options]
