@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Implemented ``funds.fund_details``.
+* Updated dataset.
 
 v0.69.0 (2025-05-11)
 --------------------

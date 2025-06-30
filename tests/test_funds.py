@@ -8,6 +8,7 @@ from tsetmc.funds import (
     etfs,
     etfs_with_most_price_decrease,
     etfs_with_most_price_increase,
+    fund_details,
     funds,
     most_traded_etfs,
 )
@@ -168,3 +169,29 @@ async def test_get_funds():
         ('mfNameEng', STR),
     ]
     assert not df['mfName'].str.contains('ي', regex=False).any()
+
+
+@file('agas_details.json')
+async def test_fund_details():
+    d = await fund_details('11341')
+    df = d.stats
+    assert [*df.dtypes.items()] == [
+        (
+            'navSub',
+            dtype('float64'),
+        ),
+        (
+            'netAsset',
+            dtype('float64'),
+        ),
+        (
+            'navStat',
+            dtype('float64'),
+        ),
+        (
+            'navRed',
+            dtype('float64'),
+        ),
+    ]
+    assert df.index.name == 'recordDate'
+    assert df.index.dtype == 'datetime64[ns]'
