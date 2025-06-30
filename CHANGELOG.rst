@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Implemented ``funds.fund_details``.
+* Fixed: The ``regNo`` column in the result ```funds.funds()`` is now always ``int``. Previously, sometimes it was ``float64``.
 * Updated dataset.
 
 v0.69.0 (2025-05-11)

@@ -114,7 +114,7 @@ async def test_get_funds():
     assert [*df.dtypes.items()] == [
         ('fundProfits', dtype('O')),
         ('stats', dtype('O')),
-        ('regNo', dtype('float64')),
+        ('regNo', dtype('int64')),
         ('fundType', dtype('int64')),
         ('fundSize', dtype('int64')),
         ('recordDate', STR),

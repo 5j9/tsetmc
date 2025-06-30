@@ -36,7 +36,10 @@ class FundType(_StrEnum):
 async def funds(type_: FundType | int | str, /) -> _DataFrame:
     """tsetmc.com > صندوق های سرمایه گذاری"""
     j = await _api(f'Fund/GetFunds/{type_}')
-    return _DataFrame(j['funds'])
+    df = _DataFrame(j['funds'])
+    # regNo is sometimes returned as float by the server
+    df['regNo'] = df['regNo'].astype(int)
+    return df
 
 
 class _Stat(_BaseModel):
