@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiohutils.tests import file
 from numpy import dtype
 
@@ -174,7 +176,8 @@ async def test_get_funds():
 @file('agas_details.json')
 async def test_fund_details():
     d = await fund_details('11341')
-    df = d.stats
+    df = d['stats']
+    assert type(d['recordDate']) is type(d['initiationDate']) is datetime
     assert [*df.dtypes.items()] == [
         (
             'navSub',

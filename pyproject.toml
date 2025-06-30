@@ -26,8 +26,8 @@ dependencies = [
     'lxml',
     'numpy',
     'pandas >= 2.1.0',
-    'pyarrow', # pd.options.future.infer_string = True
-    "pydantic>=2.11.7",
+    # pd.options.future.infer_string = True
+    'pyarrow',
 ]
 
 [project.license]

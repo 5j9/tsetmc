@@ -18,7 +18,6 @@ from pandas import (
     options as _o,
     read_csv as _read_csv,
 )
-from pydantic import BaseModel as _BaseModel
 
 _logger = _getLogger(__name__)
 _o.mode.copy_on_write = True
@@ -276,11 +275,6 @@ async def _api(path: str, *, fa=False):
     except JSONDecodeError:
         _logger.error(f'url={_API}{path}\n{content=}')
         raise
-
-
-async def _model[M: type[_BaseModel]](m: M, path: str, *, fa=False) -> M:
-    content = await _get(f'{_API}{path}', fa=fa)
-    return m.model_validate_json(content)
 
 
 def _numerize(

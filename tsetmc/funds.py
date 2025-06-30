@@ -1,14 +1,8 @@
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
-from typing import Annotated as _Annotated
 
 from pandas import (
     json_normalize as _json_normalize,
-)
-from pydantic import (
-    BaseModel as _BaseModel,
-    BeforeValidator as _BeforeValidator,
-    ConfigDict as _ConfigDict,
 )
 
 from tsetmc import (
@@ -16,7 +10,6 @@ from tsetmc import (
     FlowType as _FlowType,
     _api,
     _DataFrame,
-    _model,
 )
 
 
@@ -42,99 +35,26 @@ async def funds(type_: FundType | int | str, /) -> _DataFrame:
     return df
 
 
-class _Stat(_BaseModel):
-    recordDate: _datetime
-    navSub: int
-    netAsset: int
-    navStat: int
-    navRed: int
-
-
-def _make_stats_df(stats: list[_Stat]) -> _DataFrame:
-    if not stats:
-        return _DataFrame()  # Return empty DataFrame for empty list
-
-    df = _DataFrame(stats)
-    df['recordDate'] = df['recordDate'].astype('datetime64[ns]')
-    df.set_index('recordDate', inplace=True)
-    return df
-
-
-class FundDetails(_BaseModel):
-    model_config = _ConfigDict(arbitrary_types_allowed=True)
-    fundProfits: list
-    stats: _Annotated[_DataFrame, _BeforeValidator(_make_stats_df)]
-    regNo: int
-    fundType: int
-    fundSize: int
-    recordDate: _datetime
-    navRed: int
-    navSub: int
-    navStat: int
-    initiationDate: _datetime
-    netAsset: int
-    units: int
-    unitsSub: int
-    unitsRed: int
-    portfolioFiveBest: float
-    portfolioStock: float
-    portfolioBond: int
-    portfolioDeposit: float
-    portfolioOther: float
-    portfolioCash: float
-    custodian: str
-    custodianEN: None
-    guarantor: str
-    guarantorEN: None
-    manager: str
-    managerEN: None
-    investmentManager: str
-    investmentManagerEN: None
-    marketMaker: None
-    marketMakerEN: None
-    auditor: None
-    auditorEN: None
-    name: None
-    nameEN: None
-    webSite: str
-    webSiteEN: None
-    retInvNo: int
-    insInvNo: int
-    retInvPercent: int
-    insInvPercent: int
-    naturalPercent: int
-    legalPercent: int
-    guaranteedEarningRate: int
-    estimatedEarningRate: int
-    dividentIntervalPeriod: int
-    day1Return: float
-    day7Return: float
-    day30Return: float
-    day90Return: float
-    day180Return: float
-    day365Return: float
-    dayFirstReturn: float
-    mfName: str
-    fixIncome: int
-    mfNameEng: str
-
-
-class _FundDetails(_BaseModel):
-    fund: FundDetails
-
-
-async def fund_details(reg_no: str | int) -> FundDetails:
+async def fund_details(reg_no: str | int) -> dict:
     """reg_no (regNo) can be objtained using `tsetmc.funds.funds` function.
 
-    `FundDetails.stats` is a DataFrame with the following columns:
+    `'stats` values is a DataFrame with the following columns:
         recordDate: _datetime
         navSub: int
-        netAsset: int
+        netAsset: float
         navStat: int
         navRed: int
     recordDate is set as index.
     """
-    return (await _model(_FundDetails, f'Fund/GetFundInDetail/{reg_no}')).fund
+    j = await _api(f'Fund/GetFundInDetail/{reg_no}')
+    assert len(j) == 1
+    fund = j['fund']
+    df = fund['stats'] = _DataFrame(fund['stats'])
+    df['recordDate'] = df['recordDate'].astype('datetime64[ns]')
+    df.set_index('recordDate', inplace=True)
+    fund['recordDate'] = _datetime.fromisoformat(fund['recordDate'])
+    fund['initiationDate'] = _datetime.fromisoformat(fund['initiationDate'])
+    return fund
 
 
 async def commodity_etfs(
