@@ -4,7 +4,7 @@ from numpy import dtype
 from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
 
-from tests import assert_market_state
+from tests import STR, assert_market_state
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
     _PRICE_DTYPES_25,
@@ -327,11 +327,11 @@ async def test_get_market_watch():
     assert [*df.dtypes.items()] == [
         (
             'lva',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'lvc',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'eps',
@@ -403,11 +403,11 @@ async def test_get_market_watch():
         ),
         (
             'csv',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'insID',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'pMax',
@@ -431,7 +431,7 @@ async def test_get_market_watch():
         ),
         (
             'insCode',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'dEven',
@@ -478,7 +478,7 @@ async def test_get_client_type_all():
     assert [*df.dtypes.items()] == [
         (
             'insCode',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'buy_I_Volume',
@@ -530,7 +530,7 @@ async def test_get_inst_value_all_inst_all_param():
     assert [*df.dtypes.items()] == [
         (
             'insCode',
-            'string[pyarrow_numpy]',
+            STR,
         ),
         (
             'dataType',
@@ -542,6 +542,6 @@ async def test_get_inst_value_all_inst_all_param():
         ),
         (
             'dataValue',
-            'string[pyarrow_numpy]',
+            STR,
         ),
     ]

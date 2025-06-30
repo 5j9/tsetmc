@@ -9,7 +9,7 @@ from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex, Int64Dtype, Timestamp
 from pytest import raises, warns
 
-from tests import assert_market_state
+from tests import STR, assert_market_state
 from tsetmc import InstrumentInfo
 
 # noinspection PyProtectedMember
@@ -360,10 +360,10 @@ async def test_holders_holder():
     dtypes = holders.dtypes.to_dict()
     assert dtypes.pop('change') in (Int64Dtype(), 'int64')
     assert dtypes == {
-        'holder': 'string[pyarrow_numpy]',
+        'holder': STR,
         'shares/units': dtype('int64'),
         '%': dtype('float64'),
-        'id_cisin': 'string[pyarrow_numpy]',
+        'id_cisin': STR,
     }
 
     id_cisin = holders.iat[-1, -1]
