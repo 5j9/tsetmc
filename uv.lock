@@ -759,22 +759,23 @@ dependencies = [
     { name = "pyarrow" },
 ]
 
-[package.optional-dependencies]
-test = [
+[package.dev-dependencies]
+dev = [
     { name = "aiohutils", extra = ["test"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "aiohutils", specifier = ">=0.20.0" },
-    { name = "aiohutils", extras = ["test"], marker = "extra == 'test'", specifier = ">=0.21.2" },
     { name = "jdatetime" },
     { name = "lxml" },
     { name = "numpy" },
     { name = "pandas", specifier = ">=2.1.0" },
     { name = "pyarrow" },
 ]
-provides-extras = ["test"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "aiohutils", extras = ["test"], specifier = ">=0.22.1" }]
 
 [[package]]
 name = "tzdata"

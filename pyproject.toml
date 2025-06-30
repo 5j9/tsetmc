@@ -28,10 +28,6 @@ dependencies = [
     'pandas >= 2.1.0',
     'pyarrow',  # pd.options.future.infer_string = True
 ]
-[project.optional-dependencies]
-test = [
-    'aiohutils[test] >= 0.21.2',
-]
 
 [project.license]
 text = 'GNU General Public License v3 (GPLv3)'
@@ -81,3 +77,8 @@ reportInvalidStringEscapeSequence = false
 reportConstantRedefinition = 'error'
 reportTypeCommentUsage = 'warning'
 reportUnnecessaryComparison = 'warning'
+
+[dependency-groups]
+dev = [
+    "aiohutils[test]>=0.22.1",
+]
