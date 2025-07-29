@@ -195,7 +195,7 @@ async def market_watch_plus(
                     lst,
                     columns=_PRICE_DTYPES_25
                     if twenty_five_cols is True
-                    else _PRICE_DTYPES_23,
+                    else _PRICE_DTYPES_23,  # type: ignore
                     copy=False,
                 )
             except ValueError as e:
