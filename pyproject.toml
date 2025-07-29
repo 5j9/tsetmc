@@ -4,7 +4,7 @@ build-backend = 'uv_build'
 
 [project]
 name = 'tsetmc'
-version = "0.70.1"
+version = "0.70.2.dev1"
 authors = [
     { name = '5j9', email = '5j9@users.noreply.github.com' },
 ]
