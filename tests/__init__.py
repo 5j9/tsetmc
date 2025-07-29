@@ -17,7 +17,8 @@ def assert_market_state(market_state: MarketState):
     for k in ('fb_tno', 'derivatives_tno'):
         assert type(market_state.pop(k)) is int
     # tse_value is optional
-    assert type(market_state.pop('tse_value', 0.0)) is float
+    tse_value = market_state.pop('tse_value', 0.0)
+    assert type(tse_value) is float, tse_value
     assert market_state.keys() == {
         'tse_index',
         'tse_index_change',

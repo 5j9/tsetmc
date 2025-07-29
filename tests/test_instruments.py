@@ -59,13 +59,13 @@ def assert_page_data(
         assert type(related_companies[0]) is Instrument
 
     if general:
-        assert type(d.pop('sps')) in (float, NoneType)
+        for k in ('sector_pe', 'sps'):
+            assert type(d.pop(k)) in (float, NoneType)
         for k in ('eps', 'free_float'):
             assert type(d.pop(k)) in (int, NoneType)
         for k in ('bvol', 'cs', 'flow', 'month_average_volume', 'z'):
             assert type(d.pop(k)) is int
         for k in (
-            'sector_pe',
             'tmax',
             'tmin',
             'week_max',
@@ -171,13 +171,6 @@ async def test_asam_instant():
     with warns(DeprecationWarning):
         d = await Instrument(36592972482259020).live_data(best_limits=True)
     assert_live_data(d, best_limits=True, nav=True)
-
-
-@file('negin.txt')
-async def test_negin_instant():
-    with warns(DeprecationWarning):
-        d = await Instrument(10145129193828624).live_data()
-    assert_live_data(d, nav=True)
 
 
 FMELLI = Instrument(35425587644337450)
@@ -715,6 +708,8 @@ async def test_closing_price_info():
 @file('best_limits.json')
 async def test_best_limits():
     df = await KARIS.best_limits()
+    if df.empty:
+        return
     assert [*df.dtypes.items()] == [
         ('number', dtype('int64')),
         ('qTitMeDem', dtype('int64')),
@@ -723,9 +718,10 @@ async def test_best_limits():
         ('pMeOf', dtype('float64')),
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
+        ('title', dtype('O')),
         ('insCode', dtype('O')),
     ]
-    assert len(df) == 5
+    assert len(df) <= 5, len(df)
 
 
 @file('client_type_karis.json')

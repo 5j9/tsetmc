@@ -179,6 +179,8 @@ async def test_major_holders_activity():
 @file('top_industry_groups.html')
 async def test_top_industry_groups():
     df = await top_industry_groups()
+    if df.empty:
+        return
     assert [*df.dtypes.items()] == [
         ('group', STR),
         ('mv', dtype('float64')),

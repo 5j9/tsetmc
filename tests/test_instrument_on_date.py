@@ -54,6 +54,7 @@ async def test_intraday_best_limits():
         ('pMeOf', dtype('float64')),
         ('zOrdMeOf', dtype('int64')),
         ('qTitMeOf', dtype('int64')),
+        ('title', dtype('O')),
         ('insCode', dtype('O')),
     ]
 
