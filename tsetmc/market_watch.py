@@ -116,7 +116,7 @@ async def market_watch_init(
             _StringIO(states),
             names=_PRICE_DTYPES_25,  # type: ignore
             index_col='ins_code',
-            dtype=_PRICE_DTYPES_25,
+            dtype=_PRICE_DTYPES_25,  # type: ignore
         )
     if best_limits:
         result['best_limits'] = bl = _csv2df(
