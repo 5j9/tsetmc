@@ -224,6 +224,25 @@ async def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
+@file('MarketWatchPlus_2025-07-09.txt')
+async def test_market_watch_plus_empty_prices_error():
+    mwp = await market_watch_plus(
+        0,
+        0,
+        messages=True,
+        market_state=True,
+        best_limits_prepare_join=False,
+    )
+    new_prices = mwp['new_prices']
+    assert new_prices.empty
+    i = new_prices.index
+    assert i.name == 'ins_code'
+    assert i.dtype == string
+    best_limits = mwp['best_limits']
+    assert_bl_dtypes(best_limits, False)
+    assert 'messages' in mwp
+
+
 @file('MarketWatchPlus_h64130_r9540883525.txt')
 async def test_market_watch_plus_update():
     mwp = await market_watch_plus(

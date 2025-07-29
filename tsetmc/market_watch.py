@@ -14,6 +14,7 @@ from aiohttp import (
 from aiohutils.pd import html_to_df as _html_to_df
 from numpy import nan as _nan
 from pandas import (
+    Index as _Index,
     concat as _concat,
     to_numeric as _to_numeric,
 )
@@ -145,6 +146,59 @@ class MarketWatchPlus(_TypedDict):
     refid: int
 
 
+def _parse_inst_prices_str(
+    inst_prices_str: str, new_prices: bool, price_updates: bool, result: dict
+):
+    if not inst_prices_str:
+        index = _Index([], dtype=str, name='ins_code')
+        if new_prices:
+            result['new_prices'] = _DataFrame(
+                columns=_PRICE_DTYPES_23,  # type: ignore
+                index=index,
+            )
+        if price_updates:
+            result['price_updates'] = _DataFrame(
+                columns=_PRICE_UPDATE_COLUMNS,  # type: ignore
+                index=index,
+            )
+        return
+
+    inst_prices = [ip.split(',') for ip in inst_prices_str.split(';')]
+    if new_prices:
+        lst = [ip for ip in inst_prices if len(ip) != 10]
+        twenty_five_cols = not lst or len(lst[0]) == 25
+        try:
+            # https://github.com/pandas-dev/pandas/issues/57798
+            df = _DataFrame(
+                lst,
+                columns=_PRICE_DTYPES_25
+                if twenty_five_cols is True
+                else _PRICE_DTYPES_23,  # type: ignore
+                copy=False,
+            )
+        except ValueError as e:
+            _save_last_content(f'{e}')
+            raise e
+        df['eps'] = df['eps'].replace('', _nan)
+        if twenty_five_cols is True:
+            df['predtran'] = df['predtran'].replace('', _nan)
+            df['buyop'] = df['buyop'].replace('', _nan)
+            df = df.astype(_PRICE_DTYPES_25)
+        else:
+            df = df.astype(_PRICE_DTYPES_23)
+        df.set_index('ins_code', inplace=True)
+        result['new_prices'] = df
+    if price_updates:
+        lst = [ip for ip in inst_prices if len(ip) == 10]
+        # noinspection PyTypeChecker
+        # https://github.com/pandas-dev/pandas/issues/57798
+        df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)  # type: ignore
+        df = df.astype(_PRICE_UPDATE_COLUMNS)
+        df.ins_code = df.ins_code.astype('string')
+        df.set_index('ins_code', inplace=True)
+        result['price_updates'] = df
+
+
 async def market_watch_plus(
     heven: int,
     refid: int,
@@ -166,7 +220,7 @@ async def market_watch_plus(
         (
             handle_msg,
             update_fast_view,
-            inst_price,
+            inst_prices_str,
             best_limit,
             str_refid,
         ) = text.split('@')
@@ -184,41 +238,9 @@ async def market_watch_plus(
         if update_fast_view != '':
             result['market_state'] = _parse_market_state(update_fast_view)
     if new_prices or price_updates:
-        inst_prices = [ip.split(',') for ip in inst_price.split(';')]
-        if new_prices:
-            lst = [ip for ip in inst_prices if len(ip) != 10]
-            twenty_five_cols = not lst or len(lst[0]) == 25
-            try:
-                # noinspection PyTypeChecker
-                # https://github.com/pandas-dev/pandas/issues/57798
-                df = _DataFrame(
-                    lst,
-                    columns=_PRICE_DTYPES_25
-                    if twenty_five_cols is True
-                    else _PRICE_DTYPES_23,  # type: ignore
-                    copy=False,
-                )
-            except ValueError as e:
-                _save_last_content(f'{e}')
-                raise e
-            df['eps'] = df['eps'].replace('', _nan)
-            if twenty_five_cols is True:
-                df['predtran'] = df['predtran'].replace('', _nan)
-                df['buyop'] = df['buyop'].replace('', _nan)
-                df = df.astype(_PRICE_DTYPES_25)
-            else:
-                df = df.astype(_PRICE_DTYPES_23)
-            df.set_index('ins_code', inplace=True)
-            result['new_prices'] = df
-        if price_updates:
-            lst = [ip for ip in inst_prices if len(ip) == 10]
-            # noinspection PyTypeChecker
-            # https://github.com/pandas-dev/pandas/issues/57798
-            df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)
-            df = df.astype(_PRICE_UPDATE_COLUMNS)
-            df.ins_code = df.ins_code.astype('string')
-            df.set_index('ins_code', inplace=True)
-            result['price_updates'] = df
+        _parse_inst_prices_str(
+            inst_prices_str, new_prices, price_updates, result
+        )
     if best_limits:
         bl = _csv2df(
             _StringIO(best_limit),

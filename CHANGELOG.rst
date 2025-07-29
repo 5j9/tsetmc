@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Fix redirect warning for http://old.tsetmc.com/ redirecting to https://old.tsetmc.com/.
+* Fixed a bug in ``market_watch_plus`` where it could not handle empty new prices correctly.
 
 v0.70.0 (2025-06-30)
 --------------------
