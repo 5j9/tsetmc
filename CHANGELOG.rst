@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Fix redirect warning for http://old.tsetmc.com/ redirecting to https://old.tsetmc.com/.
 
 v0.70.0 (2025-06-30)
 --------------------
