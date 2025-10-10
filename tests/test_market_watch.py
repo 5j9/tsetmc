@@ -3,6 +3,7 @@ from jdatetime import datetime as jdatetime
 from numpy import dtype
 from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
+from pytest import mark
 
 from tests import STR, assert_market_state
 from tsetmc.market_watch import (
@@ -224,6 +225,7 @@ async def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
+@mark.skipif(not OFFLINE_MODE, reason='requires specific recorded input')
 @file('MarketWatchPlus_2025-07-09.txt')
 async def test_market_watch_plus_empty_prices_error():
     mwp = await market_watch_plus(
@@ -296,10 +298,9 @@ async def test_status_changes():
     assert type(df.iat[0, 3]) is jdatetime
 
 
+@mark.skipif(not OFFLINE_MODE, reason='requires specific recorded input')
 @file('empty_eps_in_mwp.txt')
 async def test_mwp_with_empty_eps_best_limits_prepare_join():
-    if not OFFLINE_MODE:
-        return
     # used to raise error due to COW setting
     mwp = await market_watch_plus(0, 0, best_limits_prepare_join=False)
     assert_bl_dtypes(mwp['best_limits'], unstacked=False)
