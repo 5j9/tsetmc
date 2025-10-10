@@ -366,7 +366,7 @@ class Instrument:
             return getattr(self, f'_{col}')
         else:
             setattr(self, f'_{col}', v)
-            return v
+            return v  # type: ignore
 
     @property
     async def cisin(self) -> str:
@@ -1283,7 +1283,8 @@ def _parse_ombud_messages(text) -> _DataFrame:
     )
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
         df['date'] = [
-            _jstrptime(d, format='%Y/%m/%d %H:%M') for d in ('14' + df['date'])
+            _jstrptime(d, format='%Y/%m/%d %H:%M')
+            for d in ('14' + df['date'])  # type: ignore
         ]
     else:
         df['date'] = df['date'].astype(object)
