@@ -1,4 +1,4 @@
-from aiohutils.tests import assert_dict_type, file
+from aiohutils.tests import file, validate_dict
 from numpy import dtype
 from pytest import warns
 
@@ -193,7 +193,7 @@ async def test_top_industry_groups():
 @file('market_overview.json')
 async def test_market_overview():
     d = await market_overview()
-    assert_dict_type(d, MarketOverview)
+    validate_dict(d, MarketOverview)
 
 
 MSG_DTYPES = [

@@ -1,4 +1,4 @@
-from aiohutils.tests import assert_dict_type, file
+from aiohutils.tests import file, validate_dict
 from numpy import dtype
 
 from tests import STR
@@ -33,7 +33,7 @@ OVERALL = Index('32097828799138957')
 @file('index_info.json')
 async def test_info():
     info = await OVERALL.info()
-    assert_dict_type(info, InstrumentInfo)
+    validate_dict(info, InstrumentInfo)
 
 
 @file('index_last_day_history.json')

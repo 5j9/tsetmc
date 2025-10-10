@@ -1,4 +1,4 @@
-from aiohutils.tests import assert_dict_type, file
+from aiohutils.tests import file, validate_dict as validate_dict
 from numpy import dtype
 from pytest import warns
 
@@ -103,7 +103,7 @@ async def test_historic_data():
 @file('faraz_GetClosingPriceDaily_20220222.json')
 async def test_daily_closing_price():
     d = await FARAZ_ON_DATE.closing_price()
-    assert_dict_type(d, ClosingPrice)
+    validate_dict(d, ClosingPrice)
 
 
 @file('faraz_GetInstrumentState_20220222.json')
@@ -142,7 +142,7 @@ async def test_intraday_holders():
 @file('ondate_client_type.json')
 async def test_client_type():
     d = await FARAZ_ON_DATE.client_type()
-    assert_dict_type(d, ClientTypeOnDate)
+    validate_dict(d, ClientTypeOnDate)
     with warns():
         d2 = await FARAZ_ON_DATE.client_types()
     assert d2 == d
