@@ -613,7 +613,7 @@ class Instrument:
                 _,
                 _,
                 _,
-                group_info,
+                _,  # group info
                 _,
                 _,
             ) = text.split(';')

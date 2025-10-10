@@ -27,7 +27,7 @@ async def instrument_filter_by_date() -> dict:
     text = await _static_content('InstrumentFilterByDate')
     html = _html(text)
 
-    ul0, ul1, ul2 = html.xpath('//td/ul')
+    ul0, ul1, _ = html.xpath('//td/ul')
 
     flow = {
         int(k): v for k, v in [i.text.split(' : ') for i in ul0.xpath('.//li')]
@@ -82,7 +82,7 @@ async def instrument() -> dict:
 
     t0 = html.xpath('//table[1]')[0]
     assert t0 is not None
-    t1, t2, t3 = t0.xpath('.//table')
+    t1, _, t3 = t0.xpath('.//table')
 
     flow = {k: v for k, v in [i.text.split(' : ') for i in t1.xpath('.//li')]}
 
