@@ -1,3 +1,4 @@
+from datetime import datetime as _datetime
 from typing import TypedDict as _TypedDict
 from warnings import warn as _warn
 
@@ -5,7 +6,6 @@ from aiohutils.pd import html_to_df as _html_to_df
 from lxml.html import fromstring as _html
 from pandas import (
     NA as _NA,
-    Timestamp as _Timestamp,
     concat as _concat,
     json_normalize as _json_normalize,
 )
@@ -143,7 +143,7 @@ class MarketOverview(_TypedDict):
     marketActivityHEven: int
     marketActivityQTotCap: float
     marketActivityQTotTran: float
-    marketActivityTimestamp: _Timestamp
+    marketActivityTimestamp: _datetime
     marketActivityZTotTran: int
     marketState: str
     marketStateTitle: str
@@ -155,9 +155,10 @@ async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
     """tsetmc.com > در یک نگاه"""
     j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
-    overview['marketActivityTimestamp'] = _Timestamp(
+    overview['marketActivityTimestamp'] = _datetime.strptime(
         f'{overview["marketActivityDEven"]}'
-        f'{overview["marketActivityHEven"]:>06}'
+        f'{overview["marketActivityHEven"]:>06}',
+        '%Y%m%d%H%M%S',
     )
     return overview
 
