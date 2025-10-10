@@ -210,6 +210,8 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
 There are many other functions and methods that are not covered here. Explore the codebase to learn more.
 
+To keep the offline dataset up-to-date, run the `tsetmc.dataset.update()` function periodically (e.g., daily). This dataset acts as a cache for basic information about common instruments.
+
 If you are interested in other information available on tsetmc.com that this library has no API for, please `open an issue`_ for them.
 
 
