@@ -4,8 +4,6 @@
 
 An ``async`` Python library to fetch data from https://tsetmc.com/.
 
-Note: The API is provisional and may change rapidly without deprecation.
-
 Installation
 ------------
 Requires Python 3.13 or later.
