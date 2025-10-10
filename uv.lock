@@ -917,7 +917,7 @@ wheels = [
 
 [[package]]
 name = "tsetmc"
-version = "0.70.3.dev1"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohutils" },

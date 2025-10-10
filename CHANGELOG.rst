@@ -1,5 +1,5 @@
-Unreleased
-----------
+v1.0.0 (2025-10-10)
+-------------------
 * Return a datetime object instead of Timestamp in `general.market_overview`.
 * Require Python 3.13+
 * Updated dataset
