@@ -17,7 +17,7 @@ classifiers = [
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Programming Language :: Python :: 3.12',
 ]
-requires-python = '>=3.12'
+requires-python = '>=3.13'
 dependencies = [
     'aiohutils >= 0.20.0',
     'jdatetime',

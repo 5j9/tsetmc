@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.12', '3.13']
+        python-version: ['3.13', '3.14']
       fail-fast: false  # Continue testing other versions even if one fails
 
     steps:
