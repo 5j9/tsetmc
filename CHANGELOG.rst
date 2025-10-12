@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v2.0.0 (2025-10-12)
 -------------------
 * Functions/Methods will never return a ``jdatetime.datetime`` object anymore. Instead datetime is now always returned as ``datetime.datetime`` (when returned individually) or ``pandas.Timestamp``` (in DataFrames).

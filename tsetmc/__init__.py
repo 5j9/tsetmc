@@ -1,4 +1,4 @@
-__version__ = '2.0.0'
+__version__ = '2.0.1.dev1'
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
 from functools import partial as _partial
