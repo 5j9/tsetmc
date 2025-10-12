@@ -1,4 +1,5 @@
 __version__ = '1.0.1.dev1'
+from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
 from functools import partial as _partial
 from json import JSONDecodeError, loads
@@ -31,11 +32,12 @@ _INDEX_CHANGE_MATCH = _rc(rf'<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?').match
 _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
 
-_jstrptime = _jdatetime.strptime
+def _jgstrptime(date_string: str, format: str):
+    return _jdatetime.strptime(date_string, format).togregorian()
 
 
 class MarketState(_TypedDict, total=False):
-    datetime: _jdatetime
+    datetime: _datetime
     tse_status: str
     tse_index: float
     tse_index_change: float | None
@@ -184,7 +186,7 @@ def _parse_market_state(s: str) -> MarketState:
             int(timestamp_match[4]),
             int(timestamp_match[5]),
             int(timestamp_match[6]),
-        ),
+        ).togregorian(),
         'tse_status': tse_status,
         'tse_index': float(tse_index),
         'tse_index_change': tse_index_change,

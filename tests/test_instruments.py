@@ -4,9 +4,8 @@ from typing import cast
 from unittest.mock import patch
 
 from aiohutils.tests import file, files, validate_dict
-from jdatetime import datetime as jdatetime
 from numpy import dtype, int64
-from pandas import DataFrame, DatetimeIndex, Int64Dtype, Timestamp
+from pandas import DataFrame, DatetimeIndex, Int64Dtype
 from pytest import raises, warns
 
 from tests import STR, assert_market_state
@@ -137,10 +136,10 @@ def assert_live_data(
             assert_market_state(market_state)
 
     if nav:
-        assert type(d.pop('nav_datetime')) in (jdatetime, str)
+        assert type(d.pop('nav_datetime')) in (datetime, str)
         assert type(d.pop('nav')) is int
 
-    assert type(d.pop('timestamp')) is Timestamp
+    assert type(d.pop('timestamp')) is datetime
     for k in ('time', 'status'):
         assert type(d.pop(k)) is str
     assert [*d.keys()] == [
@@ -437,11 +436,10 @@ async def test_adjustments():
         df = await FMELLI.adjustments()
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
-        ('date', dtype('O')),
+        ('date', dtype('<M8[ns]')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
     ]
-    assert type(df.iat[0, 0]) is jdatetime
 
 
 @file('price_adjustment_api.json')
@@ -464,7 +462,7 @@ async def test_price_adjustments():
     assert [*df.dtypes.items()] == [
         ('l18', string),
         ('l30', string),
-        ('date', dtype('O')),
+        ('date', dtype('<M8[ns]')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
     ]
@@ -579,10 +577,9 @@ async def test_ombud_messages():
         df = await Instrument(1301069819790264).ombud_messages()
     assert [*df.dtypes.items()] == [
         ('header', string),
-        ('date', dtype('O')),
+        ('date', dtype('<M8[ns]')),
         ('description', string),
     ]
-    assert type(df.iat[0, 1]) is jdatetime
 
 
 @file('shetab_messages.json')
@@ -595,17 +592,14 @@ async def test_messages():
 async def test_dps_history():
     df = await FMELLI.dps_history()
     assert [*df.dtypes.items()] == [
-        ('publish_date', dtype('O')),
-        ('meeting_date', dtype('O')),
-        ('fiscal_year', dtype('O')),
+        ('publish_date', dtype('<M8[ns]')),
+        ('meeting_date', dtype('<M8[ns]')),
+        ('fiscal_year', dtype('<M8[ns]')),
         ('profit_or_loss_after_tax', dtype('float64')),
         ('distributable_profit', dtype('float64')),
         ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
         ('cash_earnings_per_share', dtype('float64')),
     ]
-    assert type(df.iat[0, 0]) is jdatetime
-    assert type(df.iat[0, 1]) is jdatetime
-    assert type(df.iat[0, 2]) is jdatetime
 
 
 def test_hash():

@@ -26,7 +26,7 @@ from tsetmc import (
     _DataFrame,
     _get_data,
     _get_par_tree,
-    _jstrptime,
+    _jgstrptime,
     _logger,
     _parse_market_state,
     _save_last_content,
@@ -355,8 +355,8 @@ async def status_changes(top: int | str) -> _DataFrame:
     text = await _get_par_tree(f'15131L&top={top}')
     df = _html_to_df(text)
     df['date'] = [
-        _jstrptime(i, format='%Y/%m/%d %H:%M:%S')
-        for i in (df['تاریخ'] + ' ' + df['زمان'])
+        _jgstrptime(i, format='%Y/%m/%d %H:%M:%S')
+        for i in (df['تاریخ'] + ' ' + df['زمان'])  # type: ignore
     ]
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df

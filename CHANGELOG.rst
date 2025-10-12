@@ -1,6 +1,14 @@
 Unreleased
 ----------
-* 
+* Functions/Methods will never return a ``jdatetime.datetime`` object anymore. Instead datetime is now always returned as ``datetime.datetime`` (when returned individually) or ``pandas.Timestamp``` (in DataFrames).
+    This change affects the following:
+      * ``MarketState```
+      * ``instruments.price_adjustments```
+      * ``Instrument.adjustments```
+      * ``Instrument.dps_history```
+      * ``Instrument.live_data```
+      * ``market_watch.status_changes```
+      * ``market_watch.ombud_messages```
 
 v1.0.0 (2025-10-10)
 -------------------

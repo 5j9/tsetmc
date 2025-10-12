@@ -1,15 +1,15 @@
 from ast import literal_eval as _literal_eval
+from datetime import datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
 from pathlib import Path
-from re import Match as _Match, findall as _findall, fullmatch as _fullmatch
+from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
 from warnings import warn as _warn
 
 from aiohutils.pd import html_to_df as _html_to_df
 from pandas import (
-    Timestamp as _Ts,
     read_csv as _read_csv,
     to_datetime as _to_datetime,
 )
@@ -26,15 +26,14 @@ from tsetmc import (
     _get,
     _get_data,
     _get_par_tree,
-    _jdatetime,
-    _jstrptime,
+    _jgstrptime,
     _numerize,
     _parse_market_state,
     _rc,
     _TypedDict,
 )
 
-_j_ymd_parse = _partial(_jstrptime, format='%Y/%m/%d')
+_jg_ymd_parse = _partial(_jgstrptime, format='%Y/%m/%d')
 
 
 _FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}
@@ -141,7 +140,7 @@ class LiveData(_TypedDict, total=False):
     best_limits: _DataFrame
     market_state: MarketState
     nav: int
-    nav_datatime: _jdatetime
+    nav_datatime: _datetime
     pc: int
     pf: int
     pl: int
@@ -149,7 +148,7 @@ class LiveData(_TypedDict, total=False):
     pmin: int
     py: int
     status: str
-    timestamp: _Ts
+    timestamp: _datetime
     tno: int
     tval: int
     tvol: int
@@ -923,7 +922,7 @@ class Instrument:
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _html_to_df(content.decode())
         df.columns = ('date', 'adj_pc', 'pc')
-        df['date'] = [_j_ymd_parse(d) for d in df['date']]
+        df['date'] = [_jg_ymd_parse(d) for d in df['date']]
         return df
 
     async def price_adjustments(self) -> _DataFrame:
@@ -972,7 +971,7 @@ class Instrument:
         ]
         df.columns = cols
         for col in cols[:3]:
-            df[col] = [_jstrptime(d, '%Y/%m/%d') for d in df[col]]
+            df[col] = [_jgstrptime(d, '%Y/%m/%d') for d in df[col]]
         return df
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
@@ -1121,7 +1120,7 @@ async def price_adjustments(flow: _FlowType) -> _DataFrame:
     text = await _get_par_tree(f'151319&Flow={flow}')
     df = _html_to_df(text)
     df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
-    df['date'] = [_j_ymd_parse(d) for d in df['date']]
+    df['date'] = [_jg_ymd_parse(d) for d in df['date']]
     return df
 
 
@@ -1246,7 +1245,9 @@ def _parse_price_info(price_info):
     result = {
         'time': time,
         'status': status,
-        'timestamp': _Ts(f'{info_datetime_date}{last_info_time:>06}'),
+        'timestamp': _datetime.strptime(
+            f'{info_datetime_date}{last_info_time:>06}', '%Y%m%d%H%M%S'
+        ),
         'pl': int(pl),
         'pc': int(pc),
         'pf': int(pf),
@@ -1261,9 +1262,7 @@ def _parse_price_info(price_info):
     if nav:
         result['nav'] = int(nav)
         try:
-            _jdatetime(1400, 12, 1, 16, 30, 0)
-            _fullmatch(r'(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)', nav_datetime)
-            result['nav_datetime'] = _jstrptime(
+            result['nav_datetime'] = _jgstrptime(
                 nav_datetime, '%Y/%m/%d %H:%M:%S'
             )
         except ValueError:  # could be invalid day of the month
@@ -1283,7 +1282,7 @@ def _parse_ombud_messages(text) -> _DataFrame:
     )
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
         df['date'] = [
-            _jstrptime(d, format='%Y/%m/%d %H:%M')
+            _jgstrptime(d, format='%Y/%m/%d %H:%M')
             for d in ('14' + df['date'])  # type: ignore
         ]
     else:

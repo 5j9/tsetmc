@@ -293,9 +293,8 @@ async def test_status_changes():
         ('نماد', string),
         ('نام', string),
         ('وضعیت جدید', string),
-        ('date', dtype('O')),
+        ('date', dtype('<M8[ns]')),
     )
-    assert type(df.iat[0, 3]) is jdatetime
 
 
 @mark.skipif(not OFFLINE_MODE, reason='requires specific recorded input')
