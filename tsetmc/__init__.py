@@ -93,6 +93,8 @@ class InstrumentInfo(_TypedDict):
     contractSize: int
     nav: float
     underSupervision: int
+    etfIssuedUnit: float
+    etfUnitDeven: int
     cValMne: None
     lVal18: str
     cSocCSAC: None
