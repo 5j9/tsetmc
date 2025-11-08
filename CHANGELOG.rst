@@ -1,5 +1,5 @@
-Unreleased
-----------
+v2.0.1 (2025-11-08)
+-------------------
 * Updated `dataset.csv`.
 * Updated typehint: Add the new `etfIssuedUnit` and `etfUnitDeven` fields to `InstrumentInfo`.
 
