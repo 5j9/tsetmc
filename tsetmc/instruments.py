@@ -418,7 +418,7 @@ class Instrument:
         self._isin = d['instrumentID']
         self._l18 = d['lVal18AFC']
         self._l30 = d['lVal30']
-        return j['instrumentInfo']
+        return d
 
     async def trades(self) -> _DataFrame:
         j = await _api(f'Trade/GetTrade/{self.code}')
