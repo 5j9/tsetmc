@@ -1,9 +1,9 @@
-from aiohutils.tests import OFFLINE_MODE, file
 from jdatetime import datetime as jdatetime
 from numpy import dtype
 from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
-from pytest import mark
+from pytest import skip
+from pytest_aiohutils import file
 
 from tests import STR, assert_market_state
 from tsetmc.market_watch import (
@@ -225,9 +225,10 @@ async def test_market_watch_plus_new():
     assert 'market_state' not in mwp
 
 
-@mark.skipif(not OFFLINE_MODE, reason='requires specific recorded input')
 @file('MarketWatchPlus_2025-07-09.txt')
-async def test_market_watch_plus_empty_prices_error():
+async def test_market_watch_plus_empty_prices_error(test_config):
+    if not test_config['OFFLINE_MODE']:
+        raise skip('this test requires specific recorded input')
     mwp = await market_watch_plus(
         0,
         0,
@@ -297,9 +298,10 @@ async def test_status_changes():
     )
 
 
-@mark.skipif(not OFFLINE_MODE, reason='requires specific recorded input')
 @file('empty_eps_in_mwp.txt')
-async def test_mwp_with_empty_eps_best_limits_prepare_join():
+async def test_mwp_with_empty_eps_best_limits_prepare_join(test_config):
+    if not test_config['OFFLINE_MODE']:
+        raise skip('this test requires specific recorded input')
     # used to raise error due to COW setting
     mwp = await market_watch_plus(0, 0, best_limits_prepare_join=False)
     assert_bl_dtypes(mwp['best_limits'], unstacked=False)
@@ -309,9 +311,9 @@ async def test_mwp_with_empty_eps_best_limits_prepare_join():
 
 
 @file('mwp_23_cols.txt')
-async def test_23_cols():
-    if not OFFLINE_MODE:
-        return
+async def test_23_cols(test_config):
+    if not test_config['OFFLINE_MODE']:
+        raise skip('this test requires specific recorded input')
     mwp = await market_watch_plus(0, 0)
     assert len(mwp['new_prices'].columns) == 22  # ins_code has become index
 

@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from aiohutils.tests import file
+from pytest_aiohutils import file
 
 from tsetmc.dataset import add_instrument
 from tsetmc.instruments import Instrument

@@ -1,5 +1,5 @@
-from aiohutils.tests import file, validate_dict
 from numpy import dtype
+from pytest_aiohutils import file, validate_dict
 
 from tests import STR
 from tsetmc import InstrumentInfo

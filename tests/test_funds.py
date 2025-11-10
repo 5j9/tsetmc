@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from aiohutils.tests import file
 from numpy import dtype
+from pytest_aiohutils import file
 
 from tests import STR
 from tsetmc.funds import (

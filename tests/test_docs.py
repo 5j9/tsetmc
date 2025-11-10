@@ -1,4 +1,4 @@
-from aiohutils.tests import file
+from pytest_aiohutils import file
 
 from tests import STR
 from tsetmc.docs import (

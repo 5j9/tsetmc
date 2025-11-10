@@ -1,6 +1,6 @@
-from aiohutils.tests import file, validate_dict as validate_dict
 from numpy import dtype
 from pytest import warns
+from pytest_aiohutils import file, validate_dict
 
 from tsetmc.instruments import ClientTypeOnDate, ClosingPrice, Instrument
 

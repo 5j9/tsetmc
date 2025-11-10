@@ -1,11 +1,8 @@
 from datetime import datetime
 from typing import Any
 
-from aiohutils.tests import init_tests
-
 from tsetmc import MarketState
 
-init_tests()
 STR = 'str'
 
 

@@ -3,10 +3,10 @@ from types import NoneType
 from typing import cast
 from unittest.mock import patch
 
-from aiohutils.tests import file, files, validate_dict
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex, Int64Dtype
 from pytest import raises, warns
+from pytest_aiohutils import file, files, validate_dict
 
 from tests import STR, assert_market_state
 from tsetmc import InstrumentInfo

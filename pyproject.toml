@@ -19,7 +19,7 @@ classifiers = [
 ]
 requires-python = '>=3.13'
 dependencies = [
-    'aiohutils >= 0.20.0',
+    'aiohutils >= 0.22.4',
     'jdatetime',
     'lxml',
     'numpy',
@@ -81,5 +81,5 @@ module-name = "tsetmc"
 module-root = ""
 [dependency-groups]
 dev = [
-    "aiohutils[test]>=0.22.1",
+    "pytest-aiohutils>=0.22.5",
 ]
