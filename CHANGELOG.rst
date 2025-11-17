@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Fixed market_watch to handle the new csv column (``cgrvalcot``).
+* Updated ``dataset.csv``.
 
 v2.0.1 (2025-11-08)
 -------------------
