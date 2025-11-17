@@ -64,7 +64,11 @@ _PRICE_DTYPES_23 = {
     # 67-701 http://redirectcdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'yval': 'string',
 }
-_PRICE_DTYPES_25 = _PRICE_DTYPES_23 | {'predtran': 'float64', 'buyop': 'Int64'}
+_PRICE_DTYPES_26 = _PRICE_DTYPES_23 | {
+    'predtran': 'float64',
+    'buyop': 'Int64',
+    'cgrvalcot': 'string',
+}
 _PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
 
 
@@ -114,9 +118,9 @@ async def market_watch_init(
     if prices:
         result['prices'] = price_df = _csv2df(
             _StringIO(states),
-            names=_PRICE_DTYPES_25,  # type: ignore
+            names=_PRICE_DTYPES_26,  # type: ignore
             index_col='ins_code',
-            dtype=_PRICE_DTYPES_25,  # type: ignore
+            dtype=_PRICE_DTYPES_26,  # type: ignore
         )
     if best_limits:
         result['best_limits'] = bl = _csv2df(
@@ -166,24 +170,22 @@ def _parse_inst_prices_str(
     inst_prices = [ip.split(',') for ip in inst_prices_str.split(';')]
     if new_prices:
         lst = [ip for ip in inst_prices if len(ip) != 10]
-        twenty_five_cols = not lst or len(lst[0]) == 25
+        cols26 = not lst or len(lst[0]) == 26
         try:
             # https://github.com/pandas-dev/pandas/issues/57798
             df = _DataFrame(
                 lst,
-                columns=_PRICE_DTYPES_25
-                if twenty_five_cols is True
-                else _PRICE_DTYPES_23,  # type: ignore
+                columns=_PRICE_DTYPES_26 if cols26 else _PRICE_DTYPES_23,  # type: ignore
                 copy=False,
             )
         except ValueError as e:
             _save_last_content(f'{e}')
             raise e
         df['eps'] = df['eps'].replace('', _nan)
-        if twenty_five_cols is True:
+        if cols26:
             df['predtran'] = df['predtran'].replace('', _nan)
             df['buyop'] = df['buyop'].replace('', _nan)
-            df = df.astype(_PRICE_DTYPES_25)
+            df = df.astype(_PRICE_DTYPES_26)
         else:
             df = df.astype(_PRICE_DTYPES_23)
         df.set_index('ins_code', inplace=True)
