@@ -75,6 +75,8 @@ reportInvalidStringEscapeSequence = false
 reportConstantRedefinition = 'error'
 reportTypeCommentUsage = 'warning'
 reportUnnecessaryComparison = 'warning'
+venvPath = "."
+venv = ".venv"
 
 [tool.uv.build-backend]
 module-name = "tsetmc"
