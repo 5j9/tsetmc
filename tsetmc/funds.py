@@ -1,16 +1,13 @@
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
 
-from pandas import (
-    json_normalize as _json_normalize,
-)
-
 from tsetmc import (
     Flow as _Flow,
     FlowType as _FlowType,
     _api,
     _DataFrame,
 )
+from tsetmc.general import trade_top
 
 
 class FundType(_StrEnum):
@@ -61,45 +58,32 @@ async def commodity_etfs(
     *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/CommodityFund/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
+    return await trade_top(category='CommodityFund', flow=flow, top=top)
 
 
 async def etfs_with_most_price_decrease(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین کاهش قیمت"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/PClosingBtmETF/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
+    return await trade_top(category='PClosingBtmETF', flow=flow, top=top)
 
 
 async def etfs_with_most_price_increase(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین افزایش قیمت"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/PClosingTopETF/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
+    return await trade_top(category='PClosingTopETF', flow=flow, top=top)
 
 
 async def most_traded_etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین حجم معامله"""
-    j = await _api(
-        f'ClosingPrice/GetTradeTop/MostTradedETF/{flow}/{top}', fa=True
-    )
-    return _json_normalize(j['tradeTop'])
+    return await trade_top(category='MostTradedETF', flow=flow, top=top)
 
 
 async def etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > معاملات صندوق های قابل معامله"""
-    j = await _api(f'ClosingPrice/GetTradeTop/ETF/{flow}/{top}', fa=True)
-    return _json_normalize(j['tradeTop'])
+    return await trade_top(category='ETF', flow=flow, top=top)

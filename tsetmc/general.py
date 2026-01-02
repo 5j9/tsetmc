@@ -1,5 +1,5 @@
 from datetime import datetime as _datetime
-from typing import TypedDict as _TypedDict
+from typing import Literal as _Literal, TypedDict as _TypedDict
 from warnings import deprecated as _deprecated
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -187,3 +187,22 @@ async def search_messages(*, sh_date: str, term: str) -> _DataFrame:
     """
     j = await _api(f'Msg/GetMsgByDevenAndLVal18AFC/{sh_date}/{term}', fa=True)
     return _DataFrame(j['msg'])
+
+
+async def trade_top(
+    *,
+    category: _Literal[
+        'CommodityFund',
+        'ETF',
+        'MostTradedETF',
+        'MostVisited',
+        'PClosingBtmETF',
+        'PClosingTopETF',
+    ],
+    flow: _FlowType = _Flow.BOURSE,
+    top: int | str = '9999',
+) -> _DataFrame:
+    j = await _api(
+        f'ClosingPrice/GetTradeTop/{category}/{flow}/{top}', fa=True
+    )
+    return _json_normalize(j['tradeTop'])

@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Added ``general.trade_top`` function.
 * Updated ``dataset.csv``.
 
 v2.0.2 (2025-11-17)
