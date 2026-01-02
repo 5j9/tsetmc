@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v2.1.0 (2026-01-02)
 -------------------
 * Added ``general.trade_top`` function.
