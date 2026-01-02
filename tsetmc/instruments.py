@@ -6,7 +6,7 @@ from logging import warning as _warning
 from pathlib import Path
 from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
-from warnings import warn as _warn
+from warnings import deprecated as _deprecated
 
 from aiohutils.pd import html_to_df as _html_to_df
 from pandas import (
@@ -479,6 +479,7 @@ class Instrument:
 
         return await related_companies(cs)
 
+    @_deprecated('see doc-string for alternatives')
     async def page_data(
         self, general=True, trade_history=False, related_companies=False
     ) -> dict:
@@ -499,12 +500,6 @@ class Instrument:
         - self.related_companies
         - self.daily_closing_price
         """
-        _warn(
-            '`Instrument.page_data` is deprecated; see its doc-string for alternatives',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
         text = await _get_par_tree(f'151311&i={self.code}')
         if general:
             m: _Match[str] = _PAGE_VARS(text)  # type: ignore
@@ -571,6 +566,7 @@ class Instrument:
             ]
         return result
 
+    @_deprecated('see doc-string for alternatives')
     async def live_data(
         self, general=True, best_limits=False, market_state=False
     ) -> LiveData:
@@ -585,11 +581,6 @@ class Instrument:
         - `Instrument.etf`
         - `general.market_overview`
         """
-        _warn(
-            '`Instrument.live_data` is deprecated; see its doc-string for alternatives',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
         # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
@@ -635,6 +626,7 @@ class Instrument:
             )
         return result  # type: ignore
 
+    @_deprecated('use `Instrument.daily_closing_price` instead')
     async def trade_history(self, top: int, all_=False) -> _DataFrame:
         """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
 
@@ -643,11 +635,6 @@ class Instrument:
 
         Use :meth:`Instrument.on_date(<date>).trades` for intraday trades.
         """
-        _warn(
-            '`Instrument.trade_history` is deprecated; use `Instrument.daily_closing_price` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         content = await _get_data(
             f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}'
         )
@@ -685,6 +672,7 @@ class Instrument:
         )
         return df
 
+    @_deprecated('use `Instrument.client_type_history` instead')
     async def client_type_history_old(self) -> _DataFrame:
         """Get daily natural/legal history.
 
@@ -700,11 +688,6 @@ class Instrument:
         See also:
             :meth:`Instrument.client_type_history`
         """
-        _warn(
-            '`Instrument.client_type_history_old` is deprecated; use `Instrument.client_type_history` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         return _csv2df(
             _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}')),
             names=(
@@ -757,6 +740,7 @@ class Instrument:
         j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
         return j['clientType']
 
+    @_deprecated('use `Instrument.identity` instead')
     async def identification(self) -> dict:
         """Return the information available in the identification (شناسه) tab.
 
@@ -767,11 +751,6 @@ class Instrument:
         This method uses old.tsetmc.com.
         For the new API use `Instrument.identity`.
         """
-        _warn(
-            '`Instrument.identification` is deprecated; use `Instrument.identity` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         text = await _get_par_tree(f'15131M&i={self.code}')
         df = _html_to_df(text)
         return dict(zip(df[0], df[1]))
@@ -782,13 +761,9 @@ class Instrument:
         )
         return j['instrumentIdentity']
 
+    @_deprecated('use `Instrument.publisher` instead')
     async def introduction(self) -> dict[str, str]:
         """Return the information available in introduction (معرفی) tab."""
-        _warn(
-            '`Instrument.introduction` is deprecated; use `Instrument.publisher` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         text = await _get_par_tree(f'15131V&s={await self._arabic_l18}')
         df = _html_to_df(text)
         return dict(zip(df[0].str.removesuffix(' :'), df[1]))
@@ -833,6 +808,7 @@ class Instrument:
         df.set_index('dEven', inplace=True)
         return df
 
+    @_deprecated('use `Instrument.share_holders` instead')
     async def holders(self, cisin=None) -> _DataFrame:
         """Get list of current major unit/shareholders.
 
@@ -841,11 +817,6 @@ class Instrument:
         See also:
             :meth:`Instrument.on_date(<date>).holders`
         """
-        _warn(
-            '`Instrument.holders` is deprecated; use `Instrument.share_holders` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         if cisin is None:
             cisin = await self.cisin
         text = await _get_par_tree(f'15131T&c={cisin}')
@@ -872,6 +843,9 @@ class Instrument:
     ) -> _DataFrame: ...
 
     @staticmethod
+    @_deprecated(
+        'use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead'
+    )
     async def holder(
         id_cisin, history=True, other_holdings=False
     ) -> _DataFrame | tuple[_DataFrame, _DataFrame]:
@@ -882,11 +856,6 @@ class Instrument:
         If both `history` and `other_holdings` are True, then a tuple of
         DataFrames will be returned.
         """
-        _warn(
-            '`Instrument.holder` is deprecated; use `Instrument.share_holder_history` or `instruments.share_holder_companies` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
@@ -913,12 +882,8 @@ class Instrument:
         else:
             return other_holdings_df()
 
+    @_deprecated('use `Instrument.price_adjustments` instead')
     async def adjustments(self) -> _DataFrame:
-        _warn(
-            '`Instrument.adjustments` is deprecated; use `Instrument.price_adjustments` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         df = _html_to_df(content.decode())
         df.columns = ('date', 'adj_pc', 'pc')
@@ -937,12 +902,8 @@ class Instrument:
         j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
         return j['msg']
 
+    @_deprecated('use `Instrument.messages` instead')
     async def ombud_messages(self) -> _DataFrame:
-        _warn(
-            '`Instrument.ombud_messages` is deprecated; use `Instrument.messages` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         return _parse_ombud_messages(
             await _get_par_tree(f'15131W&i={self.code}')
         )
@@ -1057,12 +1018,8 @@ class InstrumentOnDate:
     async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
 
+    @_deprecated('use `InstrumentOnDate.client_type` instead')
     async def client_types(self) -> ClientTypeOnDate:
-        _warn(
-            '`InstrumentOnDate.client_types` is deprecated; use `InstrumentOnDate.client_type` instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
         return await self.client_type()
 
     async def holders(self) -> _DataFrame:
@@ -1283,7 +1240,7 @@ def _parse_ombud_messages(text) -> _DataFrame:
     if dates:  # pandas cannot do ('14' + df['date']) on empty dates
         df['date'] = [
             _jgstrptime(d, format='%Y/%m/%d %H:%M')
-            for d in ('14' + df['date'])  # type: ignore
+            for d in ('14' + df['date'])
         ]
     else:
         df['date'] = df['date'].astype(object)

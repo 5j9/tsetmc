@@ -1,6 +1,6 @@
 from datetime import datetime as _datetime
 from typing import TypedDict as _TypedDict
-from warnings import warn as _warn
+from warnings import deprecated as _deprecated
 
 from aiohutils.pd import html_to_df as _html_to_df
 from lxml.html import fromstring as _html
@@ -40,17 +40,13 @@ async def sectors_summary() -> _DataFrame:
     return _DataFrame(j['sectorSummeries'])
 
 
+@_deprecated('use sectors_summary instead')
 async def industrial_groups_overview() -> _DataFrame:
     """Return a dataframe of industrial groups.
 
     The result contains info about each group's price change.
     See: http://members.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
-    _warn(
-        'industrial_groups_overview is deprecated; use sectors_summary instead.',
-        DeprecationWarning,
-        2,
-    )
     content = await _mem_par_tree('111C1214')
     df = _html_to_df(content)
     show = df[1]
