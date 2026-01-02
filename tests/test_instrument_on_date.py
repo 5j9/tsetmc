@@ -144,5 +144,5 @@ async def test_client_type():
     d = await FARAZ_ON_DATE.client_type()
     validate_dict(d, ClientTypeOnDate)
     with warns():
-        d2 = await FARAZ_ON_DATE.client_types()
+        d2 = await FARAZ_ON_DATE.client_types()  # pyright: ignore[reportDeprecated]
     assert d2 == d

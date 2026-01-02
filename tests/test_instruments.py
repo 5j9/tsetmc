@@ -90,28 +90,28 @@ async def test_page_data():
     ins = Instrument(35425587644337450)
     assert getattr(ins, '_l18', None) is getattr(ins, '_l30', None) is None
     with warns(DeprecationWarning):
-        d = await ins.page_data(True, True, True)
+        d = await ins.page_data(True, True, True)  # pyright: ignore[reportDeprecated]
     assert_page_data(d, True, True, True)
 
 
 @file('dey.html')
 async def test_page_data_no_free_float():
     with warns(DeprecationWarning):
-        d = await Instrument(44818950263583523).page_data()
+        d = await Instrument(44818950263583523).page_data()  # pyright: ignore[reportDeprecated]
     assert_page_data(d)
 
 
 @file('kala.html')
 async def test_page_data_no_eps():
     with warns(DeprecationWarning):
-        d = await Instrument(44549439964296944).page_data()
+        d = await Instrument(44549439964296944).page_data()  # pyright: ignore[reportDeprecated]
     assert_page_data(d)
 
 
 @file('khgostar.html')
 async def test_page_data_negative_sector_pe():
     with warns(DeprecationWarning):
-        d = await Instrument(48990026850202503).page_data()
+        d = await Instrument(48990026850202503).page_data()  # pyright: ignore[reportDeprecated]
     assert_page_data(d)
 
 
@@ -159,7 +159,7 @@ def assert_live_data(
 @file('dara_yekom.txt')
 async def test_dara1_instant():
     with warns(DeprecationWarning):
-        d = await Instrument(62235397452612911).live_data(
+        d = await Instrument(62235397452612911).live_data(  # pyright: ignore[reportDeprecated]
             market_state=True, best_limits=True
         )
     assert_live_data(d, best_limits=True, market_state=True, nav=True)
@@ -168,7 +168,7 @@ async def test_dara1_instant():
 @file('asam.txt')
 async def test_asam_instant():
     with warns(DeprecationWarning):
-        d = await Instrument(36592972482259020).live_data(best_limits=True)
+        d = await Instrument(36592972482259020).live_data(best_limits=True)  # pyright: ignore[reportDeprecated]
     assert_live_data(d, best_limits=True, nav=True)
 
 
@@ -178,26 +178,26 @@ FMELLI = Instrument(35425587644337450)
 @file('fmelli.txt')
 async def test_fmelli_instant():
     with warns(DeprecationWarning):
-        d = await FMELLI.live_data(best_limits=False)
+        d = await FMELLI.live_data(best_limits=False)  # pyright: ignore[reportDeprecated]
     assert_live_data(d, best_limits=False)
 
 
 @file('vskhooz_short_response.txt')
 async def test_vskhooz_short():
     with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())
+        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
 
 
 @file('vskhooz_long_response.txt')
 async def test_vskhooz_long():
     with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())
+        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
 
 
 @file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
     with warns(DeprecationWarning):
-        df0 = await FMELLI.trade_history(2)
+        df0 = await FMELLI.trade_history(2)  # pyright: ignore[reportDeprecated]
     assert [*df0.dtypes.items()] == [
         ('pmax', dtype('float64')),
         ('pmin', dtype('float64')),
@@ -212,7 +212,7 @@ async def test_trade_history():
     assert df0.index.name == 'date'
     assert isinstance(df0.index, DatetimeIndex)
     with warns(DeprecationWarning):
-        df1 = await FMELLI.trade_history(2, True)
+        df1 = await FMELLI.trade_history(2, True)  # pyright: ignore[reportDeprecated]
     assert len(df1) >= len(df0)
 
 
@@ -222,7 +222,7 @@ VSADID = Instrument('41713045190742691')
 @file('vsadid.txt')
 async def test_vsadid():
     with warns(DeprecationWarning):
-        d = await VSADID.live_data()
+        d = await VSADID.live_data()  # pyright: ignore[reportDeprecated]
     assert_live_data(d)
 
 
@@ -255,7 +255,7 @@ async def test_equal():
 @file('vsadid_identification.html')
 async def test_identification():
     with warns(DeprecationWarning):
-        identification = await VSADID.identification()
+        identification = await VSADID.identification()  # pyright: ignore[reportDeprecated]
     assert identification == {
         'بازار': 'بازار پایه زرد فرابورس',
         'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
@@ -277,7 +277,7 @@ async def test_identification():
 @file('opal_client_types.txt')
 async def test_client_type_history_old():
     with warns(DeprecationWarning):
-        df = await Instrument(655060129740445).client_type_history_old()
+        df = await Instrument(655060129740445).client_type_history_old()  # pyright: ignore[reportDeprecated]
     assert [*df.dtypes.items()] == [
         ('n_buy_count', dtype('int64')),
         ('l_buy_count', dtype('int64')),
@@ -348,7 +348,7 @@ AVA = Instrument('18007109712724189')
 )
 async def test_holders_holder():
     with warns(DeprecationWarning):
-        holders = await AVA.holders(cisin='IRT3AVAF0003')
+        holders = await AVA.holders(cisin='IRT3AVAF0003')  # pyright: ignore[reportDeprecated]
     dtypes = holders.dtypes.to_dict()
     assert dtypes.pop('change') in (Int64Dtype(), 'int64')
     assert dtypes == {
@@ -361,7 +361,7 @@ async def test_holders_holder():
     id_cisin = holders.iat[-1, -1]
 
     with warns(DeprecationWarning):
-        hist, oth = await AVA.holder(id_cisin, True, True)
+        hist, oth = await AVA.holder(id_cisin, True, True)  # pyright: ignore[reportDeprecated]
     assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
     assert oth.index.name == 'ins_code'
     assert hist.index.dtype.kind == 'M'
@@ -372,13 +372,13 @@ async def test_holders_holder():
             ('percent', dtype('float64')),
         ]
     with warns(DeprecationWarning):
-        hist = await AVA.holder('43789,IRT3AVAF0003', True)
+        hist = await AVA.holder('43789,IRT3AVAF0003', True)  # pyright: ignore[reportDeprecated]
     assert type(hist) is DataFrame
     with warns(DeprecationWarning):
-        oth = await AVA.holder('43789,IRT3AVAF0003', False, True)
+        oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # pyright: ignore[reportDeprecated]
     assert type(oth) is DataFrame
     with warns(DeprecationWarning):
-        result = await AVA.holder('43789,IRT3AVAF0003', False)
+        result = await AVA.holder('43789,IRT3AVAF0003', False)  # pyright: ignore[reportDeprecated]
     assert oth.equals(result)
 
 
@@ -419,21 +419,21 @@ async def test_share_holders_companies_histories():
 async def test_holders_without_cisin():
     inst = VSADID
     with warns(DeprecationWarning):
-        d = await inst.identification()
+        d = await inst.identification()  # pyright: ignore[reportDeprecated]
     assert d['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
     with patch.object(
         Instrument, 'info', side_effect=NotImplementedError
     ) as info:
         with patch.object(Instrument, '_ds_or_info', Instrument.info):
             with raises(NotImplementedError), warns(DeprecationWarning):
-                await inst.holders()
+                await inst.holders()  # pyright: ignore[reportDeprecated]
     info.assert_called_once()
 
 
 @file('fmelli_price_adjustment.html')
 async def test_adjustments():
     with warns(DeprecationWarning):
-        df = await FMELLI.adjustments()
+        df = await FMELLI.adjustments()  # pyright: ignore[reportDeprecated]
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
         ('date', dtype('<M8[ns]')),
@@ -519,7 +519,7 @@ async def test_l18_without_web_request():
 @file('fmelli_introduction.html')
 async def test_introduction():
     with warns(DeprecationWarning):
-        d = await (await Instrument.from_l18('فملی')).introduction()
+        d = await (await Instrument.from_l18('فملی')).introduction()  # pyright: ignore[reportDeprecated]
     assert len(d) > 10
     assert 'مدیر عامل' in d
     assert all(type(k) is type(v) is str for k, v in d.items())
@@ -574,7 +574,7 @@ async def test_publisher():
 @file('tajalli_ombud_messages.html')
 async def test_ombud_messages():
     with warns(DeprecationWarning):
-        df = await Instrument(1301069819790264).ombud_messages()
+        df = await Instrument(1301069819790264).ombud_messages()  # pyright: ignore[reportDeprecated]
     assert [*df.dtypes.items()] == [
         ('header', string),
         ('date', dtype('<M8[ns]')),
