@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Feat!: Require Pandas v3.0.0 or higher.
+* Updated ``dataset.csv``.
 
 v2.1.0 (2026-01-02)
 -------------------
