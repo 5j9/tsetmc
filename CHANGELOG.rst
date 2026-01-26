@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Feat!: Require Pandas v3.0.0 or higher.
 
 v2.1.0 (2026-01-02)
 -------------------

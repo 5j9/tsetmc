@@ -53,7 +53,7 @@ async def test_last_day_history():
         ('c3', dtype('int64')),
         ('c4', dtype('int64')),
     ]
-    assert df.index.dtype == 'datetime64[ns]'
+    assert df.index.dtype == 'datetime64[us]'
 
 
 @file('index_history.json')
@@ -65,7 +65,7 @@ async def test_history():
         ('xNivInuPbMresIbs', dtype('float64')),
         ('xNivInuPhMresIbs', dtype('float64')),
     ]
-    assert df.index.dtype == 'datetime64[ns]'
+    assert df.index.dtype == 'datetime64[us]'
 
 
 ICT = Index('41867092385281437')  # only has two companies currently

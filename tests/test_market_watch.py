@@ -294,7 +294,7 @@ async def test_status_changes():
         ('نماد', string),
         ('نام', string),
         ('وضعیت جدید', string),
-        ('date', dtype('<M8[ns]')),
+        ('date', dtype('<M8[us]')),
     )
 
 

@@ -16,14 +16,10 @@ from jdatetime import datetime as _jdatetime
 from pandas import (
     NA as _NA,
     DataFrame as _DataFrame,
-    options as _o,
     read_csv as _read_csv,
 )
 
 _logger = _getLogger(__name__)
-_o.mode.copy_on_write = True
-_o.future.infer_string = True  # type: ignore
-_o.future.no_silent_downcasting = True  # type: ignore
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 

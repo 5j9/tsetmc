@@ -49,7 +49,7 @@ def assert_page_data(
             ('tvol', dtype('int64')),
             ('tval', dtype('float64')),
         ]
-        assert trade_history.index.dtype == dtype('<M8[ns]')
+        assert trade_history.index.dtype == dtype('<M8[us]')
         assert trade_history.index.name == 'date'
 
     if related_companies:
@@ -412,7 +412,7 @@ async def test_share_holders_companies_histories():
         ('changeAmount', dtype('float64')),
         ('shareHolderShareID', dtype('int64')),
     ]
-    assert df.index.dtype == dtype('<M8[ns]')
+    assert df.index.dtype == dtype('<M8[us]')
 
 
 @file('vsadid_identification.html')
@@ -436,7 +436,7 @@ async def test_adjustments():
         df = await FMELLI.adjustments()  # pyright: ignore[reportDeprecated]
     assert len(df) >= 18
     assert [*df.dtypes.items()] == [
-        ('date', dtype('<M8[ns]')),
+        ('date', dtype('<M8[us]')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
     ]
@@ -462,7 +462,7 @@ async def test_price_adjustments():
     assert [*df.dtypes.items()] == [
         ('l18', string),
         ('l30', string),
-        ('date', dtype('<M8[ns]')),
+        ('date', dtype('<M8[us]')),
         ('adj_pc', dtype('int64')),
         ('pc', dtype('int64')),
     ]
@@ -474,7 +474,7 @@ async def test_price_adjustments():
 async def test_adjusted_price_history():
     df = await Instrument(16422980660132735).price_history()
     assert df.index.name == 'date'
-    assert df.index.dtype == dtype('<M8[ns]')
+    assert df.index.dtype == dtype('<M8[us]')
     assert [*df.dtypes.items()] == [
         ('pmax', dtype('int64')),
         ('pmin', dtype('int64')),
@@ -577,7 +577,7 @@ async def test_ombud_messages():
         df = await Instrument(1301069819790264).ombud_messages()  # pyright: ignore[reportDeprecated]
     assert [*df.dtypes.items()] == [
         ('header', string),
-        ('date', dtype('<M8[ns]')),
+        ('date', dtype('<M8[us]')),
         ('description', string),
     ]
 
@@ -594,9 +594,9 @@ async def test_dps_history():
     if df.empty:  # the server response is unreliable
         skip('dps_history returned empty df')
     assert [*df.dtypes.items()] == [
-        ('publish_date', dtype('<M8[ns]')),
-        ('meeting_date', dtype('<M8[ns]')),
-        ('fiscal_year', dtype('<M8[ns]')),
+        ('publish_date', dtype('<M8[us]')),
+        ('meeting_date', dtype('<M8[us]')),
+        ('fiscal_year', dtype('<M8[us]')),
         ('profit_or_loss_after_tax', dtype('float64')),
         ('distributable_profit', dtype('float64')),
         ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
@@ -689,10 +689,10 @@ async def test_daily_closing_price():
         ('zTotTran', dtype('float64')),
         ('qTotTran5J', dtype('float64')),
         ('qTotCap', dtype('float64')),
-        ('datetime', dtype('<M8[ns]')),
+        ('datetime', dtype('<M8[us]')),
     ]
     assert len(df) == 3
-    assert df.index.dtype == dtype('<M8[ns]')
+    assert df.index.dtype == dtype('<M8[us]')
 
 
 @file('closing_price_info_karis.json')

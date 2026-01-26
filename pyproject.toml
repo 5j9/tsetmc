@@ -23,7 +23,7 @@ dependencies = [
     'jdatetime',
     'lxml',
     'numpy',
-    'pandas >= 2.1.0',
+    'pandas >= 3.0.0',
     # pd.options.future.infer_string = True
     'pyarrow',
 ]
