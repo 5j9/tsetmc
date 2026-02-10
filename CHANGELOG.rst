@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Updated an internal library.
+* Updated ``dataset.csv``.
 
 v3.0.0 (2026-01-26)
 -------------------

@@ -215,7 +215,7 @@ _HEADERS = {
 
 # this function should only be called from _get below
 async def _session_get(url: str) -> bytes:
-    r = await session_manager.get(url, headers=_HEADERS)
+    r = await session_manager.request('get', url, headers=_HEADERS)
     return await r.read()
 
 

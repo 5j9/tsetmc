@@ -5,21 +5,16 @@ build-backend = 'uv_build'
 [project]
 name = 'tsetmc'
 version = "3.0.1.dev1"
-authors = [
-    { name = '5j9', email = '5j9@users.noreply.github.com' },
-]
+authors = [{ name = '5j9', email = '5j9@users.noreply.github.com' }]
 description = 'a library to retrieve data from tsetmc.com website'
-keywords = [
-    'tsetmc',
-    'client',
-]
+keywords = ['tsetmc', 'client']
 classifiers = [
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Programming Language :: Python :: 3.12',
 ]
 requires-python = '>=3.13'
 dependencies = [
-    'aiohutils >= 0.22.4',
+    'aiohutils >= 0.24.0',
     'jdatetime',
     'lxml',
     'numpy',
@@ -44,17 +39,17 @@ format.quote-style = 'single'
 lint.isort.combine-as-imports = true
 lint.extend-select = [
     'W605', # invalid-escape-sequence
-    'FA',  # flake8-future-annotations
-    'I',  # isort
-    'UP',  # pyupgrade
-    'RUF', # Ruff-specific rules (RUF)
+    'FA',   # flake8-future-annotations
+    'I',    # isort
+    'UP',   # pyupgrade
+    'RUF',  # Ruff-specific rules (RUF)
 ]
 lint.ignore = [
-    'E721',  # Do not compare types, use `isinstance()`
-    'RUF001',  # ambiguous-unicode-character-string
-    'RUF002',  # ambiguous-unicode-character-docstring
-    'RUF003',  # ambiguous-unicode-character-comment
-    'RUF012',  # mutable-class-default
+    'E721',   # Do not compare types, use `isinstance()`
+    'RUF001', # ambiguous-unicode-character-string
+    'RUF002', # ambiguous-unicode-character-docstring
+    'RUF003', # ambiguous-unicode-character-comment
+    'RUF012', # mutable-class-default
 ]
 
 [tool.pytest.ini_options]
@@ -82,6 +77,4 @@ venv = ".venv"
 module-name = "tsetmc"
 module-root = ""
 [dependency-groups]
-dev = [
-    "pytest-aiohutils>=0.22.5",
-]
+dev = ["pytest-aiohutils>=0.24.0"]
