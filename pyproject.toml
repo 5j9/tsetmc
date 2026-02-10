@@ -50,6 +50,7 @@ lint.ignore = [
     'RUF002', # ambiguous-unicode-character-docstring
     'RUF003', # ambiguous-unicode-character-comment
     'RUF012', # mutable-class-default
+    'RUF059', # Unpacked variable never used
 ]
 
 [tool.pytest.ini_options]
