@@ -78,4 +78,4 @@ venv = ".venv"
 module-name = "tsetmc"
 module-root = ""
 [dependency-groups]
-dev = ["pytest-aiohutils>=0.24.0"]
+dev = ["pytest-aiohutils>=0.22.5"]
