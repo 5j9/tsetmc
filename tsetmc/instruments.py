@@ -291,8 +291,8 @@ class Codal(_TypedDict):
     hasXMLReport: int
     attachmentID: int
     contentType: int
-    fileName: str
-    fileExtension: str
+    fileName: str | None
+    fileExtension: str | None
     tracingNo: str
 
 

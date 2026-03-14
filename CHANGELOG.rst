@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Feat: Use tsetmc.ir domain when possible (has less outages inside Iran)
+* Fix: ``Instrument.codal`` method now correctly handles ``None`` files.
 
 v3.0.1 (2026-02-10)
 -------------------

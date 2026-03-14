@@ -663,9 +663,9 @@ async def test_trades():
     ]
 
 
-@file('karis_codal.json')
+@file('fmelli_codal.json')
 async def test_codal():
-    d = await KARIS.codal(n=3)
+    d = await FMELLI.codal(n=3)
     assert len(d) == 3
     validate_dict(d[0], Codal)
 
