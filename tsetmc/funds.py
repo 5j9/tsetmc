@@ -24,7 +24,7 @@ class FundType(_StrEnum):
 
 
 async def funds(type_: FundType | int | str, /) -> _DataFrame:
-    """tsetmc.com > صندوق های سرمایه گذاری"""
+    """tsetmc.ir > صندوق های سرمایه گذاری"""
     j = await _api(f'Fund/GetFunds/{type_}')
     df = _DataFrame(j['funds'])
     # regNo is sometimes returned as float by the server
@@ -57,33 +57,33 @@ async def fund_details(reg_no: str | int) -> dict:
 async def commodity_etfs(
     *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
+    """tsetmc.ir > بورس کالا > صندوق های قابل معامله"""
     return await trade_top(category='CommodityFund', flow=flow, top=top)
 
 
 async def etfs_with_most_price_decrease(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین کاهش قیمت"""
+    """tsetmc.ir > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین کاهش قیمت"""
     return await trade_top(category='PClosingBtmETF', flow=flow, top=top)
 
 
 async def etfs_with_most_price_increase(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین افزایش قیمت"""
+    """tsetmc.ir > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین افزایش قیمت"""
     return await trade_top(category='PClosingTopETF', flow=flow, top=top)
 
 
 async def most_traded_etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین حجم معامله"""
+    """tsetmc.ir > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین حجم معامله"""
     return await trade_top(category='MostTradedETF', flow=flow, top=top)
 
 
 async def etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
 ) -> _DataFrame:
-    """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > معاملات صندوق های قابل معامله"""
+    """tsetmc.ir > بورس اوراق بهادار تهران > صندوق های قابل معامله > معاملات صندوق های قابل معامله"""
     return await trade_top(category='ETF', flow=flow, top=top)

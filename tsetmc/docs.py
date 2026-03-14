@@ -1,5 +1,5 @@
 """
-https://tsetmc.com/StaticContent/WebServiceHelp
+https://tsetmc.ir/StaticContent/WebServiceHelp
 """
 
 from aiohutils.pd import html_to_df as _html_to_df
@@ -14,7 +14,7 @@ async def _static_content(key: str):
 
 
 async def client_type() -> dict:
-    """https://tsetmc.com/StaticContent/WS-ClientType"""
+    """https://tsetmc.ir/StaticContent/WS-ClientType"""
     text = await _static_content('ClientType')
     out = _html_to_df(text, 2)
     return {
@@ -23,7 +23,7 @@ async def client_type() -> dict:
 
 
 async def instrument_filter_by_date() -> dict:
-    """https://tsetmc.com/StaticContent/WS-InstrumentFilterByDate"""
+    """https://tsetmc.ir/StaticContent/WS-InstrumentFilterByDate"""
     text = await _static_content('InstrumentFilterByDate')
     html = _html(text)
 
@@ -46,7 +46,7 @@ async def instrument_filter_by_date() -> dict:
 
 
 async def instrument_state() -> dict:
-    """https://tsetmc.com/StaticContent/WS-InstrumentsState"""
+    """https://tsetmc.ir/StaticContent/WS-InstrumentsState"""
     text = await _static_content('InstrumentsState')
     html = _html(text)
 
@@ -76,7 +76,7 @@ async def instrument_state() -> dict:
 
 
 async def instrument() -> dict:
-    """https://tsetmc.com/StaticContent/WS-Instrument"""
+    """https://tsetmc.ir/StaticContent/WS-Instrument"""
     text = await _static_content('Instrument')
     html = _html(text)
 
@@ -102,7 +102,7 @@ async def instrument() -> dict:
 
 
 async def best_limits_all_ins() -> dict:
-    """https://tsetmc.com/StaticContent/WS-BestLimitsAllIns"""
+    """https://tsetmc.ir/StaticContent/WS-BestLimitsAllIns"""
     text = await _static_content('BestLimitsAllIns')
     html = _html(text)
 
@@ -128,7 +128,7 @@ async def best_limits_all_ins() -> dict:
 
 
 async def trade_last_day() -> dict:
-    """https://tsetmc.com/StaticContent/WS-TradeLastDay"""
+    """https://tsetmc.ir/StaticContent/WS-TradeLastDay"""
     text = await _static_content('TradeLastDay')
     html = _html(text)
 
