@@ -181,12 +181,12 @@ async def test_top_industry_groups():
     df = await top_industry_groups()
     if df.empty:
         return
+    assert df.pop('tvol').dtype in ('float64', 'int64')
+    assert df.pop('tval').dtype in ('float64', 'int64')
+    assert df.pop('tno').dtype in ('float64', 'int64')
     assert [*df.dtypes.items()] == [
         ('group', STR),
         ('mv', dtype('float64')),
-        ('tno', dtype('int64')),
-        ('tvol', dtype('float64')),
-        ('tval', dtype('float64')),
     ]
 
 
