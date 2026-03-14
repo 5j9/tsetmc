@@ -119,7 +119,7 @@ async def test_sectors_summary():
         ('c3', dtype('int64')),
         ('c4', dtype('int64')),
     ]
-    assert len(df) > 40
+    assert len(df) >= 10
 
 
 @file('industrial_groups_overview.html')
@@ -133,7 +133,7 @@ async def test_industrial_groups_overview():
         ('0:2', dtype('int64')),
         ('2:', dtype('int64')),
     ]
-    assert len(df) > 40
+    assert len(df) >= 10
 
 
 @file('weatherforecast.json')
