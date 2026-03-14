@@ -3,9 +3,10 @@ from numpy import dtype
 from pandas import DataFrame
 from pandas.api.types import is_numeric_dtype
 from pytest import skip
-from pytest_aiohutils import file
+from pytest_aiohutils import file, validate_dict
 
-from tests import STR, assert_market_state
+from tests import STR
+from tsetmc import MarketState
 from tsetmc.market_watch import (
     _BEST_LIMITS_NAMES,
     _PRICE_DTYPES_26,
@@ -268,7 +269,7 @@ async def test_market_watch_plus_update():
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
-        assert_market_state(market_state)
+        validate_dict(market_state, MarketState)
 
     for m in mwp['messages']:
         assert type(m) is str

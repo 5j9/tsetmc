@@ -8,8 +8,8 @@ from pandas import DataFrame, DatetimeIndex, Int64Dtype
 from pytest import raises, skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
-from tests import STR, assert_market_state
-from tsetmc import InstrumentInfo
+from tests import STR
+from tsetmc import InstrumentInfo, MarketState
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
@@ -133,7 +133,7 @@ def assert_live_data(
     if market_state:
         market_state = d.pop('market_state', None)
         if market_state is not None:
-            assert_market_state(market_state)
+            validate_dict(market_state, MarketState)
 
     if nav:
         assert type(d.pop('nav_datetime')) in (datetime, str)
