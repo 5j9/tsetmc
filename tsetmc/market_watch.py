@@ -54,14 +54,14 @@ _PRICE_DTYPES_23 = {
     'eps': 'float64',
     'bvol': 'int64',
     'visitcount': 'int64',
-    # 0-7 https://old.tsetmc.ir/Site.aspx?ParTree=1114111118&LnkIdn=83
+    # 0-7 https://old.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'flow': 'int16',
     # 1-98, see tsetmc.general.cs_codes()
     'cs': 'string',
     'tmax': 'float64',
     'tmin': 'float64',
     'z': 'int64',
-    # 67-701 https://old.tsetmc.ir/Site.aspx?ParTree=1114111118&LnkIdn=83
+    # 67-701 https://old.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
     'yval': 'string',
 }
 _PRICE_DTYPES_26 = _PRICE_DTYPES_23 | {
@@ -96,9 +96,9 @@ async def market_watch_init(
         it will be returned as a separate dataframes.
 
     For more information about filters see:
-        http://old.tsetmc.ir/Loader.aspx?ParTree=15131F
+        http://old.tsetmc.com/Loader.aspx?ParTree=15131F
     For the meaning of column names in the returned DataFrame refer to:
-        http://tsetmc.ir/Site.aspx?ParTree=151713
+        http://tsetmc.com/Site.aspx?ParTree=151713
         For persian translation of `flow` and `yval` codes use
         `tsetmc.docs.instrument`.
         `heven` is the time of the last transaction in HHMMSS format.
@@ -274,10 +274,10 @@ async def closing_price_all() -> _DataFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
-        https://old.tsetmc.ir/Site.aspx?ParTree=151713
+        https://old.tsetmc.com/Site.aspx?ParTree=151713
     This method returns the same set of information as `[ih]` variable in
         tsetmc filters. See:
-            https://old.tsetmc.ir/Site.aspx?ParTree=151715&LnkIdn=3197
+            https://old.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3197
     """
     content = await _get_data('ClosingPriceAll.aspx')
     data = _split_id_rows(content, id_row_len=11)
@@ -337,8 +337,8 @@ async def key_stats() -> _DataFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
-        https://old.tsetmc.ir/Site.aspx?ParTree=151715&LnkIdn=3199 or
-        https://old.tsetmc.ir/Site.aspx?ParTree=151713
+        https://old.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
+        https://old.tsetmc.com/Site.aspx?ParTree=151713
 
     See also the new experimental equivallent of this function:
         ``get_inst_value_all_inst_all_param``

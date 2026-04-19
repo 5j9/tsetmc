@@ -110,7 +110,7 @@ async def major_holders_activity() -> _DataFrame:
 
 
 async def top_industry_groups() -> _DataFrame:
-    """http://old.tsetmc.ir/Loader.aspx?Partree=15131O"""
+    """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
     df = _html_to_df(text)
     df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
@@ -153,7 +153,7 @@ class MarketOverview(_TypedDict):
 
 
 async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
-    """tsetmc.ir > در یک نگاه"""
+    """tsetmc.com > در یک نگاه"""
     j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
     overview['marketActivityTimestamp'] = _datetime.strptime(
@@ -183,7 +183,7 @@ async def messages(
 
 
 async def search_messages(*, sh_date: str, term: str) -> _DataFrame:
-    """https://tsetmc.ir/MsgTop
+    """https://tsetmc.com/MsgTop
 
     :param term: Only return messages containing this term.
     :param sh_date: Solar Hijri date string in 'YYYY-mm-dd' format.

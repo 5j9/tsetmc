@@ -115,7 +115,7 @@ class InstrumentInfo(_TypedDict):
 
 class Flow(_StrEnum):
     # Most of these values were obtained by checking different tabs on the
-    # main page of tsetmc.ir
+    # main page of tsetmc.com
     GENERAL = '0'  # Contains both BOURSE and OTC
     BOURSE = '1'
     OTC = '2'  # Over-the-counter, فرابورس
@@ -238,10 +238,10 @@ async def _get(url: str, *, fa: _Literal[True, False] = False) -> str | bytes:
     return content
 
 
-_DOMAIN = 'https://old.tsetmc.ir/'
+_DOMAIN = 'https://old.tsetmc.com/'
 _MEMBERS = 'http://members.tsetmc.com/'
 # API does not work on www domain
-_API = 'https://cdn.tsetmc.ir/api/'
+_API = 'https://cdn.tsetmc.com/api/'
 
 
 @_overload

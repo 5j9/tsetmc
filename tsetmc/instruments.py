@@ -493,7 +493,7 @@ class Instrument:
             https://members.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
 
         For the meaning of other column names see:
-            http://www.tsetmc.ir/Site.aspx?ParTree=151713
+            http://www.tsetmc.com/Site.aspx?ParTree=151713
 
         Alternative methods from the new API:
         - self.info
@@ -581,8 +581,8 @@ class Instrument:
         - `Instrument.etf`
         - `general.market_overview`
         """
-        # apparently, http://www.tsetmc.ir/tsev2/data/instinfodata.aspx?i=...
-        # and http://www.tsetmc.ir/tsev2/data/instinfofast.aspx?i=...
+        # apparently, http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i=...
+        # and http://www.tsetmc.com/tsev2/data/instinfofast.aspx?i=...
         # return the same response.
         text = await _get_data(
             'instinfodata.aspx'
@@ -590,7 +590,7 @@ class Instrument:
             # seems to be ignored if no NAV is defined for the instrument.
             # &c= is normally set to CSecVal, but does not seem to be required.
             # CSecVal is industry group code:
-            # http://redirectcdn.tsetmc.ir/Site.aspx?ParTree=111411111B&LnkIdn=107
+            # http://redirectcdn.tsetmc.com/Site.aspx?ParTree=111411111B&LnkIdn=107
             f'?i={self.code}&c=&e=1',
             fa=True,
         )
@@ -680,7 +680,7 @@ class Instrument:
 
         This method returns the information available at the "حقیقی-حقوقی" tab
         of the instrument. It uses the `clienttype.aspx` module of
-        old.tsetmc.ir.
+        old.tsetmc.com.
 
         This method may stop working in the future if the old tsetmc site
         shuts down.
@@ -745,10 +745,10 @@ class Instrument:
         """Return the information available in the identification (شناسه) tab.
 
         Related API descriptions:
-            https://cdn.tsetmc.ir/Site.aspx?ParTree=1114111118&LnkIdn=83
+            https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
             http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
 
-        This method uses old.tsetmc.ir.
+        This method uses old.tsetmc.com.
         For the new API use `Instrument.identity`.
         """
         text = await _get_par_tree(f'15131M&i={self.code}')
@@ -1008,7 +1008,7 @@ class InstrumentOnDate:
     async def states(self) -> _DataFrame:
         """Get intraday instrument states.
 
-        http://www.tsetmc.ir/Site.aspx?ParTree=111411111Y&LnkIdn=833
+        http://www.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833
         """
         j = await _api(
             f'MarketData/GetInstrumentState/{self.code}/{self.date}'
@@ -1072,7 +1072,7 @@ async def price_adjustments(flow: _FlowType) -> _DataFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:
-        http://cdn.tsetmc.ir/Site.aspx?ParTree=1114111124&LnkIdn=843
+        http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
     text = await _get_par_tree(f'151319&Flow={flow}')
     df = _html_to_df(text)
@@ -1091,7 +1091,7 @@ async def old_search(skey: str, /) -> _DataFrame:
         #   retail: odd_lot,
         #   compensation: buyback,
         #   wholesale: block,
-        # } see: https://www.sena.ir/news/77488/
+        # } see: https://www.sena.com/news/77488/
         names=(
             'l18',
             'l30',
