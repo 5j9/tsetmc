@@ -1,5 +1,5 @@
-Unreleased
-----------
+v3.0.2 (2026-04-23)
+-------------------
 * Feat: Use tsetmc.ir domain when possible (has less outages inside Iran)
 * Fix: ``Instrument.codal`` method now correctly handles ``None`` files.
 * Fix: ``top_industry_groups`` should handle integer columns correctly.
