@@ -15,7 +15,7 @@ async def main():
     coros = [get_isin(l18) for l18 in df['l18']]
     isin = await gather(*coros)
     df[['isin', 'cisin']] = isin
-    _dump(df[['ins_code', 'isin', 'cisin', 'l18', 'l30']])
+    _dump(df[['isin', 'cisin', 'l18', 'l30']])
 
 
 run(main())
