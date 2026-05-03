@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Fixed a bug in ``dataset.update()`` function.
+* Updated the dataset.
 
 v3.0.2 (2026-04-23)
 -------------------

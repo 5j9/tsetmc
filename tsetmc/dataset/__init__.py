@@ -58,21 +58,28 @@ async def update(df: _Df | None = None) -> None:
         )
     ]
     ds = LazyDS.df
+    old_ds = ds.copy()
     ds.update(df)  # update existing l18s/l30s
-    new_items = df[~df.index.isin(ds.index)]
+    new_rows = df[~df.index.isin(ds.index)]
+    changed_rows = ds[~ds.eq(old_ds).all(axis=1)]
 
-    if new_items.empty:
-        _logger.info('No new entries were added by market watch.')
+    if new_rows.empty and changed_rows.empty:
+        _logger.info(
+            'No new/changed entries after updating using market watch.'
+        )
         return
 
     # add isin and cisin to new_items
-    new_insts = [_Instrument(code) for code in new_items.index]
+    new_insts = [_Instrument(code) for code in new_rows.index]
     await _gather(*[i.info() for i in new_insts])
-    new_items['isin'] = [i._isin for i in new_insts]
-    new_items['cisin'] = [i._cisin for i in new_insts]
+    new_rows['isin'] = [i._isin for i in new_insts]
+    new_rows['cisin'] = [i._cisin for i in new_insts]
 
-    merged = LazyDS.df = _concat([ds, new_items])[
+    merged = LazyDS.df = _concat([ds, new_rows])[
         ['isin', 'cisin', 'l18', 'l30']  # fix column order
     ]
     _dump(merged)
-    _logger.info(f'{len(new_items)} new entries were added by market watch.')
+    _logger.info(
+        f'{len(new_rows)} new and {len(changed_rows)} changed '
+        'entries after update using market watch.'
+    )
