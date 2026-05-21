@@ -196,7 +196,7 @@ def _parse_inst_prices_str(
         # https://github.com/pandas-dev/pandas/issues/57798
         df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)  # type: ignore
         df = df.astype(_PRICE_UPDATE_COLUMNS)
-        df.ins_code = df.ins_code.astype('string')
+        df['ins_code'] = df['ins_code'].astype('string')
         df.set_index('ins_code', inplace=True)
         result['price_updates'] = df
 
@@ -300,7 +300,7 @@ async def closing_price_all() -> _DataFrame:
         copy=False,
     )
     df[columns[1:]] = df[columns[1:]].apply(_to_numeric)
-    df.ins_code = df.ins_code.astype('string')
+    df['ins_code'] = df['ins_code'].astype('string')
     df.set_index(['ins_code', 'n'], inplace=True)
     return df
 
@@ -358,7 +358,7 @@ async def status_changes(top: int | str) -> _DataFrame:
     df = _html_to_df(text)
     df['date'] = [
         _jgstrptime(i, format='%Y/%m/%d %H:%M:%S')
-        for i in (df['تاریخ'] + ' ' + df['زمان'])  # type: ignore
+        for i in (df['تاریخ'] + ' ' + df['زمان'])
     ]
     df.drop(columns=['تاریخ', 'زمان'], inplace=True)
     return df

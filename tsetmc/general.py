@@ -54,7 +54,7 @@ async def industrial_groups_overview() -> _DataFrame:
     percents = show.str.extract(
         r"showBar\('[^\[]*',(\d+),(\d+),(\d+),(\d+)\)"
     ).astype('int64')
-    df = _concat((df, percents), copy=False, axis=1)
+    df = _concat((df, percents), axis=1)
     df.columns = ('group', ':-2', '-2:0', '0:2', '2:')
     return df
 
