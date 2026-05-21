@@ -187,22 +187,28 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
 .. code-block:: python
 
-    from asyncio import new_event_loop
+    from asyncio import gather, run
 
     from tsetmc.market_watch import MarketWatch
 
 
-    async def listen_to_update_events():
+    async def listen_to_update_events(market_watch):
         while True:
             await market_watch.update_event.wait()
             df = market_watch.df
             print(df.at['35425587644337450', 'pl'])  # last price of فملی
 
 
-    market_watch = MarketWatch()
-    loop = new_event_loop()
-    watch_task = loop.create_task(listen_to_update_events())
-    loop.run_until_complete(market_watch.start())
+    async def main():
+        market_watch = MarketWatch()
+        await gather(
+            market_watch.start(),
+            listen_to_update_events(market_watch),
+        )
+
+
+    run(main())
+
 
 
 
