@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v3.0.4 (2026-06-02)
 -------------------
 * More compact logging message for _ClientResponseError.
