@@ -515,7 +515,12 @@ class MarketWatch:
                 mwp = await market_watch_plus(
                     refid=refid, heven=heven, **self.plus_kwargs
                 )
-            except (_ClientConnectorDNSError, _ClientResponseError) as e:
+            except _ClientResponseError as e:
+                _logger.warning(
+                    f'{e.status} status while awaiting market_watch_plus'
+                )
+                continue
+            except _ClientConnectorDNSError as e:
                 _logger.warning(f'{e!r} while awaiting market_watch_plus')
                 continue
             except Exception as e:
