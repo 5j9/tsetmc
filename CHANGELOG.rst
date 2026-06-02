@@ -1,5 +1,7 @@
 Unreleased
 ----------
+* More compact logging message for _ClientResponseError.
+* Minor documentation improvements.
 * Updated the dataset.
 
 v3.0.3 (2026-05-03)
