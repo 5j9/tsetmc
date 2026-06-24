@@ -3,6 +3,7 @@ from types import NoneType
 from typing import cast
 from unittest.mock import patch
 
+import polars as pl
 from numpy import dtype, int64
 from pandas import DataFrame, DatetimeIndex, Int64Dtype
 from pytest import raises, skip, warns
@@ -672,27 +673,34 @@ async def test_codal():
 
 @file('daily_closing_price_karis.json')
 async def test_daily_closing_price():
-    df = await KARIS.daily_closing_price(n=3)
-    assert [*df.dtypes.items()] == [
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('datetime', dtype('<M8[us]')),
-    ]
+    result = await KARIS.daily_closing_price(n=3)
+    # Collect for further testing
+    df = result.collect()
+    expected_schema = {
+        'priceChange': pl.Float64,
+        'priceMin': pl.Float64,
+        'priceMax': pl.Float64,
+        'priceYesterday': pl.Float64,
+        'priceFirst': pl.Float64,
+        'last': pl.Boolean,
+        'id': pl.Int64,
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'iClose': pl.Boolean,
+        'yClose': pl.Boolean,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+        'date': pl.Date,
+        'time': pl.Time,
+        'datetime': pl.Datetime(time_unit='us'),
+    }
+    assert df.schema == expected_schema
     assert len(df) == 3
-    assert df.index.dtype == dtype('<M8[us]')
+    assert df['date'].is_sorted(descending=True)
 
 
 @file('closing_price_info_karis.json')

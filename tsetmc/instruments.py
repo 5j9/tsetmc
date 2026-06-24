@@ -8,6 +8,7 @@ from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
 from warnings import deprecated as _deprecated
 
+import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
 from pandas import (
     read_csv as _read_csv,
@@ -431,29 +432,51 @@ class Instrument:
         )
         return j['preparedData']
 
-    async def daily_closing_price(self, n=0) -> _DataFrame:
+    async def daily_closing_price(self, n=0) -> _pl.LazyFrame:
         """n is the number of days. Use 0 (default) to fetch all.
 
         result columns: [
-            'priceChange', 'priceMin', 'priceMax', 'priceYesterday',
+            'date', 'priceChange', 'priceMin', 'priceMax', 'priceYesterday',
             'priceFirst', 'last', 'id', 'insCode', 'pClosing', 'iClose',
             'yClose', 'pDrCotVal', 'zTotTran', 'qTotTran5J', 'qTotCap',
             'datetime'
         ]
-        result.index: date (datetime64[us])
-        result.index.is_monotonic_decreasing
+        result['date'].is_monotonic_decreasing
         """
         j = await _api(
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
-        df = _DataFrame(j['closingPriceDaily'], copy=False)
-        datetime = df['datetime'] = _to_datetime(
-            df.pop('dEven').astype(str)
-            + df.pop('hEven').astype(str).str.rjust(6, '0')
-        )
-        df['date'] = datetime.dt.normalize()
-        df.set_index('date', inplace=True)
-        return df
+        lf = _pl.LazyFrame(j['closingPriceDaily'])
+
+        # Convert dEven (int like 20231225) to Date
+        # Convert hEven (int like 93000 or 123456) to Time
+        lf = (
+            lf.with_columns(
+                [
+                    # Parse date: dEven is YYYYMMDD
+                    _pl.col('dEven')
+                    .cast(_pl.Utf8)
+                    .str.strptime(_pl.Date, format='%Y%m%d')
+                    .alias('date'),
+                    # Parse time: hEven is HHMMSS (without leading zeros)
+                    _pl.time(
+                        _pl.col('hEven') // 10000,  # hours
+                        (_pl.col('hEven') // 100) % 100,  # minutes
+                        _pl.col('hEven') % 100,  # seconds
+                    ).alias('time'),
+                ]
+            ).with_columns(
+                [
+                    # Combine date and time into datetime
+                    (
+                        _pl.col('date').cast(_pl.Datetime)
+                        + _pl.col('time').cast(_pl.Duration)
+                    ).alias('datetime')
+                ]
+            )
+        ).sort('date', descending=True)
+
+        return lf
 
     async def closing_price_info(self) -> ClosingPriceInfo:
         j = await _api(

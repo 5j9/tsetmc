@@ -20,6 +20,7 @@ dependencies = [
     'numpy',
     'pandas >= 3.0.0',
     # pd.options.future.infer_string = True
+    "polars>=1.41.2",
     'pyarrow',
 ]
 
