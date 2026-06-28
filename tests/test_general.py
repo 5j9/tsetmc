@@ -1,3 +1,4 @@
+import polars as pl
 from numpy import dtype
 from pytest import warns
 from pytest_aiohutils import file, validate_dict
@@ -8,7 +9,7 @@ from tsetmc.general import (
     MarketOverview,
     boards,
     cs_codes,
-    industrial_groups_overview,
+    industrial_groups_overview,  # pyright: ignore[reportDeprecated]
     major_holders_activity,
     market_map_data,
     market_overview,
@@ -110,84 +111,127 @@ async def test_cs_codes():
 
 @file('sectors_summary.json')
 async def test_sectors_summary():
-    df = await sectors_summary()
-    assert [*df.dtypes.items()] == [
-        ('cSecVal', STR),
-        ('lSecVal', STR),
-        ('c1', dtype('int64')),
-        ('c2', dtype('int64')),
-        ('c3', dtype('int64')),
-        ('c4', dtype('int64')),
-    ]
-    assert len(df) >= 10
+    lf = await sectors_summary()
+    df = lf.collect()
+
+    # Check full schema
+    expected_schema = {
+        'cSecVal': pl.Utf8,
+        'lSecVal': pl.Utf8,
+        'c1': pl.Int64,
+        'c2': pl.Int64,
+        'c3': pl.Int64,
+        'c4': pl.Int64,
+    }
+
+    assert dict(df.schema) == expected_schema
+    assert df.height >= 10
 
 
 @file('industrial_groups_overview.html')
 async def test_industrial_groups_overview():
     with warns(DeprecationWarning):
-        df = await industrial_groups_overview()
-    assert [*df.dtypes.items()] == [
-        ('group', STR),
-        (':-2', dtype('int64')),
-        ('-2:0', dtype('int64')),
-        ('0:2', dtype('int64')),
-        ('2:', dtype('int64')),
-    ]
+        lf = await industrial_groups_overview()  # pyright: ignore[reportDeprecated]
+
+    df = lf.collect()
+
+    # Check both column names and dtypes
+    expected = {
+        'group': pl.Utf8,
+        ':-2': pl.Int64,
+        '-2:0': pl.Int64,
+        '0:2': pl.Int64,
+        '2:': pl.Int64,
+    }
+
+    assert dict(df.schema) == expected
     assert len(df) >= 10
 
 
 @file('weatherforecast.json')
 async def test_market_map_data():
-    df = await market_map_data()
-    if df.empty:
+    lf = await market_map_data()
+    df = lf.collect()
+
+    if df.height == 0:
         return
-    assert len(df) > 300
-    assert not df.lVal18AFC.str.contains('ي').any()
-    assert [*df.dtypes.items()] == [
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('lVal18AFC', STR),
-        ('lVal30', STR),
-        ('lSecVal', STR),
-        ('marketCap', dtype('float64')),
-        ('percent', dtype('float64')),
-        ('priceChangePercent', dtype('float64')),
-        ('hEvenShow', STR),
-        ('color', STR),
-        ('fontSize', dtype('int64')),
-        ('fontColor', STR),
-        ('customLabel', STR),
-    ]
+
+    assert df.height > 300
+    assert not df['lVal18AFC'].str.contains('ي').any()
+
+    # Check schema
+    expected_schema = {
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+        'priceYesterday': pl.Float64,
+        'lVal18AFC': pl.Utf8,
+        'lVal30': pl.Utf8,
+        'lSecVal': pl.Utf8,
+        'marketCap': pl.Float64,
+        'percent': pl.Float64,
+        'priceChangePercent': pl.Float64,
+        'hEvenShow': pl.Utf8,
+        'color': pl.Utf8,
+        'fontSize': pl.Int64,
+        'fontColor': pl.Utf8,
+        'customLabel': pl.Utf8,
+    }
+
+    assert dict(df.schema) == expected_schema
 
 
 @file('major_holders_activity.html')
 async def test_major_holders_activity():
-    df = await major_holders_activity()
-    dtypes = [*df.dtypes.items()]
-    assert dtypes[:3] == [('ins_code', STR), ('l30', STR), ('holder', STR)]
-    for _, t in dtypes[3:]:
-        assert dtype(t) == dtype('float64')
+    lf = await major_holders_activity()
+    df = lf.collect()
+    print(df)
+
+    # Build expected schema dynamically
+    # First 3 columns are strings, rest are float64
+    expected_schema = {}
+
+    # First 3 columns
+    expected_schema['ins_code'] = pl.Utf8
+    expected_schema['l30'] = pl.Utf8
+    expected_schema['holder'] = pl.Utf8
+
+    # Remaining columns (we don't know their names, but they should be float64)
+    for col in df.columns[3:]:
+        expected_schema[col] = pl.Float64
+
+    assert dict(df.schema) == expected_schema
 
 
 @file('top_industry_groups.html')
 async def test_top_industry_groups():
-    df = await top_industry_groups()
-    if df.empty:
+    lf = await top_industry_groups()
+    df = lf.collect()
+
+    # Check if DataFrame is empty
+    if df.height == 0:
         return
-    assert df.pop('tvol').dtype in ('float64', 'int64')
-    assert df.pop('tval').dtype in ('float64', 'int64')
-    assert df.pop('tno').dtype in ('float64', 'int64')
-    assert [*df.dtypes.items()] == [
-        ('group', STR),
-        ('mv', dtype('float64')),
-    ]
+
+    # Check full schema
+    expected_schema = {
+        'group': pl.Utf8,
+        'mv': pl.Float64,
+        'tno': pl.Float64,
+        'tvol': pl.Float64,
+        'tval': pl.Float64,
+    }
+
+    # Check each column's dtype
+    for col, expected_dtype in expected_schema.items():
+        assert col in df.columns
+        assert df[col].dtype == expected_dtype, (
+            f'Column {col} has dtype {df[col].dtype}, expected {expected_dtype}'
+        )
 
 
 @file('market_overview.json')

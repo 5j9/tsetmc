@@ -11,6 +11,7 @@ from typing import (
     overload as _overload,
 )
 
+import polars as _pl
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
 from pandas import (
@@ -299,6 +300,53 @@ def _numerize(
                 'T': 10**12,
             }
         ).astype(astype)
+
+
+def _numerize_pl(
+    df: _pl.LazyFrame,
+    cols: list[str] | tuple[str, ...] | str,
+) -> _pl.LazyFrame:
+    """Numerize columns in a Polars LazyFrame (handles commas and K/M/B/T suffixes)."""
+    if isinstance(cols, str):
+        cols = [cols]
+
+    expressions = []
+    for col in cols:
+        # Clean the column: trim whitespace, remove commas
+        cleaned = _pl.col(col).str.strip_chars().str.replace_all(',', '')
+
+        # Check if it has K/M/B/T suffix at the end
+        has_suffix = cleaned.str.contains(r'[KMBT]$')
+
+        # Extract number (remove suffix if present)
+        number_part = cleaned.str.replace(r'[KMBT]$', '')
+
+        # Get suffix multiplier
+        multiplier = (
+            _pl.when(cleaned.str.contains('K$'))
+            .then(10**3)
+            .when(cleaned.str.contains('M$'))
+            .then(10**6)
+            .when(cleaned.str.contains('B$'))
+            .then(10**9)
+            .when(cleaned.str.contains('T$'))
+            .then(10**12)
+            .otherwise(1)
+        )
+
+        # Apply numerization with safe casting
+        expr = (
+            _pl.when(has_suffix)
+            .then(
+                number_part.cast(_pl.Float64, strict=False)
+                * multiplier.cast(_pl.Float64)
+            )
+            .otherwise(cleaned.cast(_pl.Float64, strict=False))
+            .alias(col)
+        )
+        expressions.append(expr)
+
+    return df.with_columns(expressions)
 
 
 def _save_last_content(msg: str, /):

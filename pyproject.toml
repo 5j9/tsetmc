@@ -15,6 +15,7 @@ classifiers = [
 requires-python = '>=3.13'
 dependencies = [
     'aiohutils >= 0.24.0',
+    "html-table-parse>=0.2.2",
     'jdatetime',
     'lxml',
     'numpy',

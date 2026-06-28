@@ -2,11 +2,14 @@ from datetime import datetime as _datetime
 from typing import Literal as _Literal, TypedDict as _TypedDict
 from warnings import deprecated as _deprecated
 
-from aiohutils.pd import html_to_df as _html_to_df
+import polars as _pl
+from html_table_parse import (
+    to_dict as _html_to_dict,
+    to_list as _html_to_list,
+)
 from lxml.html import fromstring as _html
 from pandas import (
     NA as _NA,
-    concat as _concat,
     json_normalize as _json_normalize,
 )
 
@@ -17,68 +20,94 @@ from tsetmc import (
     _DataFrame,
     _get_par_tree,
     _mem_par_tree,
-    _numerize,
+    _numerize_pl,
 )
 
 
 async def boards() -> dict[int, str]:
     """See http://members.tsetmc.com/Loader.aspx?ParTree=121C1913."""
     content = await _mem_par_tree('111C1913')
-    iloc = _html_to_df(content, header=0).iloc
-    return dict(zip(iloc[:, 0], iloc[:, 1]))
+    table = _html_to_dict(content)
+    codes = [int(c) for c in table['کد تابلو']]
+    return dict(zip(codes, table['تابلو']))
 
 
 async def cs_codes() -> dict[str, str]:
     """https://members.tsetmc.com/Loader.aspx?ParTree=111C1213"""
     content = await _mem_par_tree('111C1213')
-    iloc = _html_to_df(content, header=0).iloc
-    return dict(zip(iloc[:, 0], iloc[:, 1]))
+    table = _html_to_dict(content)
+    return dict(zip(table['کد گروه های صنعت'], table['گروه های صنعت']))
 
 
-async def sectors_summary() -> _DataFrame:
+async def sectors_summary() -> _pl.LazyFrame:
     j = await _api('MarketData/GetSectorsSummary', fa=True)
-    return _DataFrame(j['sectorSummeries'])
+    return _pl.LazyFrame(j['sectorSummeries'])
 
 
 @_deprecated('use sectors_summary instead')
-async def industrial_groups_overview() -> _DataFrame:
-    """Return a dataframe of industrial groups.
+async def industrial_groups_overview() -> _pl.LazyFrame:
+    """Return a LazyFrame of industrial groups.
 
     The result contains info about each group's price change.
     See: http://members.tsetmc.com/Loader.aspx?ParTree=111C1214
     """
     content = await _mem_par_tree('111C1214')
-    df = _html_to_df(content)
-    show = df[1]
-    df.drop(columns=1, inplace=True)
-    percents = show.str.extract(
-        r"showBar\('[^\[]*',(\d+),(\d+),(\d+),(\d+)\)"
-    ).astype('int64')
-    df = _concat((df, percents), axis=1)
-    df.columns = ('group', ':-2', '-2:0', '0:2', '2:')
-    return df
+    table = _html_to_list(content)
+
+    return (
+        _pl.LazyFrame(table, orient='row')
+        .with_columns(
+            _pl.col('column_1')
+            .str.extract(r'showBar\(([^)]*)\)')
+            .alias('showbar_content')
+        )
+        .with_columns(
+            _pl.col('showbar_content')
+            .str.split(',')
+            .list.get(1)
+            .cast(_pl.Int64)
+            .alias(':-2'),
+            _pl.col('showbar_content')
+            .str.split(',')
+            .list.get(2)
+            .cast(_pl.Int64)
+            .alias('-2:0'),
+            _pl.col('showbar_content')
+            .str.split(',')
+            .list.get(3)
+            .cast(_pl.Int64)
+            .alias('0:2'),
+            _pl.col('showbar_content')
+            .str.split(',')
+            .list.get(4)
+            .cast(_pl.Int64)
+            .alias('2:'),
+        )
+        .drop(['column_1', 'showbar_content'])
+        .rename({'column_0': 'group'})
+    )
 
 
 async def market_map_data(
     *, market=0, size=9999, sector=0, typeSelected=1, heven=0
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     j = await _api(
         f'ClosingPrice/GetMarketMap'
         f'?market={market}&size={size}&sector={sector}'
         f'&typeSelected={typeSelected}&hEven={heven}',
         fa=True,
     )
-    df = _DataFrame(j)
-    return df
+    return _pl.LazyFrame(j)
 
 
-async def major_holders_activity() -> _DataFrame:
+async def major_holders_activity() -> _pl.LazyFrame:
     text = await _get_par_tree('15131I')
     html = _html(text)
     trs = html.xpath('//tr')
 
     rows = []
     append_row = rows.append
+
     for tr in trs[1:]:
         tds = tr.xpath('.//td')
         td0 = tds[0]
@@ -89,38 +118,59 @@ async def major_holders_activity() -> _DataFrame:
             href = inst_div.xpath('.//a[1]/@href')[0]
             ins_code = href[href.rfind('=') + 1 :]
             l30 = inst_div.text_content()
+        else:
+            ins_code = None
+            l30 = None
 
         holder = td0.xpath('.//li[1]/text()')[0]
-        # ins_code and l30 are expected to be bound at this point
-        append_row([ins_code, l30, holder, *_parse_tds(tds)])  # type: ignore
-    return _DataFrame(
-        rows,
-        copy=False,
-        columns=(
-            'ins_code',
-            'l30',
-            'holder',
-            *(
-                # the first header is 'شرکت - سهامدار'
-                th.text
-                for th in trs[0].xpath('.//th')[1:]
-            ),
-        ),
+
+        # Get parsed TDs
+        parsed_tds = list(_parse_tds(tds))
+        row_data = [ins_code, l30, holder, *parsed_tds]
+        append_row(row_data)
+
+    # Get column names from header
+    header_cols = [th.text for th in trs[0].xpath('.//th')[1:]]
+    columns = ('ins_code', 'l30', 'holder', *header_cols)
+
+    # Pad rows to ensure consistent length
+    max_cols = len(columns)
+    for i, row in enumerate(rows):
+        if len(row) < max_cols:
+            rows[i] = row + [None] * (max_cols - len(row))
+        elif len(row) > max_cols:
+            rows[i] = row[:max_cols]
+
+    # Create LazyFrame and forward fill nulls in ins_code and l30
+    return _pl.LazyFrame(rows, schema=columns, orient='row').with_columns(
+        [
+            _pl.col('ins_code').fill_null(strategy='forward'),
+            _pl.col('l30').fill_null(strategy='forward'),
+        ]
     )
 
 
-async def top_industry_groups() -> _DataFrame:
+async def top_industry_groups() -> _pl.LazyFrame:
     """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
-    df = _html_to_df(text)
-    df.columns = ['group', 'mv', 'tno', 'tvol', 'tval']
-    _numerize(
-        df,
-        (*[c for c in ('mv', 'tvol', 'tval') if df[c].dtype == 'str'],),
-        'float64',
-        comma=True,
+    table = _html_to_list(text)
+
+    # Skip the header row (first row)
+    data_rows = table[1:] if table else []
+
+    return (
+        _pl.LazyFrame(data_rows, orient='row')
+        .rename(
+            {
+                'column_0': 'group',
+                'column_1': 'mv',
+                'column_2': 'tno',
+                'column_3': 'tvol',
+                'column_4': 'tval',
+            }
+        )
+        .pipe(_numerize_pl, ['mv', 'tno', 'tvol', 'tval'])
     )
-    return df
 
 
 def _parse_tds(tds):
