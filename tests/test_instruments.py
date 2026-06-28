@@ -751,67 +751,75 @@ async def test_related_companies():
     c = d['relatedCompany']
     h = d['relatedCompanyThirtyDayHistory']
 
-    assert [*c.dtypes.items()] == [
-        ('instrumentState', dtype('O')),
-        ('lastHEven', dtype('int64')),
-        ('finalLastDate', dtype('int64')),
-        ('nvt', dtype('float64')),
-        ('mop', dtype('int64')),
-        ('pRedTran', dtype('float64')),
-        ('thirtyDayClosingHistory', dtype('O')),
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('instrument.cValMne', dtype('O')),
-        ('instrument.lVal18', dtype('O')),
-        ('instrument.cSocCSAC', dtype('O')),
-        ('instrument.lSoc30', dtype('O')),
-        ('instrument.yMarNSC', dtype('O')),
-        ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', string),
-        ('instrument.lVal30', string),
-        ('instrument.lVal18AFC', string),
-        ('instrument.flow', dtype('int64')),
-        ('instrument.cIsin', dtype('O')),
-        ('instrument.zTitad', dtype('float64')),
-        ('instrument.baseVol', dtype('int64')),
-        ('instrument.instrumentID', dtype('O')),
-        ('instrument.cgrValCot', dtype('O')),
-        ('instrument.cComVal', dtype('O')),
-        ('instrument.lastDate', dtype('int64')),
-        ('instrument.sourceID', dtype('int64')),
-        ('instrument.flowTitle', dtype('O')),
-        ('instrument.cgrValCotTitle', dtype('O')),
-    ]
-    assert [*h.dtypes.items()] == [
-        ('id', dtype('int64')),
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-    ]
+    # Check relatedCompany schema - columns that are always null
+    expected_c_schema = {
+        'instrumentState': pl.Null,  # Always null
+        'lastHEven': pl.Int64,
+        'finalLastDate': pl.Int64,
+        'nvt': pl.Float64,
+        'mop': pl.Int64,
+        'pRedTran': pl.Float64,
+        'thirtyDayClosingHistory': pl.Null,  # Always null
+        'priceChange': pl.Float64,
+        'priceMin': pl.Float64,
+        'priceMax': pl.Float64,
+        'priceYesterday': pl.Float64,
+        'priceFirst': pl.Float64,
+        'last': pl.Boolean,
+        'id': pl.Int64,
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'iClose': pl.Boolean,
+        'yClose': pl.Boolean,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+        # Flattened instrument fields
+        'cValMne': pl.Null,  # Always null
+        'lVal18': pl.Null,  # Always null
+        'cSocCSAC': pl.Null,  # Always null
+        'lSoc30': pl.Null,  # Always null
+        'yMarNSC': pl.Null,  # Always null
+        'yVal': pl.Null,  # Always null
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'flow': pl.Int64,
+        'cIsin': pl.Null,  # Always null
+        'zTitad': pl.Float64,
+        'baseVol': pl.Int64,
+        'instrumentID': pl.Null,  # Always null
+        'cgrValCot': pl.Null,  # Always null
+        'cComVal': pl.Null,  # Always null
+        'lastDate': pl.Int64,
+        'sourceID': pl.Int64,
+        'flowTitle': pl.Null,  # Always null
+        'cgrValCotTitle': pl.Null,  # Always null
+    }
+    assert dict(c.collect_schema()) == expected_c_schema
 
-    assert h.groupby('insCode')['insCode'].agg(len).mode()[0] > 20
+    # Check relatedCompanyThirtyDayHistory schema
+    expected_h_schema = {
+        'id': pl.Int64,
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'iClose': pl.Boolean,
+        'yClose': pl.Boolean,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+    }
+    assert dict(h.collect_schema()) == expected_h_schema
+
+    # Check that each insCode appears more than 20 times
+    counts = h.group_by('insCode').agg(pl.len().alias('count'))
+    mode_count = counts.select(pl.col('count').mode().first()).collect().item()
+    assert mode_count > 20
 
 
 @file('test_identity.json')

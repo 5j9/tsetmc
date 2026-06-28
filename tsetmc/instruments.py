@@ -501,7 +501,7 @@ class Instrument:
         j = await _api(f'Fund/GetETFByInsCode/{self.code}')
         return j['etf']
 
-    async def related_companies(self, cs=None) -> dict[str, _DataFrame]:
+    async def related_companies(self, cs=None) -> dict[str, _pl.LazyFrame]:
         if cs is None:
             cs = await self.cs
 

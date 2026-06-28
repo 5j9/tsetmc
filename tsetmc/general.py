@@ -8,16 +8,11 @@ from html_table_parse import (
     to_list as _html_to_list,
 )
 from lxml.html import fromstring as _html
-from pandas import (
-    NA as _NA,
-    json_normalize as _json_normalize,
-)
 
 from tsetmc import (
     Flow as _Flow,
     FlowType as _FlowType,
     _api,
-    _DataFrame,
     _get_par_tree,
     _mem_par_tree,
     _numerize_pl,
@@ -180,7 +175,7 @@ def _parse_tds(tds):
             yield float(text.replace(',', ''))
         except ValueError:
             if td == '\xa0':
-                yield _NA
+                yield None
 
 
 class MarketOverview(_TypedDict):
@@ -214,13 +209,25 @@ async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
     return overview
 
 
-async def related_companies(cs: str) -> dict[str, _DataFrame]:
+async def related_companies(cs: str) -> dict[str, _pl.LazyFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
-    j['relatedCompany'] = _json_normalize(j['relatedCompany'])
-    j['relatedCompanyThirtyDayHistory'] = _DataFrame(
-        j['relatedCompanyThirtyDayHistory'], copy=False
-    )
-    return j
+
+    data = j['relatedCompany']
+    df = _pl.LazyFrame(data)
+
+    # Handle the instrument struct specifically (similar to trade_top)
+    if data and isinstance(data[0], dict) and 'instrument' in data[0]:
+        # Drop top-level insCode if it exists (instrument has it)
+        df = df.drop('insCode', strict=False)
+        df = df.unnest('instrument')
+
+    # Convert relatedCompanyThirtyDayHistory (no nested structs)
+    related_history = _pl.LazyFrame(j['relatedCompanyThirtyDayHistory'])
+
+    return {
+        'relatedCompany': df,
+        'relatedCompanyThirtyDayHistory': related_history,
+    }
 
 
 async def messages(
@@ -255,8 +262,18 @@ async def trade_top(
     ],
     flow: _FlowType = _Flow.BOURSE,
     top: int | str = '9999',
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     j = await _api(
         f'ClosingPrice/GetTradeTop/{category}/{flow}/{top}', fa=True
     )
-    return _json_normalize(j['tradeTop'])
+
+    data = j['tradeTop']
+    df = _pl.LazyFrame(data)
+
+    # Check if the data has the 'instrument' field by looking at the first item
+    if data and isinstance(data[0], dict) and 'instrument' in data[0]:
+        # Drop top-level insCode if it exists (instrument has it, avoid duplication)
+        df = df.drop('insCode', strict=False)
+        df = df.unnest('instrument')
+
+    return df

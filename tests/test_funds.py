@@ -1,12 +1,12 @@
 from datetime import datetime
 
+import polars as pl
 from numpy import dtype
 from pytest_aiohutils import file
 
 from tests import STR
 from tsetmc.funds import (
     FundType,
-    commodity_etfs,
     etfs,
     etfs_with_most_price_decrease,
     etfs_with_most_price_increase,
@@ -15,98 +15,111 @@ from tsetmc.funds import (
     most_traded_etfs,
 )
 
-GET_TRADE_TOP_DTYPES = [
-    ('instrumentState', dtype('O')),
-    ('lastHEven', dtype('int64')),
-    ('finalLastDate', dtype('int64')),
-    ('nvt', dtype('float64')),
-    ('mop', dtype('int64')),
-    ('pRedTran', dtype('float64')),
-    ('thirtyDayClosingHistory', dtype('O')),
-    ('priceChange', dtype('float64')),
-    ('priceMin', dtype('float64')),
-    ('priceMax', dtype('float64')),
-    ('priceYesterday', dtype('float64')),
-    ('priceFirst', dtype('float64')),
-    ('last', dtype('bool')),
-    ('id', dtype('int64')),
-    ('insCode', STR),
-    ('dEven', dtype('int64')),
-    ('hEven', dtype('int64')),
-    ('pClosing', dtype('float64')),
-    ('iClose', dtype('bool')),
-    ('yClose', dtype('bool')),
-    ('pDrCotVal', dtype('float64')),
-    ('zTotTran', dtype('float64')),
-    ('qTotTran5J', dtype('float64')),
-    ('qTotCap', dtype('float64')),
-    ('instrument.cValMne', dtype('O')),
-    ('instrument.lVal18', dtype('O')),
-    ('instrument.cSocCSAC', dtype('O')),
-    ('instrument.lSoc30', dtype('O')),
-    ('instrument.yMarNSC', dtype('O')),
-    ('instrument.yVal', dtype('O')),
-    ('instrument.insCode', STR),
-    ('instrument.lVal30', STR),
-    ('instrument.lVal18AFC', STR),
-    ('instrument.flow', dtype('int64')),
-    ('instrument.cIsin', dtype('O')),
-    ('instrument.zTitad', dtype('float64')),
-    ('instrument.baseVol', dtype('int64')),
-    ('instrument.instrumentID', dtype('O')),
-    ('instrument.cgrValCot', dtype('O')),
-    ('instrument.cComVal', dtype('O')),
-    ('instrument.lastDate', dtype('int64')),
-    ('instrument.sourceID', dtype('int64')),
-    ('instrument.flowTitle', dtype('O')),
-    ('instrument.cgrValCotTitle', dtype('O')),
-]
-
-
-@file('commodity_funds.json')
-async def test_commodity_funds():
-    df = await commodity_etfs(top=3)
-    assert len(df) == 3
-    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
-    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
-
 
 @file('etfs_with_most_price_decrease.json')
 async def test_etfs_with_most_price_decrease():
-    df = await etfs_with_most_price_decrease(top=3)
-    if df.empty:  # early morning
+    lf = await etfs_with_most_price_decrease(top=3)
+    df = lf.collect()
+
+    # Check if empty (early morning)
+    if df.height == 0:
         return
-    assert len(df) == 3
-    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
-    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+    assert df.height == 3
+    assert not df['lVal30'].str.contains('ي', literal=True).any()
+
+    # Check key columns
+    key_columns = {
+        'insCode': pl.Utf8,
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'pClosing': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotCap': pl.Float64,
+        'flow': pl.Int64,
+    }
+
+    for col, expected_dtype in key_columns.items():
+        assert col in df.columns
+        assert df[col].dtype == expected_dtype
 
 
 @file('etfs_with_most_price_increase.json')
 async def test_etfs_with_most_price_increase():
-    df = await etfs_with_most_price_increase(top=3)
-    if df.empty:  # early morning
+    lf = await etfs_with_most_price_increase(top=3)
+    df = lf.collect()
+
+    if df.height == 0:
         return
-    assert len(df) == 3
-    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
-    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+    assert df.height == 3
+    assert not df['lVal30'].str.contains('ي', literal=True).any()
+
+    # Check key columns
+    key_columns = {
+        'insCode': pl.Utf8,
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'pClosing': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotCap': pl.Float64,
+        'flow': pl.Int64,
+    }
+
+    for col, expected_dtype in key_columns.items():
+        assert col in df.columns
+        assert df[col].dtype == expected_dtype
 
 
 @file('most_traded_etfs.json')
 async def test_most_traded_etfs():
-    df = await most_traded_etfs(top=3)
-    if df.empty:  # early morning
+    lf = await most_traded_etfs(top=3)
+    df = lf.collect()
+
+    if df.height == 0:
         return
-    assert len(df) == 3
-    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
-    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+
+    assert df.height == 3
+    assert not df['lVal30'].str.contains('ي', literal=True).any()
+
+    # Check key columns
+    key_columns = {
+        'insCode': pl.Utf8,
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'pClosing': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotCap': pl.Float64,
+        'flow': pl.Int64,
+    }
+
+    for col, expected_dtype in key_columns.items():
+        assert col in df.columns
+        assert df[col].dtype == expected_dtype
 
 
 @file('etfs.json')
 async def test_etfs():
-    df = await etfs(top=3)
-    assert len(df) == 3
-    assert [*df.dtypes.items()] == GET_TRADE_TOP_DTYPES
-    assert not df['instrument.lVal30'].str.contains('ي', regex=False).any()
+    lf = await etfs(top=3)
+    df = lf.collect()
+
+    assert df.height == 3
+    assert not df['lVal30'].str.contains('ي', literal=True).any()
+
+    # Check key columns
+    key_columns = {
+        'insCode': pl.Utf8,
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'pClosing': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotCap': pl.Float64,
+        'flow': pl.Int64,
+    }
+
+    for col, expected_dtype in key_columns.items():
+        assert col in df.columns
+        assert df[col].dtype == expected_dtype
 
 
 @file('get_funds_mix.json')

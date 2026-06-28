@@ -1,6 +1,8 @@
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
 
+import polars as _pl
+
 from tsetmc import (
     Flow as _Flow,
     FlowType as _FlowType,
@@ -56,34 +58,34 @@ async def fund_details(reg_no: str | int) -> dict:
 
 async def commodity_etfs(
     *, flow: _FlowType = _Flow.MERCANTILE, top: int | str = '9999'
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """tsetmc.com > بورس کالا > صندوق های قابل معامله"""
     return await trade_top(category='CommodityFund', flow=flow, top=top)
 
 
 async def etfs_with_most_price_decrease(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین کاهش قیمت"""
     return await trade_top(category='PClosingBtmETF', flow=flow, top=top)
 
 
 async def etfs_with_most_price_increase(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین افزایش قیمت"""
     return await trade_top(category='PClosingTopETF', flow=flow, top=top)
 
 
 async def most_traded_etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > بیشترین حجم معامله"""
     return await trade_top(category='MostTradedETF', flow=flow, top=top)
 
 
 async def etfs(
     *, flow: _FlowType = _Flow.BOURSE, top: int | str = '9999'
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """tsetmc.com > بورس اوراق بهادار تهران > صندوق های قابل معامله > معاملات صندوق های قابل معامله"""
     return await trade_top(category='ETF', flow=flow, top=top)
