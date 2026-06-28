@@ -225,14 +225,13 @@ async def related_companies(cs: str) -> dict[str, _DataFrame]:
 
 async def messages(
     *, flow: _FlowType = _Flow.GENERAL, top: int | str = 200
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """See also: ``search_messages`` and ``Instrument.messages``."""
     j = await _api(f'Msg/GetMsgByFlow/{flow}/{top}', fa=True)
-    df = _DataFrame(j['msg'])
-    return df
+    return _pl.LazyFrame(j['msg'])
 
 
-async def search_messages(*, sh_date: str, term: str) -> _DataFrame:
+async def search_messages(*, sh_date: str, term: str) -> _pl.LazyFrame:
     """https://tsetmc.com/MsgTop
 
     :param term: Only return messages containing this term.
@@ -241,7 +240,7 @@ async def search_messages(*, sh_date: str, term: str) -> _DataFrame:
     See also: ``messages`` and ``Instrument.messages``.
     """
     j = await _api(f'Msg/GetMsgByDevenAndLVal18AFC/{sh_date}/{term}', fa=True)
-    return _DataFrame(j['msg'])
+    return _pl.LazyFrame(j['msg'])
 
 
 async def trade_top(
