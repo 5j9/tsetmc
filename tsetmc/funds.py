@@ -7,7 +7,6 @@ from tsetmc import (
     Flow as _Flow,
     FlowType as _FlowType,
     _api,
-    _DataFrame,
 )
 from tsetmc.general import trade_top
 
@@ -35,24 +34,35 @@ async def funds(type_: FundType | int | str, /) -> _pl.LazyFrame:
 
 
 async def fund_details(reg_no: str | int) -> dict:
-    """reg_no (regNo) can be objtained using `tsetmc.funds.funds` function.
+    """reg_no (regNo) can be obtained using `tsetmc.funds.funds` function.
 
-    `'stats` values is a DataFrame with the following columns:
+    `stats` values is a LazyFrame with the following columns:
         recordDate: _datetime
         navSub: int
         netAsset: float
         navStat: int
         navRed: int
-    recordDate is set as index.
     """
     j = await _api(f'Fund/GetFundInDetail/{reg_no}')
     assert len(j) == 1
     fund = j['fund']
-    df = fund['stats'] = _DataFrame(fund['stats'])
-    df['recordDate'] = df['recordDate'].astype('datetime64[ns]')
-    df.set_index('recordDate', inplace=True)
+
+    # Convert stats to Polars LazyFrame
+    df = _pl.LazyFrame(fund['stats'])
+
+    # Convert recordDate to datetime
+    df = df.with_columns(_pl.col('recordDate').cast(_pl.Datetime))
+
+    # Sort by recordDate
+    df = df.sort('recordDate')
+
+    # Store in fund dict
+    fund['stats'] = df
+
+    # Convert date strings to datetime objects
     fund['recordDate'] = _datetime.fromisoformat(fund['recordDate'])
     fund['initiationDate'] = _datetime.fromisoformat(fund['initiationDate'])
+
     return fund
 
 

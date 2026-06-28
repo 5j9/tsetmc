@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import polars as pl
-from numpy import dtype
 from pytest_aiohutils import file
 
 from tsetmc.funds import (
@@ -202,25 +201,28 @@ async def test_get_funds():
 @file('agas_details.json')
 async def test_fund_details():
     d = await fund_details('11341')
-    df = d['stats']
+    df = d['stats'].collect()
+
+    # Check date types
     assert type(d['recordDate']) is type(d['initiationDate']) is datetime
-    assert [*df.dtypes.items()] == [
-        (
-            'navSub',
-            dtype('float64'),
-        ),
-        (
-            'netAsset',
-            dtype('float64'),
-        ),
-        (
-            'navStat',
-            dtype('float64'),
-        ),
-        (
-            'navRed',
-            dtype('float64'),
-        ),
-    ]
-    assert df.index.name == 'recordDate'
-    assert df.index.dtype == 'datetime64[ns]'
+
+    # Check schema (Polars has no index, so recordDate is a regular column)
+    expected_schema = {
+        'recordDate': pl.Datetime,
+        'navSub': pl.Float64,
+        'netAsset': pl.Float64,
+        'navStat': pl.Float64,
+        'navRed': pl.Float64,
+    }
+
+    # Check each column's dtype
+    for col, expected_dtype in expected_schema.items():
+        assert col in df.columns, f"Column '{col}' not found"
+        assert df[col].dtype == expected_dtype, (
+            f"Column '{col}' has dtype {df[col].dtype}, expected {expected_dtype}"
+        )
+
+    # Check that recordDate is sorted (like an index)
+    # Get the recordDate column and check if it's sorted
+    record_dates = df['recordDate'].to_list()
+    assert record_dates == sorted(record_dates), 'recordDate is not sorted'
