@@ -688,19 +688,25 @@ class Instrument:
         )
         return df
 
-    async def price_history(self, adjusted: bool = True) -> _DataFrame:
-        # As far as I can tell the new tsetmc site does not have any
-        # API for adjusted price history, but see self.price_adjustments.
+    async def price_history(self, adjusted: bool = True) -> _pl.LazyFrame:
         content = await _get(
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'
         )
-        df = _csv2df(
-            _BytesIO(content),
-            names=('date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'),
-            index_col='date',
-            parse_dates=True,
-        )
-        return df
+        return _pl.scan_csv(
+            _StringIO(content.decode()),
+            eol_char=';',
+            has_header=False,
+            new_columns=['date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'],
+            schema_overrides={
+                'date': _pl.String,
+                'pmax': _pl.Int64,
+                'pmin': _pl.Int64,
+                'pf': _pl.Int64,
+                'pl': _pl.Int64,
+                'tvol': _pl.Int64,
+                'pc': _pl.Int64,
+            },
+        ).with_columns(_pl.col('date').str.strptime(_pl.Date, format='%Y%m%d'))
 
     @_deprecated('use `Instrument.client_type_history` instead')
     async def client_type_history_old(self) -> _DataFrame:

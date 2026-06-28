@@ -473,17 +473,21 @@ async def test_price_adjustments():
 
 @file('latif_financial_aph.aspx')
 async def test_adjusted_price_history():
-    df = await Instrument(16422980660132735).price_history()
-    assert df.index.name == 'date'
-    assert df.index.dtype == dtype('<M8[us]')
-    assert [*df.dtypes.items()] == [
-        ('pmax', dtype('int64')),
-        ('pmin', dtype('int64')),
-        ('pf', dtype('int64')),
-        ('pl', dtype('int64')),
-        ('tvol', dtype('int64')),
-        ('pc', dtype('int64')),
-    ]
+    lf = await Instrument(16422980660132735).price_history()
+    df = lf.collect()
+
+    # Check schema directly
+    expected_schema = {
+        'date': pl.Date,
+        'pmax': pl.Int64,
+        'pmin': pl.Int64,
+        'pf': pl.Int64,
+        'pl': pl.Int64,
+        'tvol': pl.Int64,
+        'pc': pl.Int64,
+    }
+
+    assert df.schema == expected_schema
 
 
 @file('search_mellat.txt')
