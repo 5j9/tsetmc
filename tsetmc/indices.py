@@ -26,8 +26,8 @@ class Index:
         df = df.with_columns(
             _pl.concat_str(
                 [
-                    _pl.col('dEven').cast(_pl.Utf8),
-                    _pl.col('hEven').cast(_pl.Utf8).str.zfill(6),
+                    _pl.col('dEven').cast(_pl.String),
+                    _pl.col('hEven').cast(_pl.String).str.zfill(6),
                 ]
             )
             .str.strptime(_pl.Datetime, format='%Y%m%d%H%M%S')
@@ -46,7 +46,7 @@ class Index:
         # Convert dEven to datetime
         df = df.with_columns(
             _pl.col('dEven')
-            .cast(_pl.Utf8)
+            .cast(_pl.String)
             .str.strptime(_pl.Datetime, format='%Y%m%d')
             .alias('date')
         ).drop('dEven')

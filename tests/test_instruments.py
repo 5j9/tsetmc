@@ -688,7 +688,7 @@ async def test_daily_closing_price():
         'priceFirst': pl.Float64,
         'last': pl.Boolean,
         'id': pl.Int64,
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,
@@ -767,7 +767,7 @@ async def test_related_companies():
         'priceFirst': pl.Float64,
         'last': pl.Boolean,
         'id': pl.Int64,
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,
@@ -784,8 +784,8 @@ async def test_related_companies():
         'lSoc30': pl.Null,  # Always null
         'yMarNSC': pl.Null,  # Always null
         'yVal': pl.Null,  # Always null
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'flow': pl.Int64,
         'cIsin': pl.Null,  # Always null
         'zTitad': pl.Float64,
@@ -803,7 +803,7 @@ async def test_related_companies():
     # Check relatedCompanyThirtyDayHistory schema
     expected_h_schema = {
         'id': pl.Int64,
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,

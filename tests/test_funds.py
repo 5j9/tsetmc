@@ -28,9 +28,9 @@ async def test_etfs_with_most_price_decrease():
 
     # Check key columns
     key_columns = {
-        'insCode': pl.Utf8,
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'insCode': pl.String,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'pClosing': pl.Float64,
         'zTotTran': pl.Float64,
         'qTotCap': pl.Float64,
@@ -55,9 +55,9 @@ async def test_etfs_with_most_price_increase():
 
     # Check key columns
     key_columns = {
-        'insCode': pl.Utf8,
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'insCode': pl.String,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'pClosing': pl.Float64,
         'zTotTran': pl.Float64,
         'qTotCap': pl.Float64,
@@ -82,9 +82,9 @@ async def test_most_traded_etfs():
 
     # Check key columns
     key_columns = {
-        'insCode': pl.Utf8,
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'insCode': pl.String,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'pClosing': pl.Float64,
         'zTotTran': pl.Float64,
         'qTotCap': pl.Float64,
@@ -106,9 +106,9 @@ async def test_etfs():
 
     # Check key columns
     key_columns = {
-        'insCode': pl.Utf8,
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'insCode': pl.String,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'pClosing': pl.Float64,
         'zTotTran': pl.Float64,
         'qTotCap': pl.Float64,
@@ -135,11 +135,11 @@ async def test_get_funds():
         'regNo': pl.Int64,
         'fundType': pl.Int64,
         'fundSize': pl.Int64,
-        'recordDate': pl.Utf8,
+        'recordDate': pl.String,
         'navRed': pl.Float64,
         'navSub': pl.Float64,
         'navStat': pl.Float64,
-        'initiationDate': pl.Utf8,
+        'initiationDate': pl.String,
         'netAsset': pl.Float64,
         'units': pl.Float64,
         'unitsSub': pl.Float64,
@@ -150,13 +150,13 @@ async def test_get_funds():
         'portfolioDeposit': pl.Float64,
         'portfolioOther': pl.Float64,
         'portfolioCash': pl.Float64,
-        'custodian': pl.Utf8,
+        'custodian': pl.String,
         'custodianEN': pl.Null,
-        'guarantor': pl.Utf8,
+        'guarantor': pl.String,
         'guarantorEN': pl.Null,
-        'manager': pl.Utf8,
+        'manager': pl.String,
         'managerEN': pl.Null,
-        'investmentManager': pl.Utf8,
+        'investmentManager': pl.String,
         'investmentManagerEN': pl.Null,
         'marketMaker': pl.Null,
         'marketMakerEN': pl.Null,
@@ -182,9 +182,9 @@ async def test_get_funds():
         'day180Return': pl.Float64,
         'day365Return': pl.Float64,
         'dayFirstReturn': pl.Float64,
-        'mfName': pl.Utf8,
+        'mfName': pl.String,
         'fixIncome': pl.Int64,
-        'mfNameEng': pl.Utf8,
+        'mfNameEng': pl.String,
     }
 
     # Check each column's dtype

@@ -114,8 +114,8 @@ async def test_sectors_summary():
 
     # Check full schema
     expected_schema = {
-        'cSecVal': pl.Utf8,
-        'lSecVal': pl.Utf8,
+        'cSecVal': pl.String,
+        'lSecVal': pl.String,
         'c1': pl.Int64,
         'c2': pl.Int64,
         'c3': pl.Int64,
@@ -135,7 +135,7 @@ async def test_industrial_groups_overview():
 
     # Check both column names and dtypes
     expected = {
-        'group': pl.Utf8,
+        'group': pl.String,
         ':-2': pl.Int64,
         '-2:0': pl.Int64,
         '0:2': pl.Int64,
@@ -159,7 +159,7 @@ async def test_market_map_data():
 
     # Check schema
     expected_schema = {
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,
@@ -168,17 +168,17 @@ async def test_market_map_data():
         'qTotTran5J': pl.Float64,
         'qTotCap': pl.Float64,
         'priceYesterday': pl.Float64,
-        'lVal18AFC': pl.Utf8,
-        'lVal30': pl.Utf8,
-        'lSecVal': pl.Utf8,
+        'lVal18AFC': pl.String,
+        'lVal30': pl.String,
+        'lSecVal': pl.String,
         'marketCap': pl.Float64,
         'percent': pl.Float64,
         'priceChangePercent': pl.Float64,
-        'hEvenShow': pl.Utf8,
-        'color': pl.Utf8,
+        'hEvenShow': pl.String,
+        'color': pl.String,
         'fontSize': pl.Int64,
-        'fontColor': pl.Utf8,
-        'customLabel': pl.Utf8,
+        'fontColor': pl.String,
+        'customLabel': pl.String,
     }
 
     assert dict(df.schema) == expected_schema
@@ -195,9 +195,9 @@ async def test_major_holders_activity():
     expected_schema = {}
 
     # First 3 columns
-    expected_schema['ins_code'] = pl.Utf8
-    expected_schema['l30'] = pl.Utf8
-    expected_schema['holder'] = pl.Utf8
+    expected_schema['ins_code'] = pl.String
+    expected_schema['l30'] = pl.String
+    expected_schema['holder'] = pl.String
 
     # Remaining columns (we don't know their names, but they should be float64)
     for col in df.columns[3:]:
@@ -217,7 +217,7 @@ async def test_top_industry_groups():
 
     # Check full schema
     expected_schema = {
-        'group': pl.Utf8,
+        'group': pl.String,
         'mv': pl.Float64,
         'tno': pl.Float64,
         'tvol': pl.Float64,
@@ -242,8 +242,8 @@ MSG_SCHEMA = {
     'tseMsgIdn': pl.Int64,
     'dEven': pl.Int64,
     'hEven': pl.Int64,
-    'tseTitle': pl.Utf8,
-    'tseDesc': pl.Utf8,
+    'tseTitle': pl.String,
+    'tseDesc': pl.String,
     'flow': pl.Int64,
 }
 

@@ -11,7 +11,7 @@ async def test_last_state():
     df = lf.collect()
 
     expected_schema = {
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'xDrNivJIdx004': pl.Float64,
@@ -20,7 +20,7 @@ async def test_last_state():
         'xVarIdxJRfV': pl.Float64,
         'last': pl.Boolean,
         'indexChange': pl.Float64,
-        'lVal30': pl.Utf8,
+        'lVal30': pl.String,
         'c1': pl.Int64,
         'c2': pl.Int64,
         'c3': pl.Int64,
@@ -116,7 +116,7 @@ async def test_companies():
         'priceFirst': pl.Float64,
         'last': pl.Boolean,
         'id': pl.Int64,
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,
@@ -133,8 +133,8 @@ async def test_companies():
         'lSoc30': pl.Null,
         'yMarNSC': pl.Null,
         'yVal': pl.Null,
-        'lVal30': pl.Utf8,
-        'lVal18AFC': pl.Utf8,
+        'lVal30': pl.String,
+        'lVal18AFC': pl.String,
         'flow': pl.Int64,
         'cIsin': pl.Null,
         'zTitad': pl.Float64,
@@ -152,7 +152,7 @@ async def test_companies():
     # Check companies_history schema
     expected_history_schema = {
         'id': pl.Int64,
-        'insCode': pl.Utf8,
+        'insCode': pl.String,
         'dEven': pl.Int64,
         'hEven': pl.Int64,
         'pClosing': pl.Float64,

@@ -455,7 +455,7 @@ class Instrument:
                 [
                     # Parse date: dEven is YYYYMMDD
                     _pl.col('dEven')
-                    .cast(_pl.Utf8)
+                    .cast(_pl.String)
                     .str.strptime(_pl.Date, format='%Y%m%d')
                     .alias('date'),
                     # Parse time: hEven is HHMMSS (without leading zeros)
