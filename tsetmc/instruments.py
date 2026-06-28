@@ -693,7 +693,7 @@ class Instrument:
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'
         )
         return _pl.scan_csv(
-            _StringIO(content.decode()),
+            _BytesIO(content),
             eol_char=';',
             has_header=False,
             new_columns=['date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'],
