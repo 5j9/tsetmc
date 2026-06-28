@@ -1,30 +1,32 @@
-from numpy import dtype
+import polars as pl
 from pytest_aiohutils import file, validate_dict
 
-from tests import STR
 from tsetmc import InstrumentInfo
 from tsetmc.indices import Index, last_state
 
 
 @file('last_state.json')
 async def test_last_state():
-    df = await last_state()
-    assert [*df.dtypes.items()] == [
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('xDrNivJIdx004', dtype('float64')),
-        ('xPhNivJIdx004', dtype('float64')),
-        ('xPbNivJIdx004', dtype('float64')),
-        ('xVarIdxJRfV', dtype('float64')),
-        ('last', dtype('bool')),
-        ('indexChange', dtype('float64')),
-        ('lVal30', STR),
-        ('c1', dtype('int64')),
-        ('c2', dtype('int64')),
-        ('c3', dtype('int64')),
-        ('c4', dtype('int64')),
-    ]
+    lf = await last_state()
+    df = lf.collect()
+
+    expected_schema = {
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'xDrNivJIdx004': pl.Float64,
+        'xPhNivJIdx004': pl.Float64,
+        'xPbNivJIdx004': pl.Float64,
+        'xVarIdxJRfV': pl.Float64,
+        'last': pl.Boolean,
+        'indexChange': pl.Float64,
+        'lVal30': pl.Utf8,
+        'c1': pl.Int64,
+        'c2': pl.Int64,
+        'c3': pl.Int64,
+        'c4': pl.Int64,
+    }
+    assert dict(df.schema) == expected_schema
 
 
 OVERALL = Index('32097828799138957')
@@ -38,34 +40,52 @@ async def test_info():
 
 @file('index_last_day_history.json')
 async def test_last_day_history():
-    df = await OVERALL.last_day_history()
-    assert [*df.dtypes.items()] == [
-        ('insCode', dtype('O')),
-        ('xDrNivJIdx004', dtype('float64')),
-        ('xPhNivJIdx004', dtype('float64')),
-        ('xPbNivJIdx004', dtype('float64')),
-        ('xVarIdxJRfV', dtype('float64')),
-        ('last', dtype('bool')),
-        ('indexChange', dtype('float64')),
-        ('lVal30', dtype('O')),
-        ('c1', dtype('int64')),
-        ('c2', dtype('int64')),
-        ('c3', dtype('int64')),
-        ('c4', dtype('int64')),
-    ]
-    assert df.index.dtype == 'datetime64[us]'
+    lf = await OVERALL.last_day_history()
+    df = lf.collect()
+
+    expected_schema = {
+        'insCode': pl.Null,
+        'xDrNivJIdx004': pl.Float64,
+        'xPhNivJIdx004': pl.Float64,
+        'xPbNivJIdx004': pl.Float64,
+        'xVarIdxJRfV': pl.Float64,
+        'last': pl.Boolean,
+        'indexChange': pl.Float64,
+        'lVal30': pl.Null,
+        'c1': pl.Int64,
+        'c2': pl.Int64,
+        'c3': pl.Int64,
+        'c4': pl.Int64,
+        'datetime': pl.Datetime,  # The datetime column we created
+    }
+    assert dict(df.schema) == expected_schema
+
+    # Check that datetime column is datetime type
+    assert df['datetime'].dtype == pl.Datetime
+    # Check that it's sorted
+    dates = df['datetime'].to_list()
+    assert dates == sorted(dates)
 
 
 @file('index_history.json')
 async def test_history():
-    df = await OVERALL.history()
-    assert [*df.dtypes.items()] == [
-        ('insCode', dtype('int64')),
-        ('xNivInuClMresIbs', dtype('float64')),
-        ('xNivInuPbMresIbs', dtype('float64')),
-        ('xNivInuPhMresIbs', dtype('float64')),
-    ]
-    assert df.index.dtype == 'datetime64[us]'
+    lf = await OVERALL.history()
+    df = lf.collect()
+
+    expected_schema = {
+        'insCode': pl.Int64,
+        'xNivInuClMresIbs': pl.Float64,
+        'xNivInuPbMresIbs': pl.Float64,
+        'xNivInuPhMresIbs': pl.Float64,
+        'date': pl.Datetime,  # The date column we created
+    }
+    assert dict(df.schema) == expected_schema
+
+    # Check that date column is datetime type
+    assert df['date'].dtype == pl.Datetime
+    # Check that it's sorted
+    dates = df['date'].to_list()
+    assert dates == sorted(dates)
 
 
 ICT = Index('41867092385281437')  # only has two companies currently
@@ -74,66 +94,73 @@ ICT = Index('41867092385281437')  # only has two companies currently
 @file('index_companies.json')
 async def test_companies():
     d = await ICT.companies()
-    companies = d['indexCompany']
-    companies_history = d['relatedCompanyThirtyDayHistory']
-    if companies.empty:  # before the market start
+    companies = d['indexCompany'].collect()
+    companies_history = d['relatedCompanyThirtyDayHistory'].collect()
+
+    if companies.height == 0:  # before the market start
         return
-    assert [*companies.dtypes.items()] == [
-        ('instrumentState', dtype('O')),
-        ('lastHEven', dtype('int64')),
-        ('finalLastDate', dtype('int64')),
-        ('nvt', dtype('float64')),
-        ('mop', dtype('int64')),
-        ('pRedTran', dtype('float64')),
-        ('thirtyDayClosingHistory', dtype('O')),
-        ('priceChange', dtype('float64')),
-        ('priceMin', dtype('float64')),
-        ('priceMax', dtype('float64')),
-        ('priceYesterday', dtype('float64')),
-        ('priceFirst', dtype('float64')),
-        ('last', dtype('bool')),
-        ('id', dtype('int64')),
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-        ('instrument.cValMne', dtype('O')),
-        ('instrument.lVal18', dtype('O')),
-        ('instrument.cSocCSAC', dtype('O')),
-        ('instrument.lSoc30', dtype('O')),
-        ('instrument.yMarNSC', dtype('O')),
-        ('instrument.yVal', dtype('O')),
-        ('instrument.insCode', STR),
-        ('instrument.lVal30', STR),
-        ('instrument.lVal18AFC', STR),
-        ('instrument.flow', dtype('int64')),
-        ('instrument.cIsin', dtype('O')),
-        ('instrument.zTitad', dtype('float64')),
-        ('instrument.baseVol', dtype('int64')),
-        ('instrument.instrumentID', dtype('O')),
-        ('instrument.cgrValCot', dtype('O')),
-        ('instrument.cComVal', dtype('O')),
-        ('instrument.lastDate', dtype('int64')),
-        ('instrument.sourceID', dtype('int64')),
-        ('instrument.flowTitle', dtype('O')),
-        ('instrument.cgrValCotTitle', dtype('O')),
-    ]
-    assert [*companies_history.dtypes.items()] == [
-        ('id', dtype('int64')),
-        ('insCode', STR),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
-    ]
+
+    # Check indexCompany schema (after flattening)
+    expected_company_schema = {
+        'instrumentState': pl.Null,
+        'lastHEven': pl.Int64,
+        'finalLastDate': pl.Int64,
+        'nvt': pl.Float64,
+        'mop': pl.Int64,
+        'pRedTran': pl.Float64,
+        'thirtyDayClosingHistory': pl.Null,
+        'priceChange': pl.Float64,
+        'priceMin': pl.Float64,
+        'priceMax': pl.Float64,
+        'priceYesterday': pl.Float64,
+        'priceFirst': pl.Float64,
+        'last': pl.Boolean,
+        'id': pl.Int64,
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'iClose': pl.Boolean,
+        'yClose': pl.Boolean,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+        # Flattened instrument fields (no 'instrument.' prefix)
+        'cValMne': pl.Null,
+        'lVal18': pl.Null,
+        'cSocCSAC': pl.Null,
+        'lSoc30': pl.Null,
+        'yMarNSC': pl.Null,
+        'yVal': pl.Null,
+        'lVal30': pl.Utf8,
+        'lVal18AFC': pl.Utf8,
+        'flow': pl.Int64,
+        'cIsin': pl.Null,
+        'zTitad': pl.Float64,
+        'baseVol': pl.Int64,
+        'instrumentID': pl.Null,
+        'cgrValCot': pl.Null,
+        'cComVal': pl.Null,
+        'lastDate': pl.Int64,
+        'sourceID': pl.Int64,
+        'flowTitle': pl.Null,
+        'cgrValCotTitle': pl.Null,
+    }
+    assert dict(companies.schema) == expected_company_schema
+
+    # Check companies_history schema
+    expected_history_schema = {
+        'id': pl.Int64,
+        'insCode': pl.Utf8,
+        'dEven': pl.Int64,
+        'hEven': pl.Int64,
+        'pClosing': pl.Float64,
+        'iClose': pl.Boolean,
+        'yClose': pl.Boolean,
+        'pDrCotVal': pl.Float64,
+        'zTotTran': pl.Float64,
+        'qTotTran5J': pl.Float64,
+        'qTotCap': pl.Float64,
+    }
+    assert dict(companies_history.schema) == expected_history_schema
