@@ -4,7 +4,6 @@ import polars as pl
 from numpy import dtype
 from pytest_aiohutils import file
 
-from tests import STR
 from tsetmc.funds import (
     FundType,
     etfs,
@@ -124,66 +123,80 @@ async def test_etfs():
 
 @file('get_funds_mix.json')
 async def test_get_funds():
-    df = await funds(FundType.MIXED)
-    assert len(df) >= 15
-    assert [*df.dtypes.items()] == [
-        ('fundProfits', dtype('O')),
-        ('stats', dtype('O')),
-        ('regNo', dtype('int64')),
-        ('fundType', dtype('int64')),
-        ('fundSize', dtype('int64')),
-        ('recordDate', STR),
-        ('navRed', dtype('float64')),
-        ('navSub', dtype('float64')),
-        ('navStat', dtype('float64')),
-        ('initiationDate', STR),
-        ('netAsset', dtype('float64')),
-        ('units', dtype('float64')),
-        ('unitsSub', dtype('float64')),
-        ('unitsRed', dtype('float64')),
-        ('portfolioFiveBest', dtype('float64')),
-        ('portfolioStock', dtype('float64')),
-        ('portfolioBond', dtype('float64')),
-        ('portfolioDeposit', dtype('float64')),
-        ('portfolioOther', dtype('float64')),
-        ('portfolioCash', dtype('float64')),
-        ('custodian', STR),
-        ('custodianEN', dtype('O')),
-        ('guarantor', STR),
-        ('guarantorEN', dtype('O')),
-        ('manager', STR),
-        ('managerEN', dtype('O')),
-        ('investmentManager', STR),
-        ('investmentManagerEN', dtype('O')),
-        ('marketMaker', dtype('O')),
-        ('marketMakerEN', dtype('O')),
-        ('auditor', dtype('O')),
-        ('auditorEN', dtype('O')),
-        ('name', dtype('O')),
-        ('nameEN', dtype('O')),
-        ('webSite', STR),
-        ('webSiteEN', dtype('O')),
-        ('retInvNo', dtype('int64')),
-        ('insInvNo', dtype('int64')),
-        ('retInvPercent', dtype('float64')),
-        ('insInvPercent', dtype('float64')),
-        ('naturalPercent', dtype('float64')),
-        ('legalPercent', dtype('float64')),
-        ('guaranteedEarningRate', dtype('float64')),
-        ('estimatedEarningRate', dtype('float64')),
-        ('dividentIntervalPeriod', dtype('int64')),
-        ('day1Return', dtype('float64')),
-        ('day7Return', dtype('float64')),
-        ('day30Return', dtype('float64')),
-        ('day90Return', dtype('float64')),
-        ('day180Return', dtype('float64')),
-        ('day365Return', dtype('float64')),
-        ('dayFirstReturn', dtype('float64')),
-        ('mfName', STR),
-        ('fixIncome', dtype('int64')),
-        ('mfNameEng', STR),
-    ]
-    assert not df['mfName'].str.contains('ي', regex=False).any()
+    lf = await funds(FundType.MIXED)
+    df = lf.collect()
+
+    # Check length
+    assert df.height >= 15
+
+    # Check schema
+    expected_schema = {
+        'fundProfits': pl.List,
+        'stats': pl.Null,
+        'regNo': pl.Int64,
+        'fundType': pl.Int64,
+        'fundSize': pl.Int64,
+        'recordDate': pl.Utf8,
+        'navRed': pl.Float64,
+        'navSub': pl.Float64,
+        'navStat': pl.Float64,
+        'initiationDate': pl.Utf8,
+        'netAsset': pl.Float64,
+        'units': pl.Float64,
+        'unitsSub': pl.Float64,
+        'unitsRed': pl.Float64,
+        'portfolioFiveBest': pl.Float64,
+        'portfolioStock': pl.Float64,
+        'portfolioBond': pl.Float64,
+        'portfolioDeposit': pl.Float64,
+        'portfolioOther': pl.Float64,
+        'portfolioCash': pl.Float64,
+        'custodian': pl.Utf8,
+        'custodianEN': pl.Null,
+        'guarantor': pl.Utf8,
+        'guarantorEN': pl.Null,
+        'manager': pl.Utf8,
+        'managerEN': pl.Null,
+        'investmentManager': pl.Utf8,
+        'investmentManagerEN': pl.Null,
+        'marketMaker': pl.Null,
+        'marketMakerEN': pl.Null,
+        'auditor': pl.Null,
+        'auditorEN': pl.Null,
+        'name': pl.Null,
+        'nameEN': pl.Null,
+        'webSite': pl.String,
+        'webSiteEN': pl.Null,
+        'retInvNo': pl.Int64,
+        'insInvNo': pl.Int64,
+        'retInvPercent': pl.Float64,
+        'insInvPercent': pl.Float64,
+        'naturalPercent': pl.Float64,
+        'legalPercent': pl.Float64,
+        'guaranteedEarningRate': pl.Float64,
+        'estimatedEarningRate': pl.Float64,
+        'dividentIntervalPeriod': pl.Int64,
+        'day1Return': pl.Float64,
+        'day7Return': pl.Float64,
+        'day30Return': pl.Float64,
+        'day90Return': pl.Float64,
+        'day180Return': pl.Float64,
+        'day365Return': pl.Float64,
+        'dayFirstReturn': pl.Float64,
+        'mfName': pl.Utf8,
+        'fixIncome': pl.Int64,
+        'mfNameEng': pl.Utf8,
+    }
+
+    # Check each column's dtype
+    for col, expected_dtype in expected_schema.items():
+        assert col in df.columns, f"Column '{col}' not found"
+        assert df[col].dtype == expected_dtype, (
+            f"Column '{col}' has dtype {df[col].dtype}, expected {expected_dtype}"
+        )
+
+    # Check that no mfName contains 'ي'
+    assert not df['mfName'].str.contains('ي', literal=True).any()
 
 
 @file('agas_details.json')

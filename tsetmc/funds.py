@@ -25,13 +25,13 @@ class FundType(_StrEnum):
     FUND = '17'
 
 
-async def funds(type_: FundType | int | str, /) -> _DataFrame:
+async def funds(type_: FundType | int | str, /) -> _pl.LazyFrame:
     """tsetmc.com > صندوق های سرمایه گذاری"""
     j = await _api(f'Fund/GetFunds/{type_}')
-    df = _DataFrame(j['funds'])
     # regNo is sometimes returned as float by the server
-    df['regNo'] = df['regNo'].astype(int)
-    return df
+    return _pl.LazyFrame(j['funds']).with_columns(
+        _pl.col('regNo').cast(_pl.Int64)
+    )
 
 
 async def fund_details(reg_no: str | int) -> dict:
