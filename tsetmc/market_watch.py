@@ -574,7 +574,7 @@ class MarketWatch:
 
         self.init_callback(mwi)
 
-        heven = _cast(int, self.lf.select('heven').max().collect().item())
+        heven = _cast(int, self.lf.select('heven').max().collect().item() or 0)
         refid = mwi['refid']
         set_event()
         clear_event()
@@ -601,13 +601,14 @@ class MarketWatch:
 
             refid = mwp['refid']
 
-            price_updates = mwp['price_updates'].collect()
-            mwp['price_updates'] = price_updates.lazy()
-            new_prices = mwp['new_prices'].collect()
-            mwp['new_prices'] = new_prices.lazy()
-            heven = max(
-                price_updates.select(_pl.col('heven').max()).item(),
-                new_prices.select(_pl.col('heven').max()).item(),
+            pu_max, np_max = _pl.collect_all(
+                [
+                    mwp['price_updates'].select('heven').max(),
+                    mwp['new_prices'].select('heven').max(),
+                ]
             )
+
+            heven = max(heven, pu_max.item() or heven, np_max.item() or heven)
+
             set_event()
             clear_event()
