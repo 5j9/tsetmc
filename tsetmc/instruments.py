@@ -314,6 +314,17 @@ class ClientTypeOnDate(_TypedDict):
     sell_I_Count: int
 
 
+_DPS_HISTORY_SCHEMA = {
+    'publish_date': _pl.String,
+    'meeting_date': _pl.String,
+    'fiscal_year': _pl.String,
+    'profit_or_loss_after_tax': _pl.Float64,
+    'distributable_profit': _pl.Float64,
+    'accumulated_profit_at_the_end_of_the_period': _pl.Float64,
+    'cash_earnings_per_share': _pl.Float64,
+}
+
+
 class Instrument:
     __slots__ = '_cisin', '_cs', '_isin', '_l18', '_l30', 'code'
 
@@ -957,32 +968,34 @@ class Instrument:
             await _get_par_tree(f'15131W&i={self.code}')
         )
 
-    async def dps_history(self) -> _DataFrame:
+    async def dps_history(self) -> _pl.LazyFrame:
         """Get DPS history.
 
-        :raises pandas.errors.EmptyDataError: No columns to parse from file
+        :raises polars.exceptions.NoDataError: If the source content is completely empty
         """
-        # Note: Currently does not have an _api equivalent. The DPS tab is
-        # non-functional in the new tsetmc website.
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
-        df = _csv2df(
+
+        # Eagerly load via scan_csv + collect
+        lf = _pl.scan_csv(
             _BytesIO(content),
-            header=None,
-            sep='@',
+            has_header=False,
+            separator='@',
+            schema=_DPS_HISTORY_SCHEMA,
+            eol_char=';',
         )
-        cols = [
-            'publish_date',
-            'meeting_date',
-            'fiscal_year',
-            'profit_or_loss_after_tax',
-            'distributable_profit',
-            'accumulated_profit_at_the_end_of_the_period',
-            'cash_earnings_per_share',
-        ]
-        df.columns = cols
-        for col in cols[:3]:
-            df[col] = [_jgstrptime(d, '%Y/%m/%d') for d in df[col]]
-        return df
+
+        # Map the Jalali date conversion over the first 3 date columns
+        date_cols = ['publish_date', 'meeting_date', 'fiscal_year']
+
+        return lf.with_columns(
+            [
+                _pl.col(c).map_elements(
+                    lambda d: _jgstrptime(d, '%Y/%m/%d').date() if d else None,
+                    return_dtype=_pl.Date,
+                )
+                for c in date_cols
+            ]
+        )
 
     def on_date(self, date: int | str) -> 'InstrumentOnDate':
         """Return an object resembling Instrument on a specific date.

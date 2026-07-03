@@ -502,18 +502,19 @@ async def test_messages():
 
 @file('fmelli_dps.txt')
 async def test_dps_history():
-    df = await FMELLI.dps_history()
-    if df.empty:  # the server response is unreliable
+    lf = await FMELLI.dps_history()
+    df = lf.collect()
+    if df.is_empty():
         skip('dps_history returned empty df')
-    assert [*df.dtypes.items()] == [
-        ('publish_date', dtype('<M8[us]')),
-        ('meeting_date', dtype('<M8[us]')),
-        ('fiscal_year', dtype('<M8[us]')),
-        ('profit_or_loss_after_tax', dtype('float64')),
-        ('distributable_profit', dtype('float64')),
-        ('accumulated_profit_at_the_end_of_the_period', dtype('float64')),
-        ('cash_earnings_per_share', dtype('float64')),
-    ]
+    assert dict(df.schema) == {
+        'publish_date': pl.Date,
+        'meeting_date': pl.Date,
+        'fiscal_year': pl.Date,
+        'profit_or_loss_after_tax': pl.Float64,
+        'distributable_profit': pl.Float64,
+        'accumulated_profit_at_the_end_of_the_period': pl.Float64,
+        'cash_earnings_per_share': pl.Float64,
+    }
 
 
 def test_hash():
