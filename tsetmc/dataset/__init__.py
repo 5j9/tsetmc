@@ -50,7 +50,7 @@ async def add_instrument(inst: _Instrument) -> None:
 async def update(df: _Df | None = None) -> None:
     if df is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
-        df = mwi['prices']
+        df = mwi['prices'].collect().to_pandas().set_index('ins_code')
     df = df[['l18', 'l30']][
         ~(
             df['yval'].isin(YVAL_EXCLUSIONS)

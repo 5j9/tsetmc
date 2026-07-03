@@ -1,15 +1,13 @@
+import polars as pl
 from jdatetime import datetime as jdatetime
-from numpy import dtype
-from pandas import DataFrame
-from pandas.api.types import is_numeric_dtype
 from pytest import skip
 from pytest_aiohutils import file, validate_dict
 
-from tests import STR
 from tsetmc import MarketState
 from tsetmc.market_watch import (
-    _BEST_LIMITS_NAMES,
+    _BEST_LIMITS_SCHEMA,
     _PRICE_DTYPES_26,
+    _PRICE_UPDATE_COLUMNS,
     _parse_market_state,
     client_type_all,
     closing_price_all,
@@ -22,65 +20,71 @@ from tsetmc.market_watch import (
     status_changes,
 )
 
-PRICE_DTYPES_ITEMS = [*_PRICE_DTYPES_26.items()][1:]  # ins_code is now index
-BL_STACKED_COLUMNS = _BEST_LIMITS_NAMES[2:]
+PRICE_DTYPES_ITEMS = _PRICE_DTYPES_26
+BL_STACKED_COLUMNS = list(_BEST_LIMITS_SCHEMA)[2:]
 BL_UNSTACKED_COLUMNS = [
     f'{n}{i}' for n in BL_STACKED_COLUMNS for i in range(1, 6)
 ]
-string = 'string'
 
 
-def assert_bl_dtypes(df: DataFrame, unstacked=True):
+def assert_bl_dtypes(lf: pl.DataFrame, unstacked=True):
+    schema = lf.collect_schema()
+    assert schema['ins_code'] == pl.String
+
     if unstacked:
         columns = BL_UNSTACKED_COLUMNS
-        index = df.index
-        assert index.name == 'ins_code'
-        assert index.dtype == string
     else:
-        columns = BL_STACKED_COLUMNS
-        index = df.index
-        assert index.names == ['ins_code', 'number']
-        assert [*index.dtypes] == [string, 'int64']  # type: ignore
+        columns = list(BL_STACKED_COLUMNS)
+        assert schema['number'] == pl.Int64
 
     for c in columns:
-        col = df.pop(c)
-        assert is_numeric_dtype(col)
+        assert schema[c] in (pl.Int64, pl.Float64, pl.Int32)
 
 
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
-    assert [*mwi['prices'].dtypes.items()] == PRICE_DTYPES_ITEMS
-    assert [*mwi['best_limits'].index.dtypes.items()] == [  # type: ignore
-        ('ins_code', string),
-        ('number', dtype('int64')),
-    ]
+    assert mwi['prices'].collect_schema() == PRICE_DTYPES_ITEMS
+
+    bl_schema = mwi['best_limits'].collect_schema()
+    assert bl_schema['ins_code'] == pl.String
+    assert bl_schema['number'] == pl.Int64
     assert 'market_state' not in mwi
 
     mwi = await market_watch_init(market_state=True)
-    prices = mwi['prices']
+    prices = mwi['prices'].collect()
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
     assert_bl_dtypes(prices)
-    assert [*prices.dtypes.items()] == PRICE_DTYPES_ITEMS
 
-    i = prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == string
+    expected_combined_schema = {
+        **_PRICE_DTYPES_26,
+        **{
+            c: pl.Int64
+            for c in BL_UNSTACKED_COLUMNS
+            if c not in _PRICE_DTYPES_26
+        },
+    }
+    assert dict(prices.collect_schema()) == expected_combined_schema
 
     mwi = await market_watch_init(prices=False, market_state=False)
     assert 'prices' not in mwi
-    assert [*mwi['best_limits'].index.dtypes.items()] == [  # type: ignore
-        ('ins_code', string),
-        ('number', dtype('int64')),
-    ]
+    bl_schema = mwi['best_limits'].collect_schema()
+    assert bl_schema['ins_code'] == pl.String
+    assert bl_schema['number'] == pl.Int64
 
 
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
-    df = await closing_price_all()
-    assert all(t == 'int64' for t in df.dtypes)
-    assert df.columns.to_list() == [
+    lf = await closing_price_all()
+    schema = lf.collect_schema()
+
+    assert schema['ins_code'] == pl.String
+    assert schema['n'] == pl.Int64
+
+    expected_cols = [
+        'ins_code',
+        'n',
         'pc',
         'pl',
         'tno',
@@ -91,42 +95,44 @@ async def test_closing_price_all():
         'py',
         'pf',
     ]
-    assert [*df.index.dtypes.items()] == [  # type: ignore
-        ('ins_code', string),
-        ('n', dtype('int64')),
-    ]
+    assert list(schema.keys()) == expected_cols
+    for c in expected_cols[1:]:
+        assert schema[c] == pl.Int64
 
 
 @file('ClientTypeAll.aspx')
 async def test_client_type_all():
-    df = await client_type_all()
-    assert all(
-        df.columns
-        == [
-            'n_buy_count',
-            'l_buy_count',
-            'n_buy_volume',
-            'l_buy_volume',
-            'n_sell_count',
-            'l_sell_count',
-            'n_sell_volume',
-            'l_sell_volume',
-        ]
-    )
-    assert df.index.name == 'ins_code'
-    assert df.index.dtype == string
-    if df.empty:
-        return
-    assert all(dt == 'int64' for dt in df.dtypes)
+    lf = await client_type_all()
+    schema = lf.collect_schema()
+
+    expected_cols = [
+        'ins_code',
+        'n_buy_count',
+        'l_buy_count',
+        'n_buy_volume',
+        'l_buy_volume',
+        'n_sell_count',
+        'l_sell_count',
+        'n_sell_volume',
+        'l_sell_volume',
+    ]
+    assert list(schema.keys()) == expected_cols
+    assert schema['ins_code'] == pl.String
+
+    for c in expected_cols[1:]:
+        assert schema[c] == pl.Int64
 
 
 @file('InstValue.aspx')
 async def test_key_stats():
-    df = await key_stats()
-    assert all(df.columns.str.startswith('is'))
-    assert all(t == 'float64' for t in df.dtypes)
-    assert df.index.name == 'ins_code'
-    assert df.index.dtype == string
+    lf = await key_stats()
+    schema = lf.collect_schema()
+
+    assert schema['ins_code'] == pl.String
+    for col in schema.keys():
+        if col != 'ins_code':
+            assert col.startswith('is')
+            assert schema[col] == pl.Float64
 
 
 def test_parse_index():
@@ -215,12 +221,10 @@ async def test_market_watch_plus_new():
         market_state=False,
         best_limits_prepare_join=False,
     )
-    new_prices = mwp['new_prices']
-    assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    i = new_prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == string
-    best_limits = mwp['best_limits']
+    new_prices = mwp['new_prices'].collect()
+    assert new_prices.schema == _PRICE_DTYPES_26
+
+    best_limits = mwp['best_limits'].collect()
     assert_bl_dtypes(best_limits, False)
     assert 'messages' not in mwp
     assert 'market_state' not in mwp
@@ -231,18 +235,13 @@ async def test_market_watch_plus_empty_prices_error(test_config):
     if not test_config['OFFLINE_MODE']:
         raise skip('this test requires specific recorded input')
     mwp = await market_watch_plus(
-        0,
-        0,
-        messages=True,
-        market_state=True,
-        best_limits_prepare_join=False,
+        0, 0, messages=True, market_state=True, best_limits_prepare_join=False
     )
-    new_prices = mwp['new_prices']
-    assert new_prices.empty
-    i = new_prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == string
-    best_limits = mwp['best_limits']
+    new_prices = mwp['new_prices'].collect()
+    assert new_prices.is_empty()
+    assert new_prices.schema == _PRICE_DTYPES_26
+
+    best_limits = mwp['best_limits'].collect()
     assert_bl_dtypes(best_limits, False)
     assert 'messages' in mwp
 
@@ -252,20 +251,13 @@ async def test_market_watch_plus_update():
     mwp = await market_watch_plus(
         64130, 9540883525, best_limits_prepare_join=False
     )
-    price_updates = mwp['price_updates']
-    assert price_updates.columns.to_list() == [
-        'heven',
-        'pf',
-        'pc',
-        'pl',
-        'tno',
-        'tvol',
-        'tval',
-        'pmin',
-        'pmax',
-    ]
-    assert all(is_numeric_dtype(c) for c in price_updates.dtypes)
-    assert price_updates.index.dtype == string
+    price_updates = mwp['price_updates'].collect()
+    price_schema = price_updates.schema
+    assert list(price_schema.keys()) == list(_PRICE_UPDATE_COLUMNS.keys())
+    assert price_schema['ins_code'] == pl.String
+
+    for c in list(_PRICE_UPDATE_COLUMNS.keys())[1:]:
+        assert price_schema[c] in (pl.Int32, pl.Int64)
 
     market_state = mwp.pop('market_state', None)
     if market_state is not None:
@@ -275,28 +267,25 @@ async def test_market_watch_plus_update():
         assert type(m) is str
         assert m.isnumeric()
 
-    bl = mwp['best_limits']
+    bl = mwp['best_limits'].collect()
     assert_bl_dtypes(bl, False)
-
     assert type(mwp['refid']) == int
 
-    new_prices = mwp['new_prices']
-    assert [*new_prices.dtypes.items()] == PRICE_DTYPES_ITEMS
-    i = new_prices.index
-    assert i.name == 'ins_code'
-    assert i.dtype == string
+    new_prices = mwp['new_prices'].collect()
+    assert new_prices.schema == _PRICE_DTYPES_26
 
 
 @file('status_changes.html')
 async def test_status_changes():
-    df = await status_changes(3)
+    lf = await status_changes(3)
+    df = lf.collect()
     assert len(df) == 3
-    assert (*df.dtypes.items(),) == (
-        ('نماد', string),
-        ('نام', string),
-        ('وضعیت جدید', string),
-        ('date', dtype('<M8[us]')),
-    )
+    assert list(df.schema.items()) == [
+        ('نماد', pl.String),
+        ('نام', pl.String),
+        ('وضعیت جدید', pl.String),
+        ('date', pl.Datetime('us')),
+    ]
 
 
 @file('mwp_23_cols.txt')
@@ -304,7 +293,7 @@ async def test_23_cols(test_config):
     if not test_config['OFFLINE_MODE']:
         raise skip('this test requires specific recorded input')
     mwp = await market_watch_plus(0, 0)
-    assert len(mwp['new_prices'].columns) == 22  # ins_code has become index
+    assert len(mwp['new_prices'].collect_schema()) == 23
 
 
 def test_parse_market_state_with_18_values():
@@ -333,225 +322,91 @@ def test_parse_market_state_with_18_values():
 
 @file('get_market_watch_0.json')
 async def test_get_market_watch():
-    df = await get_market_watch()
-    assert [*df.dtypes.items()] == [
-        (
-            'lva',
-            STR,
-        ),
-        (
-            'lvc',
-            STR,
-        ),
-        (
-            'eps',
-            dtype('float64'),
-        ),
-        (
-            'pe',
-            dtype('float64'),
-        ),
-        (
-            'pmd',
-            dtype('float64'),
-        ),
-        (
-            'pmo',
-            dtype('float64'),
-        ),
-        (
-            'qtj',
-            dtype('float64'),
-        ),
-        (
-            'pdv',
-            dtype('float64'),
-        ),
-        (
-            'ztt',
-            dtype('float64'),
-        ),
-        (
-            'qtc',
-            dtype('float64'),
-        ),
-        (
-            'bv',
-            dtype('float64'),
-        ),
-        (
-            'pc',
-            dtype('float64'),
-        ),
-        (
-            'pcpc',
-            dtype('float64'),
-        ),
-        (
-            'pmn',
-            dtype('float64'),
-        ),
-        (
-            'pmx',
-            dtype('float64'),
-        ),
-        (
-            'py',
-            dtype('float64'),
-        ),
-        (
-            'pf',
-            dtype('float64'),
-        ),
-        (
-            'pcl',
-            dtype('float64'),
-        ),
-        (
-            'vc',
-            dtype('int64'),
-        ),
-        (
-            'csv',
-            STR,
-        ),
-        (
-            'insID',
-            STR,
-        ),
-        (
-            'pMax',
-            dtype('float64'),
-        ),
-        (
-            'pMin',
-            dtype('int64'),
-        ),
-        (
-            'ztd',
-            dtype('float64'),
-        ),
+    lf = await get_market_watch()
+
+    assert list(lf.collect_schema().items()) == [
+        ('lva', pl.String),
+        ('lvc', pl.String),
+        ('eps', pl.Float64),
+        ('pe', pl.Float64),
+        ('pmd', pl.Float64),
+        ('pmo', pl.Float64),
+        ('qtj', pl.Float64),
+        ('pdv', pl.Float64),
+        ('ztt', pl.Float64),
+        ('qtc', pl.Float64),
+        ('bv', pl.Float64),
+        ('pc', pl.Float64),
+        ('pcpc', pl.Float64),
+        ('pmn', pl.Float64),
+        ('pmx', pl.Float64),
+        ('py', pl.Float64),
+        ('pf', pl.Float64),
+        ('pcl', pl.Float64),
+        ('vc', pl.Int64),
+        ('csv', pl.String),
+        ('insID', pl.String),
+        ('pMax', pl.Float64),
+        ('pMin', pl.Int64),
+        ('ztd', pl.Float64),
         (
             'blDs',
-            dtype('O'),
+            pl.List(
+                pl.Struct(
+                    {
+                        'n': pl.Int64,
+                        'qmd': pl.Int64,
+                        'zmd': pl.Int64,
+                        'pmd': pl.Float64,
+                        'pmo': pl.Float64,
+                        'zmo': pl.Int64,
+                        'qmo': pl.Int64,
+                        'rid': pl.Int64,
+                    }
+                )
+            ),
         ),
-        (
-            'id',
-            dtype('int64'),
-        ),
-        (
-            'insCode',
-            STR,
-        ),
-        (
-            'dEven',
-            dtype('int64'),
-        ),
-        (
-            'hEven',
-            dtype('int64'),
-        ),
-        (
-            'pClosing',
-            dtype('float64'),
-        ),
-        (
-            'iClose',
-            dtype('bool'),
-        ),
-        (
-            'yClose',
-            dtype('bool'),
-        ),
-        (
-            'pDrCotVal',
-            dtype('float64'),
-        ),
-        (
-            'zTotTran',
-            dtype('float64'),
-        ),
-        (
-            'qTotTran5J',
-            dtype('float64'),
-        ),
-        (
-            'qTotCap',
-            dtype('float64'),
-        ),
+        ('id', pl.Int64),
+        ('insCode', pl.String),
+        ('dEven', pl.Int64),
+        ('hEven', pl.Int64),
+        ('pClosing', pl.Float64),
+        ('iClose', pl.Boolean),
+        ('yClose', pl.Boolean),
+        ('pDrCotVal', pl.Float64),
+        ('zTotTran', pl.Float64),
+        ('qTotTran5J', pl.Float64),
+        ('qTotCap', pl.Float64),
     ]
 
 
 @file('get_client_type_all.json')
 async def test_get_client_type_all():
-    df = await get_client_type_all()
-    assert [*df.dtypes.items()] == [
-        (
-            'insCode',
-            STR,
-        ),
-        (
-            'buy_I_Volume',
-            dtype('float64'),
-        ),
-        (
-            'buy_N_Volume',
-            dtype('float64'),
-        ),
-        (
-            'buy_DDD_Volume',
-            dtype('float64'),
-        ),
-        (
-            'buy_CountI',
-            dtype('int64'),
-        ),
-        (
-            'buy_CountN',
-            dtype('int64'),
-        ),
-        (
-            'buy_CountDDD',
-            dtype('int64'),
-        ),
-        (
-            'sell_I_Volume',
-            dtype('float64'),
-        ),
-        (
-            'sell_N_Volume',
-            dtype('float64'),
-        ),
-        (
-            'sell_CountI',
-            dtype('int64'),
-        ),
-        (
-            'sell_CountN',
-            dtype('int64'),
-        ),
+    lf = await get_client_type_all()
+
+    assert [*lf.collect_schema().items()] == [
+        ('insCode', pl.String),
+        ('buy_I_Volume', pl.Float64),
+        ('buy_N_Volume', pl.Float64),
+        ('buy_DDD_Volume', pl.Float64),
+        ('buy_CountI', pl.Int64),
+        ('buy_CountN', pl.Int64),
+        ('buy_CountDDD', pl.Int64),
+        ('sell_I_Volume', pl.Float64),
+        ('sell_N_Volume', pl.Float64),
+        ('sell_CountI', pl.Int64),
+        ('sell_CountN', pl.Int64),
     ]
 
 
 @file('get_inst_value_all_inst_all_param.json')
 async def test_get_inst_value_all_inst_all_param():
-    df = await get_inst_value_all_inst_all_param()
-    assert len(df) > 20e3
-    assert [*df.dtypes.items()] == [
-        (
-            'insCode',
-            STR,
-        ),
-        (
-            'dataType',
-            dtype('int64'),
-        ),
-        (
-            'dEven',
-            dtype('int64'),
-        ),
-        (
-            'dataValue',
-            STR,
-        ),
+    lf = await get_inst_value_all_inst_all_param()
+    schema = lf.collect_schema()
+    # Or match the exact sequential list of structural items:
+    assert [*schema.items()] == [
+        ('insCode', pl.String),
+        ('dataType', pl.Int64),
+        ('dEven', pl.Int64),
+        ('dataValue', pl.String),
     ]

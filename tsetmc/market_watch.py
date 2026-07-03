@@ -5,25 +5,19 @@ from typing import (
     Any as _Any,
     NotRequired as _NotRequired,
     TypedDict as _TypedDict,
+    cast as _cast,
 )
 
+import polars as _pl
 from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
     ClientResponseError as _ClientResponseError,
 )
 from aiohutils.pd import html_to_df as _html_to_df
-from numpy import nan as _nan
-from pandas import (
-    Index as _Index,
-    concat as _concat,
-    to_numeric as _to_numeric,
-)
 
 from tsetmc import (
     MarketState,
     _api,
-    _csv2df,
-    _DataFrame,
     _get_data,
     _get_par_tree,
     _jgstrptime,
@@ -32,59 +26,85 @@ from tsetmc import (
     _save_last_content,
 )
 
-_BEST_LIMITS_NAMES = ('ins_code', 'number', 'zo', 'zd', 'pd', 'po', 'qd', 'qo')
+_BEST_LIMITS_SCHEMA = {
+    'ins_code': _pl.String,
+    'number': _pl.Int64,
+    'zo': _pl.Float64,
+    'zd': _pl.Float64,
+    'pd': _pl.Float64,
+    'po': _pl.Float64,
+    'qd': _pl.Float64,
+    'qo': _pl.Float64,
+}
+
 _COMMON_DTYPES = {
-    'heven': 'int32',
-    'pf': 'int64',
-    'pc': 'int64',
-    'pl': 'int64',
-    'tno': 'int64',
-    'tvol': 'int64',
-    'tval': 'int64',
-    'pmin': 'int64',
-    'pmax': 'int64',
+    'heven': _pl.Int32,
+    'pf': _pl.Int64,
+    'pc': _pl.Int64,
+    'pl': _pl.Int64,
+    'tno': _pl.Int64,
+    'tvol': _pl.Int64,
+    'tval': _pl.Int64,
+    'pmin': _pl.Int64,
+    'pmax': _pl.Int64,
 }
+
 _PRICE_DTYPES_23 = {
-    'ins_code': 'string',
-    'isin': 'string',
-    'l18': 'string',
-    'l30': 'string',
+    'ins_code': _pl.String,
+    'isin': _pl.String,
+    'l18': _pl.String,
+    'l30': _pl.String,
     **_COMMON_DTYPES,
-    'py': 'int64',
-    'eps': 'float64',
-    'bvol': 'int64',
-    'visitcount': 'int64',
-    # 0-7 https://old.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'flow': 'int16',
-    # 1-98, see tsetmc.general.cs_codes()
-    'cs': 'string',
-    'tmax': 'float64',
-    'tmin': 'float64',
-    'z': 'int64',
-    # 67-701 https://old.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-    'yval': 'string',
+    'py': _pl.Int64,
+    'eps': _pl.Float64,
+    'bvol': _pl.Int64,
+    'visitcount': _pl.Int64,
+    'flow': _pl.Int16,
+    'cs': _pl.String,
+    'tmax': _pl.Float64,
+    'tmin': _pl.Float64,
+    'z': _pl.Int64,
+    'yval': _pl.String,
 }
+
 _PRICE_DTYPES_26 = _PRICE_DTYPES_23 | {
-    'predtran': 'float64',
-    'buyop': 'Int64',
-    'cgrvalcot': 'string',
+    'predtran': _pl.Float64,
+    'buyop': _pl.Int64,
+    'cgrvalcot': _pl.String,
 }
-_PRICE_UPDATE_COLUMNS = {'ins_code': 'string', **_COMMON_DTYPES}
+
+_PRICE_UPDATE_COLUMNS = {'ins_code': _pl.String, **_COMMON_DTYPES}
 
 
 class MarketWatchInit(_TypedDict):
-    prices: _DataFrame
-    best_limits: _DataFrame
+    prices: _pl.LazyFrame
+    best_limits: _pl.LazyFrame
     market_state: MarketState
     refid: int
 
 
-def _unstack_best_limits(bl: _DataFrame) -> _DataFrame:
-    # merge multiple rows sharing the same `row` number into one row.
-    # a fascinating solution from https://stackoverflow.com/a/53563551/2705757
-    bl = bl.unstack()  # type: ignore
-    bl.columns = [f'{name}{number}' for name, number in bl.columns]
-    return bl
+def _unstack_best_limits(bl: _pl.LazyFrame, /) -> _pl.LazyFrame:
+    # Polars pivot currently requires an eager Frame collection.
+    df = bl.collect()
+    value_cols = [c for c in df.columns if c not in ('ins_code', 'number')]
+
+    pivoted = df.pivot(
+        on='number',
+        index='ins_code',
+        values=value_cols,
+        aggregate_function='first',
+    )
+
+    new_names = []
+    for col in pivoted.columns:
+        if col == 'ins_code':
+            new_names.append(col)
+            continue
+        name, number = col.split('_')
+        new_names.append(f'{name}{number}')
+
+    pivoted.columns = new_names
+    return pivoted.lazy()
 
 
 async def market_watch_init(
@@ -115,36 +135,53 @@ async def market_watch_init(
         raise
 
     result: dict = {'refid': int(refid)}
+
     if prices:
-        result['prices'] = price_df = _csv2df(
+        # Direct generation of a LazyFrame using scan_csv on the memory buffer
+        price_df = _pl.scan_csv(
             _StringIO(states),
-            names=_PRICE_DTYPES_26,  # type: ignore
-            index_col='ins_code',
-            dtype=_PRICE_DTYPES_26,  # type: ignore
+            has_header=False,
+            schema=_PRICE_DTYPES_26,
+            eol_char=';',
+            missing_columns='insert',
         )
+        result['prices'] = price_df
+    else:
+        price_df = None
+
     if best_limits:
-        result['best_limits'] = bl = _csv2df(
+        bl = _pl.scan_csv(
             _StringIO(price_rows),
-            names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'},
-            index_col=('ins_code', 'number'),
+            has_header=False,
+            schema={
+                'ins_code': _pl.String,
+                'number': _pl.Int64,
+                'zo': _pl.Int64,
+                'zd': _pl.Int64,
+                'pd': _pl.Int64,
+                'po': _pl.Int64,
+                'qd': _pl.Int64,
+                'qo': _pl.Int64,
+            },
+            eol_char=';',
         )
-    if join and prices and best_limits:
-        # noinspection PyUnboundLocalVariable
-        bl = _unstack_best_limits(bl)  # type: ignore
-        # noinspection PyUnboundLocalVariable
-        joined = bl.join(price_df)  # type: ignore
-        # joined_df.index = to_numeric(joined_df.index, downcast='unsigned')
-        result['prices'] = joined
+        result['best_limits'] = bl
+
+        if join and price_df is not None:
+            bl = _unstack_best_limits(bl)
+            joined = bl.join(price_df, on='ins_code', how='left')
+            result['prices'] = joined
+
     if market_state:
         result['market_state'] = _parse_market_state(market_state_str)
+
     return result  # type: ignore
 
 
 class MarketWatchPlus(_TypedDict):
-    new_prices: _DataFrame
-    price_updates: _DataFrame
-    best_limits: _DataFrame
+    new_prices: _pl.LazyFrame
+    price_updates: _pl.LazyFrame
+    best_limits: _pl.LazyFrame
     messages: list[str]
     market_state: _NotRequired[MarketState]
     refid: int
@@ -154,51 +191,38 @@ def _parse_inst_prices_str(
     inst_prices_str: str, new_prices: bool, price_updates: bool, result: dict
 ):
     if not inst_prices_str:
-        index = _Index([], dtype=str, name='ins_code')
         if new_prices:
-            result['new_prices'] = _DataFrame(
-                columns=_PRICE_DTYPES_23,  # type: ignore
-                index=index,
-            )
+            result['new_prices'] = _pl.DataFrame(
+                schema=_PRICE_DTYPES_26
+            ).lazy()
         if price_updates:
-            result['price_updates'] = _DataFrame(
-                columns=_PRICE_UPDATE_COLUMNS,  # type: ignore
-                index=index,
-            )
+            result['price_updates'] = _pl.DataFrame(
+                schema=_PRICE_UPDATE_COLUMNS
+            ).lazy()
         return
 
     inst_prices = [ip.split(',') for ip in inst_prices_str.split(';')]
+    inst_prices = [
+        [(i if i else None) for i in ip.split(',')]
+        for ip in inst_prices_str.split(';')
+    ]
+
     if new_prices:
         lst = [ip for ip in inst_prices if len(ip) != 10]
         cols26 = not lst or len(lst[0]) == 26
+        target_schema = _PRICE_DTYPES_26 if cols26 else _PRICE_DTYPES_23
         try:
-            # https://github.com/pandas-dev/pandas/issues/57798
-            df = _DataFrame(
-                lst,
-                columns=_PRICE_DTYPES_26 if cols26 else _PRICE_DTYPES_23,  # type: ignore
-                copy=False,
-            )
+            lf = _pl.LazyFrame(lst, schema=target_schema, orient='row')
         except ValueError as e:
             _save_last_content(f'{e}')
             raise e
-        df['eps'] = df['eps'].replace('', _nan)
-        if cols26:
-            df['predtran'] = df['predtran'].replace('', _nan)
-            df['buyop'] = df['buyop'].replace('', _nan)
-            df = df.astype(_PRICE_DTYPES_26)
-        else:
-            df = df.astype(_PRICE_DTYPES_23)
-        df.set_index('ins_code', inplace=True)
-        result['new_prices'] = df
+        result['new_prices'] = lf
+
     if price_updates:
         lst = [ip for ip in inst_prices if len(ip) == 10]
-        # noinspection PyTypeChecker
-        # https://github.com/pandas-dev/pandas/issues/57798
-        df = _DataFrame(lst, columns=_PRICE_UPDATE_COLUMNS, copy=False)  # type: ignore
-        df = df.astype(_PRICE_UPDATE_COLUMNS)
-        df['ins_code'] = df['ins_code'].astype('string')
-        df.set_index('ins_code', inplace=True)
-        result['price_updates'] = df
+        result['price_updates'] = _pl.LazyFrame(
+            lst, schema=_PRICE_UPDATE_COLUMNS, orient='row'
+        )
 
 
 async def market_watch_plus(
@@ -229,6 +253,7 @@ async def market_watch_plus(
     except ValueError as e:
         _save_last_content(f'{e!r}')
         raise e
+
     result = {}
     if messages:
         # whenever a new id appears, users should try to fetch new messages
@@ -236,41 +261,47 @@ async def market_watch_plus(
         # todo: implement functions to fetch messages using message ids
         # NewMsgNotification, NewInsStateNotification, NewCodalNotification
         result['messages'] = handle_msg.split(',')
-    if market_state:
-        if update_fast_view != '':
-            result['market_state'] = _parse_market_state(update_fast_view)
+    if market_state and update_fast_view != '':
+        result['market_state'] = _parse_market_state(update_fast_view)
+
     if new_prices or price_updates:
         _parse_inst_prices_str(
             inst_prices_str, new_prices, price_updates, result
         )
+
     if best_limits:
-        bl = _csv2df(
+        bl = _pl.scan_csv(
             _StringIO(best_limit),
-            index_col=('ins_code', 'number'),
-            names=_BEST_LIMITS_NAMES,
-            dtype={'ins_code': 'string'},
+            has_header=False,
+            schema=_BEST_LIMITS_SCHEMA,
+            eol_char=';',
         )
         if best_limits_prepare_join:
             bl = _unstack_best_limits(bl)
         result['best_limits'] = bl
+
     result['refid'] = int(str_refid)
     return result  # type: ignore
 
 
-def _split_id_rows(content: bytes, id_row_len: int) -> list:
-    data = content.split(b';')
-    for i, datum in enumerate(data):
+def _split_id_rows(content: bytes, id_row_len: int) -> list[list[str]]:
+    raw_rows = content.split(b';')
+    parsed_data: list[list[str]] = []
+
+    id_ = b''
+    for datum in raw_rows:
         items = datum.split(b',')
         if len(items) == id_row_len:
             id_ = items[0]
         else:
-            # noinspection PyUnboundLocalVariable
-            items.insert(0, id_)  # type: ignore
-        data[i] = items  # type: ignore
-    return data
+            items.insert(0, id_)
+
+        parsed_data.append([x.decode('utf-8', errors='ignore') for x in items])
+
+    return parsed_data
 
 
-async def closing_price_all() -> _DataFrame:
+async def closing_price_all() -> _pl.LazyFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
@@ -294,46 +325,48 @@ async def closing_price_all() -> _DataFrame:
         'py',
         'pf',
     ]
-    df = _DataFrame(
-        data,
-        columns=columns,
-        copy=False,
-    )
-    df[columns[1:]] = df[columns[1:]].apply(_to_numeric)
-    df['ins_code'] = df['ins_code'].astype('string')
-    df.set_index(['ins_code', 'n'], inplace=True)
-    return df
+
+    df = _pl.DataFrame(data, schema=columns, orient='row')
+    df = df.with_columns(
+        [_pl.col(c).cast(_pl.Int64, strict=False) for c in columns[1:]]
+    ).with_columns(_pl.col('ins_code').cast(_pl.String))
+
+    return df.lazy()
 
 
-async def client_type_all() -> _DataFrame:
+_CLIENT_TYPE_SCHEMA = {
+    'ins_code': _pl.String,
+    'n_buy_count': _pl.Int64,
+    'l_buy_count': _pl.Int64,
+    'n_buy_volume': _pl.Int64,
+    'l_buy_volume': _pl.Int64,
+    'n_sell_count': _pl.Int64,
+    'l_sell_count': _pl.Int64,
+    'n_sell_volume': _pl.Int64,
+    'l_sell_volume': _pl.Int64,
+}
+
+
+async def client_type_all() -> _pl.LazyFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
 
-    See also the new experimental equivallent of this function:
+    See also the new experimental equivalent of this function:
         ``get_client_type_all``
     """
     content = await _get_data('ClientTypeAll.aspx')
-    df = _csv2df(
+
+    df = _pl.scan_csv(
         _BytesIO(content),
-        names=(
-            'ins_code',
-            'n_buy_count',
-            'l_buy_count',
-            'n_buy_volume',
-            'l_buy_volume',
-            'n_sell_count',
-            'l_sell_count',
-            'n_sell_volume',
-            'l_sell_volume',
-        ),
-        index_col='ins_code',
-        dtype={'ins_code': 'string'},
+        has_header=False,
+        schema=_CLIENT_TYPE_SCHEMA,
+        eol_char=';',
     )
     return df
 
 
-async def key_stats() -> _DataFrame:
+async def key_stats() -> _pl.LazyFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
@@ -345,28 +378,44 @@ async def key_stats() -> _DataFrame:
     """
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
-    df = _DataFrame(data, columns=('ins_code', 'n', 'value'), copy=False)
-    df.set_index(df.pop('ins_code').astype('string'), inplace=True)
-    df = df.apply(_to_numeric)
-    df = df.pivot(columns='n', values='value')
-    df.columns = [f'is{c}' for c in df.columns]
-    return df
+    columns = ('ins_code', 'n', 'value')
+
+    df = _pl.DataFrame(data, schema=columns, orient='row')
+    df = df.with_columns(
+        [
+            _pl.col('ins_code').cast(_pl.String),
+            _pl.col('n').cast(_pl.String),
+            _pl.col('value').cast(_pl.Float64, strict=False),
+        ]
+    )
+
+    pivoted = df.pivot(
+        on='n', index='ins_code', values='value', aggregate_function='first'
+    )
+    pivoted = pivoted.rename(
+        {c: f'is{c}' for c in pivoted.columns if c != 'ins_code'}
+    )
+    return pivoted.lazy()
 
 
-async def status_changes(top: int | str) -> _DataFrame:
+async def status_changes(top: int | str) -> _pl.LazyFrame:
     text = await _get_par_tree(f'15131L&top={top}')
-    df = _html_to_df(text)
-    df['date'] = [
-        _jgstrptime(i, format='%Y/%m/%d %H:%M:%S')
-        for i in (df['تاریخ'] + ' ' + df['زمان'])
+    pdf = _html_to_df(text)
+    df = _pl.from_pandas(pdf)
+
+    datetime_strings = df['تاریخ'] + ' ' + df['زمان']
+    parsed_dates = [
+        _jgstrptime(i, format='%Y/%m/%d %H:%M:%S') for i in datetime_strings
     ]
-    df.drop(columns=['تاریخ', 'زمان'], inplace=True)
-    return df
+
+    df = df.with_columns(_pl.Series('date', parsed_dates))
+    df = df.drop(['تاریخ', 'زمان'])
+    return df.lazy()
 
 
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
-) -> _DataFrame:
+) -> _pl.LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api(
         'ClosingPrice/GetMarketWatch'
@@ -386,30 +435,32 @@ async def get_market_watch(
         f'&hEven={h_even}'
         f'&RefID={ref_id}'
     )
-    # assert len(j) == 1
-    df = _DataFrame(j['marketwatch'])
-    df['pe'] = df['pe'].replace('-', None).astype('float64')
-    return df
+    df = _pl.DataFrame(j['marketwatch'])
+    if 'pe' in df.columns:
+        df = df.with_columns(
+            _pl.col('pe').replace('-', None).cast(_pl.Float64, strict=False)
+        )
+    return df.lazy()
 
 
-async def get_client_type_all() -> _DataFrame:
+async def get_client_type_all() -> _pl.LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('ClientType/GetClientTypeAll')
     if len(j.keys()) > 1:
         _logger.warning(
             f'Unexpected keys in get_client_type_all response: {j.keys()=}'
         )
-    return _DataFrame(j['clientTypeAllDto'])
+    return _pl.DataFrame(j['clientTypeAllDto']).lazy()
 
 
-async def get_inst_value_all_inst_all_param() -> _DataFrame:
+async def get_inst_value_all_inst_all_param() -> _pl.LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('MarketData/GetInstValueAllInstAllParam')
     if len(j.keys()) > 1:
         _logger.warning(
             f'Unexpected keys in get_inst_value_all_inst_all_param response: {j.keys()=}'
         )
-    return _DataFrame(j['instValueAllInstAllParam'])
+    return _pl.DataFrame(j['instValueAllInstAllParam']).lazy()
 
 
 class MarketWatch:
@@ -471,23 +522,41 @@ class MarketWatch:
         )
 
     def _default_init_callback(self, d: MarketWatchInit):
-        self.df = d.get('prices')
+        self.df = d.get('prices').collect()
         self.market_state = d.get('market_state')
 
-    def _default_plus_callback(self, d: MarketWatchPlus):
-        # Note that None and True both translate to True
+    def _default_plus_callback(self, mwp: MarketWatchPlus):
         kwget = self.plus_kwargs.get
-        dget = d.get
-        if kwget('best_limits') is not False:
-            self.df.update(dget('best_limits'))
+        mwp_get = mwp.get
 
-        if kwget('new_prices') is not False:
-            self.df = _concat([self.df, dget('new_prices')])
+        if kwget('best_limits'):
+            best_limits = mwp_get('best_limits').collect()
+            self.df = self.df.join(best_limits, on='ins_code', how='left')
 
-        if kwget('price_updates') is not False:
-            self.df.update(dget('price_updates'))
+        if kwget('new_prices'):
+            new_prices = mwp_get('new_prices').collect()
+            self.df = _pl.concat([self.df, new_prices], how='diagonal')
 
-        self.market_state = dget('market_state')
+        if kwget('price_updates'):
+            price_updates = mwp_get('price_updates').collect()
+            self.df = self.df.join(
+                price_updates, on='ins_code', how='left', suffix='_update'
+            )
+            update_exprs = []
+            for col in self.df.columns:
+                if col.endswith('_update'):
+                    base_col = col.replace('_update', '')
+                    update_exprs.append(
+                        _pl.coalesce([_pl.col(col), _pl.col(base_col)]).alias(
+                            base_col
+                        )
+                    )
+            if update_exprs:
+                self.df = self.df.with_columns(update_exprs).select(
+                    [c for c in self.df.columns if not c.endswith('_update')]
+                )
+
+        self.market_state = mwp_get('market_state')
 
     async def start(self):
         update_event = self.update_event
@@ -504,7 +573,8 @@ class MarketWatch:
             break
 
         self.init_callback(mwi)
-        heven = mwi['prices'].heven.max()
+
+        heven = _cast(int, self.df['heven'].max())
         refid = mwi['refid']
         set_event()
         clear_event()
@@ -530,9 +600,14 @@ class MarketWatch:
             self.plus_callback(mwp)
 
             refid = mwp['refid']
+
+            price_updates = mwp['price_updates'].collect()
+            mwp['price_updates'] = price_updates.lazy()
+            new_prices = mwp['new_prices'].collect()
+            mwp['new_prices'] = new_prices.lazy()
             heven = max(
-                mwp['price_updates'].heven.max(),
-                mwp['new_prices'].heven.max(),
+                price_updates.select(_pl.col('heven').max()).item(),
+                new_prices.select(_pl.col('heven').max()).item(),
             )
             set_event()
             clear_event()
