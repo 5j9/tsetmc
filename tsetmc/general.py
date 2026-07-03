@@ -202,8 +202,7 @@ async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
     j = await _api(f'MarketData/GetMarketOverview/{flow}')
     overview = j['marketOverview']
     overview['marketActivityTimestamp'] = _datetime.strptime(
-        f'{overview["marketActivityDEven"]}'
-        f'{overview["marketActivityHEven"]:>06}',
+        f'{overview["marketActivityDEven"]}{overview["marketActivityHEven"]:>06}',
         '%Y%m%d%H%M%S',
     )
     return overview
