@@ -465,10 +465,10 @@ async def get_inst_value_all_inst_all_param() -> _pl.LazyFrame:
 
 class MarketWatch:
     __slots__ = (
-        'df',
         'init_callback',
         'init_kwargs',
         'interval',
+        'lf',
         'market_state',
         'plus_callback',
         'plus_kwargs',
@@ -501,7 +501,7 @@ class MarketWatch:
 
         If init_callback is None, then self._default_init_callback and
         self._default_plus_callback will be used which will create
-        self.df and keep it up-to-date while the watch is running.
+        self.lf and keep it up-to-date while the watch is running.
         This is convenient, but note that you may be able to be implement a
         more efficient algorith to gather specific updates by using
         custom callback functions.
@@ -522,7 +522,7 @@ class MarketWatch:
         )
 
     def _default_init_callback(self, d: MarketWatchInit):
-        self.df = d.get('prices').collect()
+        self.lf = d.get('prices')
         self.market_state = d.get('market_state')
 
     def _default_plus_callback(self, mwp: MarketWatchPlus):
@@ -530,20 +530,20 @@ class MarketWatch:
         mwp_get = mwp.get
 
         if kwget('best_limits'):
-            best_limits = mwp_get('best_limits').collect()
-            self.df = self.df.join(best_limits, on='ins_code', how='left')
+            best_limits = mwp_get('best_limits')
+            self.lf = self.lf.join(best_limits, on='ins_code', how='left')
 
         if kwget('new_prices'):
-            new_prices = mwp_get('new_prices').collect()
-            self.df = _pl.concat([self.df, new_prices], how='diagonal')
+            new_prices = mwp_get('new_prices')
+            self.lf = _pl.concat([self.lf, new_prices], how='diagonal')
 
         if kwget('price_updates'):
-            price_updates = mwp_get('price_updates').collect()
-            self.df = self.df.join(
+            price_updates = mwp_get('price_updates')
+            self.lf = self.lf.join(
                 price_updates, on='ins_code', how='left', suffix='_update'
             )
             update_exprs = []
-            for col in self.df.columns:
+            for col in self.lf.columns:
                 if col.endswith('_update'):
                     base_col = col.replace('_update', '')
                     update_exprs.append(
@@ -552,8 +552,8 @@ class MarketWatch:
                         )
                     )
             if update_exprs:
-                self.df = self.df.with_columns(update_exprs).select(
-                    [c for c in self.df.columns if not c.endswith('_update')]
+                self.lf = self.lf.with_columns(update_exprs).select(
+                    [c for c in self.lf.columns if not c.endswith('_update')]
                 )
 
         self.market_state = mwp_get('market_state')
@@ -574,7 +574,7 @@ class MarketWatch:
 
         self.init_callback(mwi)
 
-        heven = _cast(int, self.df['heven'].max())
+        heven = _cast(int, self.lf.select('heven').max().collect().item())
         refid = mwi['refid']
         set_event()
         clear_event()
