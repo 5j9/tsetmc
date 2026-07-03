@@ -13,6 +13,7 @@ from tsetmc import InstrumentInfo
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
+    _SEARCH_SCHEMA,
     ETF,
     ClientType,
     ClosingPriceInfo,
@@ -407,22 +408,13 @@ async def test_adjusted_price_history():
 
 @file('search_mellat.txt')
 async def test_old_search():
-    df = await old_search('ملت')
-    assert type(df) is DataFrame
+    lf = await old_search('ملت')
+    df = lf.collect()
+    assert type(df) is pl.DataFrame
     assert len(df) > 40
-    assert [*df.dtypes.items()] == [
-        ('l18', string),
-        ('l30', string),
-        ('ins_code', dtype('int64')),
-        ('retail', dtype('int64')),
-        ('compensation', dtype('int64')),
-        ('wholesale', dtype('int64')),
-        ('_unknown1', dtype('int64')),
-        ('_unknown2', dtype('int64')),
-        ('_unknown3', dtype('int64')),
-        ('_unknown4', dtype('int64')),
-        ('_unknown5', string),
-    ]
+
+    # Clean dictionary check against Polars types
+    assert dict(df.schema) == _SEARCH_SCHEMA
 
 
 @file('search_atlas.txt')

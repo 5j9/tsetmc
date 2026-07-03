@@ -1130,30 +1130,38 @@ async def price_adjustments(flow: _FlowType) -> _DataFrame:
     return df
 
 
-async def old_search(skey: str, /) -> _DataFrame:
-    """`skey` (search key) is usually part of the l18 or l30."""
-    return _csv2df(
-        _StringIO(await _get_data('search.aspx?skey=' + skey, fa=True)),
-        header=None,
-        # Another terminology would be: {
-        #   ins_code: round_lot,
-        #   retail: odd_lot,
-        #   compensation: buyback,
-        #   wholesale: block,
-        # } see: https://www.sena.com/news/77488/
-        names=(
-            'l18',
-            'l30',
-            'ins_code',
-            'retail',
-            'compensation',
-            'wholesale',
-            '_unknown1',
-            '_unknown2',
-            '_unknown3',
-            '_unknown4',
-            '_unknown5',
-        ),
+_SEARCH_SCHEMA = {
+    'l18': _pl.String,
+    'l30': _pl.String,
+    'ins_code': _pl.String,
+    'retail': _pl.Int64,
+    'compensation': _pl.Int64,
+    'wholesale': _pl.Int64,
+    '_unknown1': _pl.Int64,
+    '_unknown2': _pl.Int64,
+    '_unknown3': _pl.Int64,
+    '_unknown4': _pl.Int64,
+    '_unknown5': _pl.String,  # Matches your string test assertion
+}
+
+
+async def old_search(skey: str, /) -> _pl.LazyFrame:
+    """`skey` (search key) is usually part of the l18 or l30.
+
+    Terminology reference for trade types:
+    - ins_code: round_lot
+    - retail: odd_lot
+    - compensation: buyback
+    - wholesale: block
+    See: https://www.sena.com/news/77488/
+    """
+    data = await _get_data('search.aspx?skey=' + skey, fa=True)
+
+    return _pl.scan_csv(
+        _StringIO(data),
+        has_header=False,
+        schema=_SEARCH_SCHEMA,
+        eol_char=';',
     )
 
 
