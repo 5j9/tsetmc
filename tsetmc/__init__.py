@@ -22,9 +22,8 @@ from pandas import (
 
 _logger = _getLogger(__name__)
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
+
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
-
-
 _INDEX_CHANGE_MATCH = _rc(rf'<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?').match
 _INDEX_TIMESTAMP_MATCH = _rc(r'(\d\d)/(\d+)/(\d+) (\d\d):(\d\d):(\d\d)').match
 
