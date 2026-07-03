@@ -640,20 +640,33 @@ class Instrument:
         except ValueError:
             _warning(text)  # usually means the service is unavailable
             raise
+
         if general:
             result = _parse_price_info(price_info)
         else:
             result = {}
+
         if market_state:
             if index_info:  # sometimes index_info is an empty string
                 result['market_state'] = _parse_market_state(index_info)
+
         if best_limits:
-            result['best_limits'] = _csv2df(
+            # Leverage our unified schema mapping pattern with strict data types
+            result['best_limits'] = _pl.scan_csv(
                 _StringIO(orders_info),
-                sep='@',
-                names=('zd', 'qd', 'pd', 'po', 'qo', 'zo'),
-                lineterminator=',',
+                has_header=False,
+                separator='@',
+                eol_char=',',
+                schema={
+                    'zd': _pl.Int64,
+                    'qd': _pl.Int64,
+                    'pd': _pl.Int64,
+                    'po': _pl.Int64,
+                    'qo': _pl.Int64,
+                    'zo': _pl.Int64,
+                },
             )
+
         return result  # type: ignore
 
     @_deprecated('use `Instrument.daily_closing_price` instead')

@@ -1,6 +1,5 @@
 from datetime import datetime
 from types import NoneType
-from typing import cast
 from unittest.mock import patch
 
 import polars as pl
@@ -10,7 +9,7 @@ from pytest import raises, skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
 from tests import STR
-from tsetmc import InstrumentInfo, MarketState
+from tsetmc import InstrumentInfo
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
@@ -20,7 +19,6 @@ from tsetmc.instruments import (
     Codal,
     Identity,
     Instrument,
-    LiveData,
     Message,
     Search,
     ShareHolder,
@@ -116,83 +114,7 @@ async def test_page_data_negative_sector_pe():
     assert_page_data(d)
 
 
-def assert_live_data(
-    ld: LiveData, best_limits=False, market_state=False, nav=False
-):
-    d = cast(dict, ld)
-    if best_limits:
-        best_limits = d.pop('best_limits')
-        assert [*best_limits.dtypes.items()] == [
-            ('zd', dtype('int64')),
-            ('qd', dtype('int64')),
-            ('pd', dtype('int64')),
-            ('po', dtype('int64')),
-            ('qo', dtype('int64')),
-            ('zo', dtype('int64')),
-        ]
-
-    if market_state:
-        market_state = d.pop('market_state', None)
-        if market_state is not None:
-            validate_dict(market_state, MarketState)
-
-    if nav:
-        assert type(d.pop('nav_datetime')) in (datetime, str)
-        assert type(d.pop('nav')) is int
-
-    assert type(d.pop('timestamp')) is datetime
-    for k in ('time', 'status'):
-        assert type(d.pop(k)) is str
-    assert [*d.keys()] == [
-        'pl',
-        'pc',
-        'pf',
-        'py',
-        'pmin',
-        'pmax',
-        'tno',
-        'tvol',
-        'tval',
-    ]
-    assert all(type(v) is int for v in d.values())
-
-
-@file('dara_yekom.txt')
-async def test_dara1_instant():
-    with warns(DeprecationWarning):
-        d = await Instrument(62235397452612911).live_data(  # pyright: ignore[reportDeprecated]
-            market_state=True, best_limits=True
-        )
-    assert_live_data(d, best_limits=True, market_state=True, nav=True)
-
-
-@file('asam.txt')
-async def test_asam_instant():
-    with warns(DeprecationWarning):
-        d = await Instrument(36592972482259020).live_data(best_limits=True)  # pyright: ignore[reportDeprecated]
-    assert_live_data(d, best_limits=True, nav=True)
-
-
 FMELLI = Instrument(35425587644337450)
-
-
-@file('fmelli.txt')
-async def test_fmelli_instant():
-    with warns(DeprecationWarning):
-        d = await FMELLI.live_data(best_limits=False)  # pyright: ignore[reportDeprecated]
-    assert_live_data(d, best_limits=False)
-
-
-@file('vskhooz_short_response.txt')
-async def test_vskhooz_short():
-    with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
-
-
-@file('vskhooz_long_response.txt')
-async def test_vskhooz_long():
-    with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
 
 
 @file('fmelli_trade_history_top2.txt')
@@ -218,13 +140,6 @@ async def test_trade_history():
 
 
 VSADID = Instrument('41713045190742691')
-
-
-@file('vsadid.txt')
-async def test_vsadid():
-    with warns(DeprecationWarning):
-        d = await VSADID.live_data()  # pyright: ignore[reportDeprecated]
-    assert_live_data(d)
 
 
 @file('search_firuze.json')
