@@ -1,4 +1,4 @@
-import pandas as pd  # noqa: F401
+import polars as pl  # noqa: F401
 from pyperclip import copy, paste  # noqa: F401
 
 import tsetmc
