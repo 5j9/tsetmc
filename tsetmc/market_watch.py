@@ -1,6 +1,7 @@
 from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
+from itertools import islice
 from typing import (
     Any as _Any,
     NotRequired as _NotRequired,
@@ -13,7 +14,7 @@ from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
     ClientResponseError as _ClientResponseError,
 )
-from aiohutils.pd import html_to_df as _html_to_df
+from html_table_parse import to_list as _html_to_list
 
 from tsetmc import (
     MarketState,
@@ -400,17 +401,26 @@ async def key_stats() -> _pl.LazyFrame:
 
 async def status_changes(top: int | str) -> _pl.LazyFrame:
     text = await _get_par_tree(f'15131L&top={top}')
-    pdf = _html_to_df(text)
-    df = _pl.from_pandas(pdf)
-
-    datetime_strings = df['تاریخ'] + ' ' + df['زمان']
-    parsed_dates = [
-        _jgstrptime(i, format='%Y/%m/%d %H:%M:%S') for i in datetime_strings
-    ]
-
-    df = df.with_columns(_pl.Series('date', parsed_dates))
-    df = df.drop(['تاریخ', 'زمان'])
-    return df.lazy()
+    lol = _html_to_list(text)
+    assert lol[0] == ['نماد', 'نام', 'تاریخ', 'زمان', 'وضعیت جدید']
+    lf = (
+        _pl.LazyFrame(
+            islice(lol, 1, None),
+            orient='row',
+            schema={
+                k: _pl.String
+                for k in ['symbol', 'name', 'date', 'time', 'new_status']
+            },
+        )
+        .with_columns(datetime=_pl.col('date') + ' ' + _pl.col('time'))
+        .with_columns(
+            _pl.col('datetime').map_elements(
+                lambda e: _jgstrptime(e, format='%Y/%m/%d %H:%M:%S'),
+                return_dtype=_pl.Datetime,
+            )
+        )
+    )
+    return lf
 
 
 async def get_market_watch(

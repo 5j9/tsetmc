@@ -281,10 +281,12 @@ async def test_status_changes():
     df = lf.collect()
     assert len(df) == 3
     assert list(df.schema.items()) == [
-        ('نماد', pl.String),
-        ('نام', pl.String),
-        ('وضعیت جدید', pl.String),
-        ('date', pl.Datetime('us')),
+        ('symbol', pl.String),
+        ('name', pl.String),
+        ('date', pl.String),
+        ('time', pl.String),
+        ('new_status', pl.String),
+        ('datetime', pl.Datetime('us')),
     ]
 
 
