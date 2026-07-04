@@ -726,18 +726,20 @@ class Instrument:
         ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
     @_overload
-    async def client_type_history(self, date: None = None) -> _DataFrame: ...
+    async def client_type_history(
+        self, date: None = None
+    ) -> _pl.LazyFrame: ...
     @_overload
     async def client_type_history(
         self, date: int | str
     ) -> ClientTypeOnDate: ...
     async def client_type_history(
         self, date: int | str | None = None
-    ) -> _DataFrame | ClientTypeOnDate:
+    ) -> _pl.LazyFrame | ClientTypeOnDate:
         """Return natural/legal client type history.
 
         :param date: Gregorian date in YYYYMMDD format. If None, return the
-            full history as a DataFrame. Otherwise, return the data for that
+            full history as a LazyFrame. Otherwise, return the data for that
             specific date as a dict.
 
         Legal persoans are indicated with `N`, natural persons with `I`.
@@ -746,11 +748,8 @@ class Instrument:
             :meth:`Instrument.client_type`
         """
         if date is None:
-            # the following api call returns a result that is equivalent to
-            # j = (await _api(f'ClientType/GetClientType/{self.code}/1/0'))[
-            #     'clientType']
             j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
-            return _DataFrame(j['clientType'], copy=False)
+            return _pl.LazyFrame(j['clientType'])
 
         j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
         return j['clientType']

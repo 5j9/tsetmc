@@ -242,22 +242,24 @@ async def test_client_type_history():
 
 @file('fzar_GetClientTypeHistory_all.json')
 async def test_client_type_history_no_date():
-    df = await Instrument(8175784894140974).client_type_history()
-    assert [*df.dtypes.items()] == [
-        ('recDate', dtype('int64')),
-        ('insCode', string),
-        ('buy_I_Volume', dtype('float64')),
-        ('buy_N_Volume', dtype('float64')),
-        ('buy_I_Value', dtype('float64')),
-        ('buy_N_Value', dtype('float64')),
-        ('buy_N_Count', dtype('int64')),
-        ('sell_I_Volume', dtype('float64')),
-        ('buy_I_Count', dtype('float64')),
-        ('sell_N_Volume', dtype('float64')),
-        ('sell_I_Value', dtype('float64')),
-        ('sell_N_Value', dtype('float64')),
-        ('sell_N_Count', dtype('int64')),
-        ('sell_I_Count', dtype('int64')),
+    lf = await Instrument(8175784894140974).client_type_history()
+    df = lf.collect()
+
+    assert list(df.schema.items()) == [
+        ('recDate', pl.Int64),
+        ('insCode', pl.String),
+        ('buy_I_Volume', pl.Float64),
+        ('buy_N_Volume', pl.Float64),
+        ('buy_I_Value', pl.Float64),
+        ('buy_N_Value', pl.Float64),
+        ('buy_N_Count', pl.Int64),
+        ('sell_I_Volume', pl.Float64),
+        ('buy_I_Count', pl.Float64),
+        ('sell_N_Volume', pl.Float64),
+        ('sell_I_Value', pl.Float64),
+        ('sell_N_Value', pl.Float64),
+        ('sell_N_Count', pl.Int64),
+        ('sell_I_Count', pl.Int64),
     ]
 
 
