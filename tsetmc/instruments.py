@@ -537,26 +537,28 @@ class Instrument:
             }
         else:
             result = {}
+
         if trade_history:
             m = _TRADE_HISTORY(text, pos=m.end())  # type: ignore
             th = _literal_eval(_STR_TO_NUM(m[1]))
-            th = _DataFrame(
+            # Construct a Polars LazyFrame from evaluated Python rows
+            result['trade_history'] = _pl.LazyFrame(
                 th,
-                copy=False,
-                columns=(
-                    'date',
-                    'pc',
-                    'py',
-                    'pmin',
-                    'pmax',
-                    'tno',
-                    'tvol',
-                    'tval',
-                ),
+                schema={
+                    'date': _pl.String,
+                    'pc': _pl.Float64,
+                    'py': _pl.Float64,
+                    'pmin': _pl.Float64,
+                    'pmax': _pl.Float64,
+                    'tno': _pl.Int64,
+                    'tvol': _pl.Int64,
+                    'tval': _pl.Float64,
+                },
+                orient='row',
+            ).with_columns(
+                _pl.col('date').str.to_date(format='%Y%m%d', strict=False)
             )
-            th['date'] = _to_datetime(th['date'], format='%Y%m%d')
-            th.set_index('date', inplace=True)
-            result['trade_history'] = th
+
         if related_companies:
             m = _RELATED_COMPANIES(text, m.end())  # type: ignore
             result['related_companies'] = [
