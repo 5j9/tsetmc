@@ -689,7 +689,7 @@ class Instrument:
         ).with_columns(_pl.col('date').str.strptime(_pl.Date, format='%Y%m%d'))
 
     @_deprecated('use `Instrument.client_type_history` instead')
-    async def client_type_history_old(self) -> _DataFrame:
+    async def client_type_history_old(self) -> _pl.LazyFrame:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
@@ -704,27 +704,26 @@ class Instrument:
         See also:
             :meth:`Instrument.client_type_history`
         """
-        return _csv2df(
-            _BytesIO(await _get_data(f'clienttype.aspx?i={self.code}')),
-            names=(
-                'date',
-                'n_buy_count',
-                'l_buy_count',
-                'n_sell_count',
-                'l_sell_count',
-                'n_buy_volume',
-                'l_buy_volume',
-                'n_sell_volume',
-                'l_sell_volume',
-                'n_buy_value',
-                'l_buy_value',
-                'n_sell_value',
-                'l_sell_value',
-            ),
-            index_col='date',
-            parse_dates=True,
-            dtype='int64',
-        )
+        content = await _get_data(f'clienttype.aspx?i={self.code}')
+        return _pl.scan_csv(
+            _BytesIO(content),
+            schema={
+                'date': _pl.String,
+                'n_buy_count': _pl.Int64,
+                'l_buy_count': _pl.Int64,
+                'n_sell_count': _pl.Int64,
+                'l_sell_count': _pl.Int64,
+                'n_buy_volume': _pl.Int64,
+                'l_buy_volume': _pl.Int64,
+                'n_sell_volume': _pl.Int64,
+                'l_sell_volume': _pl.Int64,
+                'n_buy_value': _pl.Int64,
+                'l_buy_value': _pl.Int64,
+                'n_sell_value': _pl.Int64,
+                'l_sell_value': _pl.Int64,
+            },
+            eol_char=';',
+        ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
     @_overload
     async def client_type_history(self, date: None = None) -> _DataFrame: ...

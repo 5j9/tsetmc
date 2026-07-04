@@ -198,20 +198,24 @@ async def test_identification():
 @file('opal_client_types.txt')
 async def test_client_type_history_old():
     with warns(DeprecationWarning):
-        df = await Instrument(655060129740445).client_type_history_old()  # pyright: ignore[reportDeprecated]
-    assert [*df.dtypes.items()] == [
-        ('n_buy_count', dtype('int64')),
-        ('l_buy_count', dtype('int64')),
-        ('n_sell_count', dtype('int64')),
-        ('l_sell_count', dtype('int64')),
-        ('n_buy_volume', dtype('int64')),
-        ('l_buy_volume', dtype('int64')),
-        ('n_sell_volume', dtype('int64')),
-        ('l_sell_volume', dtype('int64')),
-        ('n_buy_value', dtype('int64')),
-        ('l_buy_value', dtype('int64')),
-        ('n_sell_value', dtype('int64')),
-        ('l_sell_value', dtype('int64')),
+        ldf = await Instrument(655060129740445).client_type_history_old()  # pyright: ignore[reportDeprecated]
+
+    df = ldf.collect()
+
+    assert list(df.schema.items()) == [
+        ('date', pl.Date),
+        ('n_buy_count', pl.Int64),
+        ('l_buy_count', pl.Int64),
+        ('n_sell_count', pl.Int64),
+        ('l_sell_count', pl.Int64),
+        ('n_buy_volume', pl.Int64),
+        ('l_buy_volume', pl.Int64),
+        ('n_sell_volume', pl.Int64),
+        ('l_sell_volume', pl.Int64),
+        ('n_buy_value', pl.Int64),
+        ('l_buy_value', pl.Int64),
+        ('n_sell_value', pl.Int64),
+        ('l_sell_value', pl.Int64),
     ]
 
 
