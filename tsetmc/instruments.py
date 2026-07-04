@@ -11,6 +11,7 @@ import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
 from html_table_parse import to_list as _html_to_list
 from pandas import (
+    DataFrame as _DataFrame,
     to_datetime as _to_datetime,
 )
 
@@ -21,7 +22,6 @@ from tsetmc import (
     InstrumentInfo,
     MarketState,
     _api,
-    _DataFrame,
     _get,
     _get_data,
     _get_par_tree,

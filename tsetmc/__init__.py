@@ -14,11 +14,7 @@ from typing import (
 import polars as _pl
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
-from pandas import (
-    NA as _NA,
-    DataFrame as _DataFrame,
-    read_csv as _read_csv,
-)
+from pandas import read_csv as _read_csv
 
 _logger = _getLogger(__name__)
 _csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
