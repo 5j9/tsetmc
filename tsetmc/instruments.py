@@ -9,6 +9,7 @@ from warnings import deprecated as _deprecated
 
 import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
+from html_table_parse import to_list as _html_to_list
 from pandas import (
     to_datetime as _to_datetime,
 )
@@ -20,7 +21,6 @@ from tsetmc import (
     InstrumentInfo,
     MarketState,
     _api,
-    _csv2df,
     _DataFrame,
     _get,
     _get_data,
@@ -823,7 +823,7 @@ class Instrument:
         return df
 
     @_deprecated('use `Instrument.share_holders` instead')
-    async def holders(self, cisin=None) -> _DataFrame:
+    async def holders(self, cisin=None) -> _pl.LazyFrame:
         """Get list of current major unit/shareholders.
 
         If `cisin` is not provided, it will be fetched using a web request.
@@ -834,27 +834,64 @@ class Instrument:
         if cisin is None:
             cisin = await self.cisin
         text = await _get_par_tree(f'15131T&c={cisin}')
-        df = _html_to_df(text)
-        df.drop(columns='Unnamed: 4', inplace=True)
-        # todo: use separate columns
-        df.columns = ['holder', 'shares/units', '%', 'change']
-        df['id_cisin'] = _findall(r"ShowShareHolder\('([^']*)'\)", text)
-        if df['change'].dtype == 'string':
-            _numerize(df, ('change',), 'Int64')
-        _numerize(df, ('shares/units',), 'int64')
-        return df
+
+        # html_to_list returns list of lists (including header row)
+        raw_data = _html_to_list(text)
+
+        if not raw_data or len(raw_data) <= 1:
+            # Return an empty LazyFrame matching the expected schema structure
+            return _pl.LazyFrame(
+                schema={
+                    'holder': _pl.String,
+                    'shares/units': _pl.Int64,
+                    '%': _pl.Float16,
+                    'change': _pl.Float64,
+                    'id_cisin': _pl.String,
+                }
+            )
+
+        # Slice out the header row [0] and take only the first 4 elements
+        # of each sublist to ignore the 'Unnamed: 4' column entirely.
+        data_rows = [row[:4] for row in raw_data[1:]]
+        id_cisin_list = _findall(r"ShowShareHolder\('([^']*)'\)", text)
+        for row, id_cisin in zip(data_rows, id_cisin_list):
+            row.append(id_cisin)
+
+        # Build the DataFrame directly with the correct column names
+        lf = _pl.LazyFrame(
+            data_rows,
+            schema={
+                'holder': _pl.String,
+                'shares/units': _pl.String,
+                '%': _pl.Float16,
+                'change': _pl.String,
+                'id_cisin': _pl.String,
+            },
+            orient='row',
+        ).with_columns(_pl.col('%').cast(_pl.Float64, strict=False))
+        lf = _numerize(lf, ['change', 'shares/units'])
+
+        # Convert final float structures to Int64 matching original logic
+        lf = lf.with_columns(
+            [
+                _pl.col('shares/units').cast(_pl.Int64, strict=False),
+                _pl.col('change').cast(_pl.Int64, strict=False),
+            ]
+        )
+
+        return lf
 
     @_overload
     @staticmethod
     async def holder(
         id_cisin, history: _Literal[True], other_holdings: _Literal[True]
-    ) -> tuple[_DataFrame, _DataFrame]: ...
+    ) -> tuple[_pl.LazyFrame, _pl.LazyFrame]: ...
 
     @_overload
     @staticmethod
     async def holder(
         id_cisin, history: bool = True, other_holdings: bool = False
-    ) -> _DataFrame: ...
+    ) -> _pl.LazyFrame: ...
 
     @staticmethod
     @_deprecated(
@@ -862,31 +899,37 @@ class Instrument:
     )
     async def holder(
         id_cisin, history=True, other_holdings=False
-    ) -> _DataFrame | tuple[_DataFrame, _DataFrame]:
+    ) -> _pl.LazyFrame | tuple[_pl.LazyFrame, _pl.LazyFrame]:
         """Return history/other holdings for the given holder id_cisin.
 
         `id_cisin` is usually obtained using `self.holders`.
 
         If both `history` and `other_holdings` are True, then a tuple of
-        DataFrames will be returned.
+        LazyFrames will be returned.
         """
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
-        def history_df() -> _DataFrame:
-            return _csv2df(
-                _StringIO(hist),
-                names=('date', 'shares'),
-                dtype='int64',
-                index_col='date',
-                parse_dates=True,
-            )
+        def history_df() -> _pl.LazyFrame:
+            # We encode to bytes since scan_csv requires a file path or byte stream
+            return _pl.scan_csv(
+                _BytesIO(hist.encode()),
+                new_columns=['date', 'shares'],
+                schema_overrides={'date': _pl.String, 'shares': _pl.Int64},
+                eol_char=';',
+            ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
-        def other_holdings_df() -> _DataFrame:
-            return _csv2df(
-                _StringIO(oth),
-                names=('ins_code', 'name', 'shares', 'percent'),
-                index_col='ins_code',
+        def other_holdings_df() -> _pl.LazyFrame:
+            return _pl.scan_csv(
+                _BytesIO(oth.encode()),
+                new_columns=['ins_code', 'name', 'shares', 'percent'],
+                schema_overrides={
+                    'ins_code': _pl.String,
+                    'name': _pl.String,
+                    'shares': _pl.Int64,
+                    'percent': _pl.Float64,
+                },
+                eol_char=';',
             )
 
         if history and other_holdings:

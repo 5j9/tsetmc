@@ -15,7 +15,7 @@ from tsetmc import (
     _api,
     _get_par_tree,
     _mem_par_tree,
-    _numerize_pl,
+    _numerize,
 )
 
 
@@ -164,7 +164,7 @@ async def top_industry_groups() -> _pl.LazyFrame:
                 'column_4': 'tval',
             }
         )
-        .pipe(_numerize_pl, ['mv', 'tno', 'tvol', 'tval'])
+        .pipe(_numerize, ['mv', 'tno', 'tvol', 'tval'])
     )
 
 

@@ -278,69 +278,38 @@ async def _api(path: str, *, fa=False):
 
 
 def _numerize(
-    df: _DataFrame,
-    cols: tuple[str, ...],
-    astype: _Literal['float64', 'int64', 'Int64'] = 'float64',
-    comma=False,
-):
-    for col in cols:
-        c = df[col]
-        if comma is True:
-            c = c.str.replace(',', '')
-        # https://stackoverflow.com/a/39684629/2705757
-        df[col] = (
-            c.replace(r' [KMB]$', '', regex=True).astype(astype)
-        ) * c.str.extract(r'[\d\. ]+([KMBT]+)', expand=False).map(
-            {
-                _NA: 1,
-                'K': 10**3,
-                'M': 10**6,
-                'B': 10**9,
-                'T': 10**12,
-            }
-        ).astype(astype)
-
-
-def _numerize_pl(
     df: _pl.LazyFrame,
     cols: list[str] | tuple[str, ...] | str,
 ) -> _pl.LazyFrame:
-    """Numerize columns in a Polars LazyFrame (handles commas and K/M/B/T suffixes)."""
+    """Numerize columns in a Polars LazyFrame (handles commas and K/M/B/T suffixes with optional spaces)."""
     if isinstance(cols, str):
         cols = [cols]
 
     expressions = []
     for col in cols:
-        # Clean the column: trim whitespace, remove commas
-        cleaned = _pl.col(col).str.strip_chars().str.replace_all(',', '')
-
-        # Check if it has K/M/B/T suffix at the end
-        has_suffix = cleaned.str.contains(r'[KMBT]$')
-
-        # Extract number (remove suffix if present)
-        number_part = cleaned.str.replace(r'[KMBT]$', '')
-
-        # Get suffix multiplier
+        cleaned = _pl.col(col).str.replace_all(',', '')
+        has_suffix = cleaned.str.contains(r'\s*[KMBT]$')
+        number_part = cleaned.str.replace(r'\s*[KMBT]$', '').str.strip_chars()
         multiplier = (
-            _pl.when(cleaned.str.contains('K$'))
+            _pl.when(cleaned.str.contains(r'\s*K$'))
             .then(10**3)
-            .when(cleaned.str.contains('M$'))
+            .when(cleaned.str.contains(r'\s*M$'))
             .then(10**6)
-            .when(cleaned.str.contains('B$'))
+            .when(cleaned.str.contains(r'\s*B$'))
             .then(10**9)
-            .when(cleaned.str.contains('T$'))
+            .when(cleaned.str.contains(r'\s*T$'))
             .then(10**12)
             .otherwise(1)
         )
-
-        # Apply numerization with safe casting
         expr = (
             _pl.when(has_suffix)
             .then(
                 number_part.cast(_pl.Float64, strict=False)
                 * multiplier.cast(_pl.Float64)
             )
-            .otherwise(cleaned.cast(_pl.Float64, strict=False))
+            .otherwise(
+                cleaned.str.strip_chars().cast(_pl.Float64, strict=False)
+            )
             .alias(col)
         )
         expressions.append(expr)

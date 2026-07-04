@@ -4,11 +4,9 @@ from unittest.mock import patch
 
 import polars as pl
 from numpy import dtype, int64
-from pandas import DataFrame, Int64Dtype
 from pytest import raises, skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
-from tests import STR
 from tsetmc import InstrumentInfo
 
 # noinspection PyProtectedMember
@@ -275,38 +273,56 @@ AVA = Instrument('18007109712724189')
 )
 async def test_holders_holder():
     with warns(DeprecationWarning):
-        holders = await AVA.holders(cisin='IRT3AVAF0003')  # pyright: ignore[reportDeprecated]
-    dtypes = holders.dtypes.to_dict()
-    assert dtypes.pop('change') in (Int64Dtype(), 'int64')
-    assert dtypes == {
-        'holder': STR,
-        'shares/units': dtype('int64'),
-        '%': dtype('float64'),
-        'id_cisin': STR,
+        lf_holders = await AVA.holders(cisin='IRT3AVAF0003')  # pyright: ignore[reportDeprecated]
+
+    df_holders = lf_holders.collect()
+    schema = dict(df_holders.schema)
+
+    # Assert change column data type
+    assert schema.pop('change') == pl.Int64
+    assert schema == {
+        'holder': pl.String,
+        'shares/units': pl.Int64,
+        '%': pl.Float64,
+        'id_cisin': pl.String,
     }
+    assert not df_holders['change'].has_nulls()
+    assert not df_holders['shares/units'].has_nulls()
 
-    id_cisin = holders.iat[-1, -1]
+    # Polars equivalent of pandas .iat[-1, -1] assuming 'id_cisin' is the last column
+    id_cisin = df_holders['id_cisin'][-1]
 
     with warns(DeprecationWarning):
-        hist, oth = await AVA.holder(id_cisin, True, True)  # pyright: ignore[reportDeprecated]
-    assert [*hist.dtypes.items()] == [('shares', dtype('int64'))]
-    assert oth.index.name == 'ins_code'
-    assert hist.index.dtype.kind == 'M'
-    if not oth.empty:
-        assert [*oth.dtypes.items()] == [
-            ('name', string),
-            ('shares', dtype('int64')),
-            ('percent', dtype('float64')),
-        ]
+        lf_hist, lf_oth = await AVA.holder(id_cisin, True, True)  # pyright: ignore[reportDeprecated]
+
+    df_hist = lf_hist.collect()
+    df_oth = lf_oth.collect()
+
+    assert [*df_hist.schema.items()] == [
+        ('date', pl.Date),
+        ('shares', pl.Int64),
+    ]
+
+    assert [*df_oth.schema.items()] == [
+        ('ins_code', pl.String),
+        ('name', pl.String),
+        ('shares', pl.Int64),
+        ('percent', pl.Float64),
+    ]
+
     with warns(DeprecationWarning):
-        hist = await AVA.holder('43789,IRT3AVAF0003', True)  # pyright: ignore[reportDeprecated]
-    assert type(hist) is DataFrame
+        lf_hist = await AVA.holder('43789,IRT3AVAF0003', True)  # pyright: ignore[reportDeprecated]
+    assert type(lf_hist) is pl.LazyFrame
+
     with warns(DeprecationWarning):
-        oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # pyright: ignore[reportDeprecated]
-    assert type(oth) is DataFrame
+        lf_oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # pyright: ignore[reportDeprecated]
+    assert type(lf_oth) is pl.LazyFrame
+
     with warns(DeprecationWarning):
-        result = await AVA.holder('43789,IRT3AVAF0003', False)  # pyright: ignore[reportDeprecated]
-    assert oth.equals(result)
+        lf_result = await AVA.holder('43789,IRT3AVAF0003', False)  # pyright: ignore[reportDeprecated]
+
+    # Polars equals check on LazyFrame queries or collected DataFrames
+    assert lf_oth.collect().equals(lf_result.collect())
 
 
 @files(  # share_holder_share_id may change from time to time
