@@ -1,7 +1,6 @@
 __version__ = '3.0.5.dev1'
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
-from functools import partial as _partial
 from json import JSONDecodeError, loads
 from logging import getLogger as _getLogger
 from re import Match as _Match, compile as _rc
@@ -14,10 +13,8 @@ from typing import (
 import polars as _pl
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
-from pandas import read_csv as _read_csv
 
 _logger = _getLogger(__name__)
-_csv2df = _partial(_read_csv, low_memory=False, engine='c', lineterminator=';')
 
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 _INDEX_CHANGE_MATCH = _rc(rf'<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?').match
