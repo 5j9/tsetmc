@@ -4,7 +4,7 @@ Unreleased
 
 v4.0.0 (2026-07-04)
 -------------------
-* BREAKING CHANGE: All method returning Pandas DataFrame now return a Polars LazyFrame.
+* BREAKING CHANGE: All method returning Pandas ``DataFrame`` now return a Polars ``LazyFrame``. ``pandas``` was removed as dependency and ``polars``` is used instead.
 * Updated the dataset.
 
 v3.0.4 (2026-06-02)
