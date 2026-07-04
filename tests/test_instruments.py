@@ -24,7 +24,6 @@ from tsetmc.instruments import (
     Search,
     ShareHolder,
     ShareHolderCompany,
-    _LazyDS,
     _parse_price_info,
     old_search,
     price_adjustments,
@@ -734,14 +733,6 @@ async def test_related_companies():
 async def test_identity():
     d = await KARIS.identity()
     validate_dict(d, Identity)
-
-
-def test_lazy_dataset():
-    # check cache
-    assert _LazyDS.df.loc['35425587644337450', 'l18'] == 'فملی'
-    assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
-    with patch.object(_LazyDS, 'df'):
-        assert _LazyDS.l30_code('فملی')[1] == '35425587644337450'
 
 
 async def test_from_isin():

@@ -3,7 +3,6 @@ from datetime import datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from logging import warning as _warning
-from pathlib import Path
 from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
 from warnings import deprecated as _deprecated
@@ -11,7 +10,6 @@ from warnings import deprecated as _deprecated
 import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
 from pandas import (
-    read_csv as _read_csv,
     to_datetime as _to_datetime,
 )
 
@@ -32,6 +30,7 @@ from tsetmc import (
     _parse_market_state,
     _rc,
     _TypedDict,
+    dataset as _dataset,
 )
 
 _jg_ymd_parse = _partial(_jgstrptime, format='%Y/%m/%d')
@@ -82,46 +81,6 @@ _TITLE_FULLMATCH = _rc(r"(.*?) \(.*?\) \- ([^']*)").fullmatch
 _RELATED_COMPANIES = _rc(r'var RelatedCompanies=(\[.*\]);').search
 _TRADE_HISTORY = _rc(r'var TradeHistory=(\[.*\]);').search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
-
-
-class _ClassProperty:
-    def __init__(self, method):
-        self.method = method
-
-    def __get__(self, owner_self, owner_cls) -> _DataFrame:
-        return self.method(owner_cls)
-
-    def __set__(self, instance, value):
-        pass
-
-
-# note: this class is public through dataset module
-class _LazyDS:
-    l18s_to_l30_code: dict[str, tuple[str, str]]
-    l30s_to_l18_code: dict[str, tuple[str, str]]
-    path = Path(__file__).parent / 'dataset/dataset.csv'
-
-    @_ClassProperty
-    def df(cls) -> _DataFrame:
-        df = _read_csv(
-            cls.path,
-            low_memory=False,
-            lineterminator='\n',
-            dtype='string',
-            encoding='utf-8-sig',
-            index_col='ins_code',
-        )
-        cls.df = df
-        return df
-
-    @classmethod
-    def l30_code(cls, l18: str) -> tuple[str, str]:
-        df = cls.df
-        d = cls.l18s_to_l30_code = dict(
-            zip(df['l18'], [*zip(df['l30'], df.index)])
-        )
-        g = cls.l30_code = d.get  # type: ignore
-        return g(l18)  # type: ignore
 
 
 class IntraDay(_TypedDict, total=False):
@@ -371,13 +330,13 @@ class Instrument:
         except AttributeError:
             pass
         try:
-            v = _LazyDS.df.at[self.code, col]
+            v = getattr(_dataset.lazy_ds.as_dict('code')[self.code], col)
         except KeyError:
             await self.info()
             return getattr(self, f'_{col}')
         else:
             setattr(self, f'_{col}', v)
-            return v  # type: ignore
+            return v
 
     @property
     async def cisin(self) -> str:
@@ -397,9 +356,10 @@ class Instrument:
 
     @staticmethod
     async def from_l18(l18: str, /) -> 'Instrument':
-        try:
-            l30, ins_code = _LazyDS.l30_code(l18)
-        except TypeError:  # cannot unpack non-iterable NoneType object
+        l18_info = _dataset.lazy_ds.as_dict('l18').get(l18)
+        if l18_info is not None:
+            l30, ins_code = l18_info.l30, l18_info.code
+        else:
             return await Instrument.from_search(l18)
         return Instrument(ins_code, l18, l30)
 
@@ -410,15 +370,15 @@ class Instrument:
         Raises KeyError if isin is not found in dataset.
         ISIN can be fetched using Instrument.info()['instrumentID'].
         """
-        df = _LazyDS.df
+        isin_info = _dataset.lazy_ds.as_dict('isin')
         try:
-            row = df[df['isin'] == isin].iloc[0]
+            row = isin_info[isin]
         except KeyError as e:
             e.add_note('isin not found in dataset, try updating the dataset.')
             raise e
-        inst = Instrument(row.name, row['l18'], row['l30'])  # type: ignore
+        inst = Instrument(row.code, row.l18, row.l30)
         inst._isin = isin
-        inst._cisin = row['cisin']
+        inst._cisin = row.cisin
         return inst
 
     async def info(self) -> InstrumentInfo:
