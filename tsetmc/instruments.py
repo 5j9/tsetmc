@@ -1076,14 +1076,14 @@ class InstrumentOnDate:
         )
         return j['closingPriceDaily']
 
-    async def closing_price_history(self) -> _DataFrame:
+    async def closing_price_history(self) -> _pl.LazyFrame:
         """Get intraday closing price history."""
         j = await _api(
             f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}'
         )
-        return _DataFrame(j['closingPriceHistory'], copy=False)
+        return _pl.LazyFrame(j['closingPriceHistory'])
 
-    async def states(self) -> _DataFrame:
+    async def states(self) -> _pl.LazyFrame:
         """Get intraday instrument states.
 
         http://www.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833
@@ -1091,7 +1091,7 @@ class InstrumentOnDate:
         j = await _api(
             f'MarketData/GetInstrumentState/{self.code}/{self.date}'
         )
-        return _DataFrame(j['instrumentState'], copy=False)
+        return _pl.LazyFrame(j['instrumentState'])
 
     async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
@@ -1100,7 +1100,7 @@ class InstrumentOnDate:
     async def client_types(self) -> ClientTypeOnDate:
         return await self.client_type()
 
-    async def holders(self) -> _DataFrame:
+    async def holders(self) -> _pl.LazyFrame:
         """Return share/unit holders for a specific date and a day before that.
 
         See also:
@@ -1108,14 +1108,14 @@ class InstrumentOnDate:
             holders.
         """
         j = await _api(f'Shareholder/{self.code}/{self.date}')
-        return _DataFrame(j['shareShareholder'], copy=False)
+        return _pl.LazyFrame(j['shareShareholder'])
 
-    async def best_limits(self) -> _DataFrame:
+    async def best_limits(self) -> _pl.LazyFrame:
         """Get intraday best limits history."""
         j = await _api(f'BestLimits/{self.code}/{self.date}')
-        return _DataFrame(j['bestLimitsHistory'], copy=False)
+        return _pl.LazyFrame(j['bestLimitsHistory'])
 
-    async def trades(self) -> _DataFrame:
+    async def trades(self) -> _pl.LazyFrame:
         """Get intraday trades.
 
         See also:
@@ -1123,14 +1123,14 @@ class InstrumentOnDate:
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
-        return _DataFrame(j['tradeHistory'], copy=False)
+        return _pl.LazyFrame(j['tradeHistory'])
 
-    async def static_thresholds(self) -> _DataFrame:
+    async def static_thresholds(self) -> _pl.LazyFrame:
         """Get intraday static thresholds."""
         j = await _api(
             f'MarketData/GetStaticThreshold/{self.code}/{self.date}'
         )
-        return _DataFrame(j['staticThreshold'], copy=False)
+        return _pl.LazyFrame(j['staticThreshold'])
 
     async def data(self) -> dict:
         """Get general info about the instrument on the specific date.

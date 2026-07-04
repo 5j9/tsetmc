@@ -1,4 +1,4 @@
-from numpy import dtype
+import polars as pl
 from pytest import warns
 from pytest_aiohutils import file, validate_dict
 
@@ -6,76 +6,78 @@ from tsetmc.instruments import ClientTypeOnDate, ClosingPrice, Instrument
 
 FARAZ_ON_DATE = Instrument(13666407494621646).on_date(20220222)
 
-string = 'string'
-
 
 @file('faraz_GetClosingPriceHistory_20220222.json')
 async def test_intraday_closing_price():
-    df = await FARAZ_ON_DATE.closing_price_history()
-    assert [*df.dtypes.items()] == [
-        ('id', dtype('int64')),
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('iClose', dtype('bool')),
-        ('yClose', dtype('bool')),
-        ('pDrCotVal', dtype('float64')),
-        ('zTotTran', dtype('float64')),
-        ('qTotTran5J', dtype('float64')),
-        ('qTotCap', dtype('float64')),
+    lf = await FARAZ_ON_DATE.closing_price_history()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('id', pl.Int64),
+        ('insCode', pl.Null),
+        ('dEven', pl.Int64),
+        ('hEven', pl.Int64),
+        ('pClosing', pl.Float64),
+        ('iClose', pl.Boolean),
+        ('yClose', pl.Boolean),
+        ('pDrCotVal', pl.Float64),
+        ('zTotTran', pl.Float64),
+        ('qTotTran5J', pl.Float64),
+        ('qTotCap', pl.Float64),
     ]
 
 
 @file('faraz_GetStaticThreshold_20220222.json')
 async def test_static_thresholds():
-    df = await FARAZ_ON_DATE.static_thresholds()
-    assert [*df.dtypes.items()] == [
-        ('insCode', string),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('psGelStaMax', dtype('float64')),
-        ('psGelStaMin', dtype('float64')),
+    lf = await FARAZ_ON_DATE.static_thresholds()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('insCode', pl.String),
+        ('dEven', pl.Int64),
+        ('hEven', pl.Int64),
+        ('psGelStaMax', pl.Float64),
+        ('psGelStaMin', pl.Float64),
     ]
 
 
 @file('faraz_BestLimits_20220222.json')
 async def test_intraday_best_limits():
-    df = await FARAZ_ON_DATE.best_limits()
-    assert [*df.dtypes.items()] == [
-        ('idn', dtype('int64')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('refID', dtype('int64')),
-        ('number', dtype('int64')),
-        ('qTitMeDem', dtype('int64')),
-        ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype('float64')),
-        ('pMeOf', dtype('float64')),
-        ('zOrdMeOf', dtype('int64')),
-        ('qTitMeOf', dtype('int64')),
-        ('title', dtype('O')),
-        ('insCode', dtype('O')),
+    lf = await FARAZ_ON_DATE.best_limits()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('idn', pl.Int64),
+        ('dEven', pl.Int64),
+        ('hEven', pl.Int64),
+        ('refID', pl.Int64),
+        ('number', pl.Int64),
+        ('qTitMeDem', pl.Int64),
+        ('zOrdMeDem', pl.Int64),
+        ('pMeDem', pl.Float64),
+        ('pMeOf', pl.Float64),
+        ('zOrdMeOf', pl.Int64),
+        ('qTitMeOf', pl.Int64),
+        ('title', pl.Null),
+        ('insCode', pl.Null),
     ]
 
 
 @file('faraz_GetTradeHistory_20220222.json')
 async def test_intraday_trades():
-    df = await FARAZ_ON_DATE.trades()
-    assert [*df.dtypes.items()] == [
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('nTran', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('qTitTran', dtype('int64')),
-        ('pTran', dtype('float64')),
-        ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype('float64')),
-        ('pPbSeaCotJ', dtype('float64')),
-        ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype('float64')),
-        ('canceled', dtype('int64')),
+    lf = await FARAZ_ON_DATE.trades()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('insCode', pl.Null),
+        ('dEven', pl.Int64),
+        ('nTran', pl.Int64),
+        ('hEven', pl.Int64),
+        ('qTitTran', pl.Int64),
+        ('pTran', pl.Float64),
+        ('qTitNgJ', pl.Int64),
+        ('iSensVarP', pl.String),
+        ('pPhSeaCotJ', pl.Float64),
+        ('pPbSeaCotJ', pl.Float64),
+        ('iAnuTran', pl.Int64),
+        ('xqVarPJDrPRf', pl.Float64),
+        ('canceled', pl.Int64),
     ]
 
 
@@ -108,34 +110,36 @@ async def test_daily_closing_price():
 
 @file('faraz_GetInstrumentState_20220222.json')
 async def test_intraday_states():
-    df = await FARAZ_ON_DATE.states()
-    assert [*df.dtypes.items()] == [
-        ('idn', dtype('int64')),
-        ('dEven', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('insCode', string),
-        ('lVal18AFC', dtype('O')),
-        ('lVal30', dtype('O')),
-        ('cEtaval', string),
-        ('realHeven', dtype('int64')),
-        ('underSupervision', dtype('int64')),
-        ('cEtavalTitle', dtype('O')),
+    lf = await FARAZ_ON_DATE.states()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('idn', pl.Int64),
+        ('dEven', pl.Int64),
+        ('hEven', pl.Int64),
+        ('insCode', pl.String),
+        ('lVal18AFC', pl.Null),
+        ('lVal30', pl.Null),
+        ('cEtaval', pl.String),
+        ('realHeven', pl.Int64),
+        ('underSupervision', pl.Int64),
+        ('cEtavalTitle', pl.Null),
     ]
 
 
 @file('faraz_Shareholder_20220222.json')
 async def test_intraday_holders():
-    df = await FARAZ_ON_DATE.holders()
-    assert [*df.dtypes.items()] == [
-        ('shareHolderID', dtype('int64')),
-        ('shareHolderName', string),
-        ('cIsin', string),
-        ('dEven', dtype('int64')),
-        ('numberOfShares', dtype('float64')),
-        ('perOfShares', dtype('float64')),
-        ('change', dtype('int64')),
-        ('changeAmount', dtype('float64')),
-        ('shareHolderShareID', dtype('int64')),
+    lf = await FARAZ_ON_DATE.holders()
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('shareHolderID', pl.Int64),
+        ('shareHolderName', pl.String),
+        ('cIsin', pl.String),
+        ('dEven', pl.Int64),
+        ('numberOfShares', pl.Float64),
+        ('perOfShares', pl.Float64),
+        ('change', pl.Int64),
+        ('changeAmount', pl.Float64),
+        ('shareHolderShareID', pl.Int64),
     ]
 
 
