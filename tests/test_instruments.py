@@ -555,23 +555,28 @@ async def test_info_on_fmelli():
 
 @file('karis_trades.json')
 async def test_trades():
-    df = await KARIS.trades()
-    if df.empty:
+    lf = await KARIS.trades()
+    df = lf.collect()
+
+    # Polars uses .is_empty() instead of .empty
+    if df.is_empty():
         return
-    assert [*df.dtypes.items()] == [
-        ('insCode', dtype('O')),
-        ('dEven', dtype('int64')),
-        ('nTran', dtype('int64')),
-        ('hEven', dtype('int64')),
-        ('qTitTran', dtype('int64')),
-        ('pTran', dtype('float64')),
-        ('qTitNgJ', dtype('int64')),
-        ('iSensVarP', string),
-        ('pPhSeaCotJ', dtype('float64')),
-        ('pPbSeaCotJ', dtype('float64')),
-        ('iAnuTran', dtype('int64')),
-        ('xqVarPJDrPRf', dtype('float64')),
-        ('canceled', dtype('int64')),
+
+    # Polars .schema returns a mapping of {name: DataType}
+    assert list(df.collect_schema().items()) == [
+        ('insCode', pl.Null),
+        ('dEven', pl.Int64),
+        ('nTran', pl.Int64),
+        ('hEven', pl.Int64),
+        ('qTitTran', pl.Int64),
+        ('pTran', pl.Float64),
+        ('qTitNgJ', pl.Int64),
+        ('iSensVarP', pl.String),
+        ('pPhSeaCotJ', pl.Float64),
+        ('pPbSeaCotJ', pl.Float64),
+        ('iAnuTran', pl.Int64),
+        ('xqVarPJDrPRf', pl.Float64),
+        ('canceled', pl.Int64),
     ]
 
 

@@ -392,10 +392,9 @@ class Instrument:
         self._l30 = d['lVal30']
         return d
 
-    async def trades(self) -> _DataFrame:
+    async def trades(self) -> _pl.LazyFrame:
         j = await _api(f'Trade/GetTrade/{self.code}')
-        df = _DataFrame(j['trade'], copy=False)
-        return df
+        return _pl.LazyFrame(j['trade'])
 
     async def codal(self, n=9) -> list[Codal]:
         j = await _api(
