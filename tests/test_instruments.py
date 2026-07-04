@@ -2,7 +2,7 @@ from datetime import date
 from unittest.mock import patch
 
 import polars as pl
-from numpy import dtype, int64
+from numpy import int64
 from pytest import raises, skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
@@ -446,11 +446,13 @@ async def test_publisher():
 @file('tajalli_ombud_messages.html')
 async def test_ombud_messages():
     with warns(DeprecationWarning):
-        df = await Instrument(1301069819790264).ombud_messages()  # pyright: ignore[reportDeprecated]
-    assert [*df.dtypes.items()] == [
-        ('header', string),
-        ('date', dtype('<M8[us]')),
-        ('description', string),
+        lf = await Instrument(1301069819790264).ombud_messages()  # pyright: ignore[reportDeprecated]
+
+    df = lf.collect()
+    assert list(df.schema.items()) == [
+        ('header', pl.String),
+        ('date', pl.Datetime),
+        ('description', pl.String),
     ]
 
 

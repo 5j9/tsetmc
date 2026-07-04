@@ -12,9 +12,6 @@ import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
 from html_table_parse import to_list as _html_to_list
 from jdatetime import date as _jdate
-from pandas import (
-    DataFrame as _DataFrame,
-)
 
 from tsetmc import (
     _F,
@@ -979,7 +976,7 @@ class Instrument:
         return j['msg']
 
     @_deprecated('use `Instrument.messages` instead')
-    async def ombud_messages(self) -> _DataFrame:
+    async def ombud_messages(self) -> _pl.LazyFrame:
         return _parse_ombud_messages(
             await _get_par_tree(f'15131W&i={self.code}')
         )
@@ -1333,20 +1330,21 @@ def _parse_price_info(price_info):
     return result
 
 
-def _parse_ombud_messages(text) -> _DataFrame:
+def _parse_ombud_messages(text) -> _pl.LazyFrame:
     headers = _findall(r'<th>(.+?)</th>', text)
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
-    df = _DataFrame(
+
+    return _pl.LazyFrame(
         {'header': headers, 'date': dates, 'description': descriptions},
-        dtype='string',
-        copy=False,
+        schema={
+            'header': _pl.String,
+            'date': _pl.String,
+            'description': _pl.String,
+        },
+    ).with_columns(
+        _pl.col('date').map_elements(
+            lambda d: _jgstrptime(f'14{d}', format='%Y/%m/%d %H:%M'),
+            return_dtype=_pl.Datetime,
+        )
     )
-    if dates:  # pandas cannot do ('14' + df['date']) on empty dates
-        df['date'] = [
-            _jgstrptime(d, format='%Y/%m/%d %H:%M')
-            for d in ('14' + df['date'])
-        ]
-    else:
-        df['date'] = df['date'].astype(object)
-    return df
