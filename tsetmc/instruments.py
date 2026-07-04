@@ -454,10 +454,9 @@ class Instrument:
         )
         return j['closingPriceInfo']
 
-    async def best_limits(self) -> _DataFrame:
+    async def best_limits(self) -> _pl.LazyFrame:
         j = await _api(f'BestLimits/{self.code}')
-        df = _DataFrame(j['bestLimits'], copy=False)
-        return df
+        return _pl.LazyFrame(j['bestLimits'])
 
     async def client_type(self) -> ClientType:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')

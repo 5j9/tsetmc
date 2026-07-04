@@ -627,19 +627,20 @@ async def test_closing_price_info():
 
 @file('best_limits.json')
 async def test_best_limits():
-    df = await KARIS.best_limits()
-    if df.empty:
+    ldf = await KARIS.best_limits()
+    df = ldf.collect()
+    if df.is_empty():
         return
-    assert [*df.dtypes.items()] == [
-        ('number', dtype('int64')),
-        ('qTitMeDem', dtype('int64')),
-        ('zOrdMeDem', dtype('int64')),
-        ('pMeDem', dtype('float64')),
-        ('pMeOf', dtype('float64')),
-        ('zOrdMeOf', dtype('int64')),
-        ('qTitMeOf', dtype('int64')),
-        ('title', dtype('O')),
-        ('insCode', dtype('O')),
+    assert list(df.schema.items()) == [
+        ('number', pl.Int64),
+        ('qTitMeDem', pl.Int64),
+        ('zOrdMeDem', pl.Int64),
+        ('pMeDem', pl.Float64),
+        ('pMeOf', pl.Float64),
+        ('zOrdMeOf', pl.Int64),
+        ('qTitMeOf', pl.Int64),
+        ('title', pl.Null),
+        ('insCode', pl.Null),
     ]
     assert len(df) <= 5, len(df)
 
