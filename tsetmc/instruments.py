@@ -88,19 +88,6 @@ _TRADE_HISTORY = _rc(r'var TradeHistory=(\[.*\]);').search
 _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
-class IntraDay(_TypedDict, total=False):
-    general: dict
-    thresholds: _DataFrame
-    closings: _DataFrame
-    candles: _DataFrame
-    states: _DataFrame
-    trades: _DataFrame
-    holders: _DataFrame
-    yesterday_holders: _DataFrame
-    client_types: dict[str, int]
-    best_limits: _DataFrame
-
-
 class LiveData(_TypedDict, total=False):
     best_limits: _DataFrame
     market_state: MarketState
