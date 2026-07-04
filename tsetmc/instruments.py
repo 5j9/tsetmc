@@ -1019,7 +1019,7 @@ class Instrument:
         return lf.with_columns(
             [
                 _pl.col(c).map_elements(
-                    lambda d: _jgstrptime(d, '%Y/%m/%d').date() if d else None,
+                    lambda d: _jg_ymd_parse(d) if d else None,
                     return_dtype=_pl.Date,
                 )
                 for c in date_cols
