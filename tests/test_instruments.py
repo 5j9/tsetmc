@@ -208,7 +208,6 @@ async def test_holders_holder():
     assert not df_holders['change'].has_nulls()
     assert not df_holders['shares/units'].has_nulls()
 
-    # Polars equivalent of pandas .iat[-1, -1] assuming 'id_cisin' is the last column
     id_cisin = df_holders['id_cisin'][-1]
 
     with warns(DeprecationWarning):

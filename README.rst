@@ -2,7 +2,7 @@
    :alt: Pytest Status
    :target: https://github.com/5j9/tsetmc/actions/workflows/pytest.yml
 
-An ``async`` Python library to fetch data from https://tsetmc.com/.
+An ``async`` Python library to fetch data from https://tsetmc.com/ built on top of `Polars`_.
 
 Installation
 ------------
@@ -122,45 +122,57 @@ Getting the latest price information:
      'qTotCap': 648015842640.0}
 
 
-Getting the daily trade history for the last n days: (as a DataFrame)
+Getting the daily trade history for the last n days: (as a Polars LazyFrame, resolved using ``.collect()``)
 
 .. code-block:: python
 
-    >>> await inst.daily_closing_price(n=2)
-       priceChange  priceMin  priceMax  ...  zTotTran  qTotTran5J       qTotCap
-    0         30.0    7490.0    7600.0  ...    4555.0  75649965.0  5.689944e+11
-    1         10.0    7500.0    7590.0  ...    4614.0  83570336.0  6.276337e+11
-    [2 rows x 17 columns]
+    >>> lf = await inst.daily_closing_price(n=2)
+    >>> lf.collect()
+    shape: (2, 17)
+    ┌─────────────┬──────────┬──────────┬───┬──────────┬────────────┬──────────────┐
+    │ priceChange ┆ priceMin ┆ priceMax ┆ … ┆ zTotTran ┆ qTotTran5J ┆ qTotCap      │
+    │ ---         ┆ ---      ┆ ---      ┆   ┆ ---      ┆ ---        ┆ ---          │
+    │ f64         ┆ f64      ┆ f64      ┆   ┆ f64      ┆ f64        ┆ f64          │
+    ╞═════════════╪══════════╪══════════╪═══╪══════════╪════════════╪══════════════╡
+    │ 30.0        ┆ 7490.0   ┆ 7600.0   ┆ … ┆ 4555.0   ┆ 7.5649965e ┆ 5.689944e+11 │
+    │ 10.0        ┆ 7500.0   ┆ 7590.0   ┆ … ┆ 4614.0   ┆ 8.3570336e ┆ 6.276337e+11 │
+    └─────────────┴──────────┴──────────┴───┴──────────┴────────────┴──────────────┘
 
 
 Getting adjusted daily prices:
 
 .. code-block:: python
 
-    >>> await inst.price_history(adjusted=True)
-                 pmax   pmin     pf     pl       tvol     pc
-    date
-    2007-02-04     45     41     45     42  172898994     42
-    2007-02-05     43     43     43     43   10826496     43
-    2007-02-06     44     44     44     44   26850133     44
-    2007-02-07     45     45     45     45   31086849     45
-    2007-02-10     45     45     45     45   40645528     45
-               ...    ...    ...    ...        ...    ...
-    2021-07-12  13340  12840  13110  12860  106208763  13020
-    2021-07-13  13010  12640  12840  12680   66812306  12770
-    2021-07-14  12830  12450  12540  12690   70277940  12670
-    2021-07-17  12960  12550  12800  12640   68542961  12750
-    2021-07-18  12880  12530  12600  12630   88106162  12650
-    [3192 rows x 6 columns]
+    >>> lf = await inst.price_history(adjusted=True)
+    >>> lf.collect()
+    shape: (3192, 7)
+    ┌────────────┬───────┬───────┬───────┬───────┬───────────┬───────┐
+    │ date       ┆ pmax  ┆ pmin  ┆ pf    ┆ pl    ┆ tvol      ┆ pc    │
+    │ ---        ┆ ---   ┆ ---   ┆ ---   ┆ ---   ┆ ---       ┆ ---   │
+    │ datetime   ┆ i64   ┆ i64   ┆ i64   ┆ i64   ┆ i64       ┆ i64   │
+    ╞════════════╪═══════╪═══════╪═══════╪═══════╪═══════════╪═══════╡
+    │ 2007-02-04 ┆ 45    ┆ 41    ┆ 45    ┆ 42    ┆ 172898994 ┆ 42    │
+    │ 2007-02-05 ┆ 43    ┆ 43    ┆ 43    ┆ 43    ┆ 10826496  ┆ 43    │
+    │ …          ┆ …     ┆ …     ┆ …     ┆ …     ┆ …         ┆ …     │
+    │ 2021-07-17 ┆ 12960 ┆ 12550 ┆ 12800 ┆ 12640 ┆ 68542961  ┆ 12750 │
+    │ 2021-07-18 ┆ 12880 ┆ 12530 ┆ 12600 ┆ 12630 ┆ 88106162  ┆ 12650 │
+    └────────────┴───────┴───────┴───────┴───────┴───────────┴───────┘
 
 
 Getting intraday data for a specific date:
 
 .. code-block:: python
 
-    >>> await inst.on_date(20210704).states()  # a dataframe:
-       idn  dEven  hEven insCode cEtaval  realHeven  underSupervision cEtavalTitle
-    0    0      0      1       0      A       94838                 0         None
+    >>> lf = await inst.on_date(20210704).states()
+    >>> lf.collect()
+    shape: (1, 10)
+    ┌─────┬───────┬───────┬─────────┬─────────┬───────────┬──────────────────┬──────────────┐
+    │ idn ┆ dEven ┆ hEven ┆ insCode ┆ cEtaval ┆ realHeven ┆ underSupervision ┆ cEtavalTitle │
+    │ --- ┆ ---   ┆ ---   ┆ ---     ┆ ---     ┆ ---       ┆ ---              ┆ ---          │
+    │ i64 ┆ i64   ┆ i64   ┆ str     ┆ str     ┆ i64       ┆ i64              ┆ str          │
+    ╞═════╪═══════╪═══════╪═════════╪═════════╪═══════════╪══════════════════╪══════════════╡
+    │ 0   ┆ 0     ┆ 1     ┆ 0       ┆ A       ┆ 94838     ┆ 0                ┆ None         │
+    └─────┴───────┴───────┴─────────┴─────────┴───────────┴──────────────────┴──────────────┘
 
 
 Searching for an instrument:
@@ -173,7 +185,7 @@ Searching for an instrument:
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
 
-The `market_watch`_ module contains several function to fetch market watch data. They include:
+The `market_watch`_ module contains several functions to fetch market watch data. They include:
 
 * ``market_watch_init``
 * ``market_watch_plus``
@@ -189,14 +201,22 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
     from asyncio import gather, run
 
+    import polars as pl
+
     from tsetmc.market_watch import MarketWatch
 
 
     async def listen_to_update_events(market_watch):
         while True:
             await market_watch.update_event.wait()
-            df = market_watch.df
-            print(df.at['35425587644337450', 'pl'])  # last price of فملی
+            # market_watch elements are exposed as a Polars LazyFrame
+            lf = market_watch.lf
+            print(
+                lf.filter(pl.col('ins_code') == '35425587644337450')
+                .select('pl')
+                .collect()
+                .item()
+            )
 
 
     async def main():
@@ -224,7 +244,7 @@ See also
 
 * https://github.com/5j9/fipiran
 
-.. _pandas: https://pandas.pydata.org/
+.. _polars: https://docs.pola.rs/
 .. _market_watch: http://www.tsetmc.com/Loader.aspx?ParTree=15131F
 .. _open an issue: https://github.com/5j9/tsetmc/issues
 .. _IPython: https://ipython.org/

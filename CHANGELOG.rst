@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* BREAKING CHANGE: All method returning Pandas DataFrame now return a Polars LazyFrame.
 * Updated the dataset.
 
 v3.0.4 (2026-06-02)
