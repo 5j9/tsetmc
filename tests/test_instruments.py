@@ -259,22 +259,23 @@ async def test_share_holders_companies_histories():
     companies = await share_holder_companies(share_holder_share_id)
     validate_dict(companies[0], ShareHolderCompany)
 
-    df = await AVA.share_holder_history(
+    lf = await AVA.share_holder_history(
         share_holder_id=share_holder_share_id,
         days=2,
     )
+    df = lf.collect()
     assert len(df) == 2
-    assert [*df.dtypes.items()] == [
-        ('shareHolderID', dtype('int64')),
-        ('shareHolderName', dtype('O')),
-        ('cIsin', string),
-        ('numberOfShares', dtype('float64')),
-        ('perOfShares', dtype('float64')),
-        ('change', dtype('int64')),
-        ('changeAmount', dtype('float64')),
-        ('shareHolderShareID', dtype('int64')),
+    assert [*df.schema.items()] == [
+        ('shareHolderID', pl.Int64),
+        ('shareHolderName', pl.Null),
+        ('cIsin', pl.String),
+        ('dEven', pl.Date),
+        ('numberOfShares', pl.Float64),
+        ('perOfShares', pl.Float64),
+        ('change', pl.Int64),
+        ('changeAmount', pl.Float64),
+        ('shareHolderShareID', pl.Int64),
     ]
-    assert df.index.dtype == dtype('<M8[us]')
 
 
 @file('vsadid_identification.html')

@@ -14,7 +14,6 @@ from html_table_parse import to_list as _html_to_list
 from jdatetime import date as _jdate
 from pandas import (
     DataFrame as _DataFrame,
-    to_datetime as _to_datetime,
 )
 
 from tsetmc import (
@@ -800,7 +799,7 @@ class Instrument:
         self,
         share_holder_id: int,
         days: int = 90,
-    ) -> _DataFrame:
+    ) -> _pl.LazyFrame:
         """Return history of share changes of a particular holder.
 
         Obtain `share_holder_id` from `self.share_holders`.
@@ -811,10 +810,11 @@ class Instrument:
             f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
             fa=True,
         )
-        df = _DataFrame(j['shareHolder'], copy=False)
-        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
-        df.set_index('dEven', inplace=True)
-        return df
+        return _pl.LazyFrame(j['shareHolder']).with_columns(
+            _pl.col('dEven')
+            .cast(_pl.String)
+            .str.to_date(format='%Y%m%d', strict=False)
+        )
 
     @_deprecated('use `Instrument.share_holders` instead')
     async def holders(self, cisin=None) -> _pl.LazyFrame:
