@@ -193,14 +193,13 @@ async def test_major_holders_activity():
 
     # Build expected schema dynamically
     # First 3 columns are strings, rest are float64
-    expected_schema = {}
+    expected_schema: dict = {
+        'ins_code': pl.String,
+        'l30': pl.String,
+        'holder': pl.String,
+    }
 
-    # First 3 columns
-    expected_schema['ins_code'] = pl.String
-    expected_schema['l30'] = pl.String
-    expected_schema['holder'] = pl.String
-
-    # Remaining columns (we don't know their names, but they should be float64)
+    # Remaining columns have dates as names and should be float64
     for col in df.columns[3:]:
         expected_schema[col] = pl.Float64
 

@@ -198,7 +198,7 @@ async def test_holders_holder():
     schema = dict(df_holders.schema)
 
     assert schema == {
-        'change': pl.Float64,
+        'change': pl.Int64,
         'holder': pl.String,
         'shares/units': pl.Int64,
         '%': pl.Float64,
