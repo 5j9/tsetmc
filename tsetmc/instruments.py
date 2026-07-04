@@ -1,7 +1,8 @@
 from ast import literal_eval as _literal_eval
-from datetime import datetime as _datetime
+from datetime import date as _date, datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
+from itertools import islice as _islice
 from logging import warning as _warning
 from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
@@ -10,6 +11,7 @@ from warnings import deprecated as _deprecated
 import polars as _pl
 from aiohutils.pd import html_to_df as _html_to_df
 from html_table_parse import to_list as _html_to_list
+from jdatetime import date as _jdate
 from pandas import (
     DataFrame as _DataFrame,
     to_datetime as _to_datetime,
@@ -33,7 +35,10 @@ from tsetmc import (
     dataset as _dataset,
 )
 
-_jg_ymd_parse = _partial(_jgstrptime, format='%Y/%m/%d')
+
+def _jg_ymd_parse(date_string: str) -> _date:
+    year, month, day = map(int, date_string.split('/'))
+    return _jdate(year, month, day).togregorian()
 
 
 _FARSI_NORM_REVERSED = {v: k for k, v in _FARSI_NORM.items()}
@@ -854,7 +859,7 @@ class Instrument:
 
         # Slice out the header row [0] and take only the first 4 elements
         # of each sublist to ignore the 'Unnamed: 4' column entirely.
-        data_rows = [row[:4] for row in raw_data[1:]]
+        data_rows = [row[:4] for row in _islice(raw_data, 1, None)]
         id_cisin_list = _findall(r"ShowShareHolder\('([^']*)'\)", text)
         for row, id_cisin in zip(data_rows, id_cisin_list):
             row.append(id_cisin)
@@ -942,19 +947,44 @@ class Instrument:
             return other_holdings_df()
 
     @_deprecated('use `Instrument.price_adjustments` instead')
-    async def adjustments(self) -> _DataFrame:
+    async def adjustments(self) -> _pl.LazyFrame:
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
-        df = _html_to_df(content.decode())
-        df.columns = ('date', 'adj_pc', 'pc')
-        df['date'] = [_jg_ymd_parse(d) for d in df['date']]
-        return df
+        raw_data = _html_to_list(content.decode())
 
-    async def price_adjustments(self) -> _DataFrame:
+        if not raw_data or len(raw_data) <= 1:
+            return _pl.LazyFrame(
+                schema={
+                    'date': _pl.Date,
+                    'adj_pc': _pl.Int64,
+                    'pc': _pl.Int64,
+                }
+            )
+
+        return _pl.LazyFrame(
+            _islice(raw_data, 1, None),
+            schema={
+                'date': _pl.String,
+                'adj_pc': _pl.String,
+                'pc': _pl.String,
+            },
+            orient='row',
+        ).with_columns(
+            [
+                _pl.col('date').map_elements(
+                    _jg_ymd_parse, return_dtype=_pl.Date
+                ),
+                _pl.col('adj_pc').str.replace_all(',', '').cast(_pl.Int64),
+                _pl.col('pc').str.replace_all(',', '').cast(_pl.Int64),
+            ]
+        )
+
+    async def price_adjustments(self) -> _pl.LazyFrame:
         j = await _api(f'ClosingPrice/GetPriceAdjustList/{self.code}')
-        df = _DataFrame(j['priceAdjust'], copy=False)
-        df['dEven'] = _to_datetime(df['dEven'], format='%Y%m%d')
-        df.set_index('dEven', inplace=True)
-        return df
+        lf = _pl.LazyFrame(
+            j['priceAdjust'],
+            schema_overrides={'dEven': _pl.String, 'insCode': _pl.String},
+        ).with_columns(_pl.col('dEven').str.to_date(format='%Y%m%d'))
+        return lf
 
     async def messages(self) -> list[Message]:
         """See also: ``general.messages`` and ``general.search_messages``."""
@@ -1129,17 +1159,36 @@ class InstrumentOnDate:
         return j['instrumentHistory']
 
 
-async def price_adjustments(flow: _FlowType) -> _DataFrame:
+async def price_adjustments(flow: _FlowType) -> _pl.LazyFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:
         http://cdn.tsetmc.com/Site.aspx?ParTree=1114111124&LnkIdn=843
     """
     text = await _get_par_tree(f'151319&Flow={flow}')
-    df = _html_to_df(text)
-    df.columns = ('l18', 'l30', 'date', 'adj_pc', 'pc')
-    df['date'] = [_jg_ymd_parse(d) for d in df['date']]
-    return df
+    raw_data = _html_to_list(text)
+
+    if not raw_data or len(raw_data) <= 1:
+        return _pl.LazyFrame(
+            schema={
+                'l18': _pl.String,
+                'l30': _pl.String,
+                'date': _pl.Date,
+                'adj_pc': _pl.Int64,
+                'pc': _pl.Int64,
+            }
+        )
+
+    # Slice out the header row
+    return _pl.LazyFrame(
+        _islice(raw_data, 1, None),
+        schema=['l18', 'l30', 'date', 'adj_pc', 'pc'],
+        orient='row',
+    ).with_columns(
+        _pl.col('date').map_elements(_jg_ymd_parse, return_dtype=_pl.Date),
+        _pl.col('adj_pc').str.replace_all(',', '').cast(_pl.Int64),
+        _pl.col('pc').str.replace_all(',', '').cast(_pl.Int64),
+    )
 
 
 _SEARCH_SCHEMA = {

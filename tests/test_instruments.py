@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from unittest.mock import patch
 
 import polars as pl
@@ -295,41 +295,55 @@ async def test_holders_without_cisin():
 @file('fmelli_price_adjustment.html')
 async def test_adjustments():
     with warns(DeprecationWarning):
-        df = await FMELLI.adjustments()  # pyright: ignore[reportDeprecated]
+        lf = await FMELLI.adjustments()  # pyright: ignore[reportDeprecated]
+
+    df = lf.collect()
     assert len(df) >= 18
-    assert [*df.dtypes.items()] == [
-        ('date', dtype('<M8[us]')),
-        ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64')),
+    assert [*df.schema.items()] == [
+        ('date', pl.Date),
+        ('adj_pc', pl.Int64),
+        ('pc', pl.Int64),
     ]
 
 
 @file('price_adjustment_api.json')
 async def test_price_adjustments_method():
-    df = await FMELLI.price_adjustments()
+    lf = await FMELLI.price_adjustments()
+    df = lf.collect()
+
     assert len(df) >= 18
-    assert [*df.dtypes.items()] == [
-        ('insCode', dtype('int64')),
-        ('pClosing', dtype('float64')),
-        ('pClosingNotAdjusted', dtype('float64')),
-        ('corporateTypeCode', dtype('O')),
-        ('instrument', dtype('O')),
+    assert [*df.schema.items()] == [
+        ('insCode', pl.String),
+        ('dEven', pl.Date),
+        ('pClosing', pl.Float64),
+        ('pClosingNotAdjusted', pl.Float64),
+        ('corporateTypeCode', pl.Null),
+        (
+            'instrument',
+            pl.Null,
+        ),  # Matches Pandas dtype('O') containing all nulls/None
     ]
-    assert df.index[-1] == datetime(2009, 7, 15)
+
+    # Grab the last item of the datetime column
+    assert df['dEven'][-1] == date(2009, 7, 15)
 
 
 @file('adjustments_flow_7.html')
 async def test_price_adjustments():
-    df = await price_adjustments(7)
-    assert [*df.dtypes.items()] == [
-        ('l18', string),
-        ('l30', string),
-        ('date', dtype('<M8[us]')),
-        ('adj_pc', dtype('int64')),
-        ('pc', dtype('int64')),
+    lf = await price_adjustments(7)
+    df = lf.collect()
+
+    assert list(df.schema.items()) == [
+        ('l18', pl.String),
+        ('l30', pl.String),
+        ('date', pl.Date),
+        ('adj_pc', pl.Int64),
+        ('pc', pl.Int64),
     ]
     assert len(df) == 6
-    assert df.iat[-1, -1] == 1000
+
+    # Polars equivalent to .iat[-1, -1] assuming 'pc' is the last column
+    assert df['pc'][-1] == 1000
 
 
 @file('latif_financial_aph.aspx')
