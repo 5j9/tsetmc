@@ -89,7 +89,7 @@ _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
 class LiveData(_TypedDict, total=False):
-    best_limits: _DataFrame
+    best_limits: _pl.LazyFrame
     market_state: MarketState
     nav: int
     nav_datatime: _datetime
