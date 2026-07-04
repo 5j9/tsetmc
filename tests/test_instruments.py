@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import polars as pl
 from numpy import dtype, int64
-from pandas import DataFrame, DatetimeIndex, Int64Dtype
+from pandas import DataFrame, Int64Dtype
 from pytest import raises, skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
@@ -120,22 +120,27 @@ FMELLI = Instrument(35425587644337450)
 @file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
     with warns(DeprecationWarning):
-        df0 = await FMELLI.trade_history(2)  # pyright: ignore[reportDeprecated]
-    assert [*df0.dtypes.items()] == [
-        ('pmax', dtype('float64')),
-        ('pmin', dtype('float64')),
-        ('pc', dtype('float64')),
-        ('pl', dtype('float64')),
-        ('pf', dtype('float64')),
-        ('py', dtype('float64')),
-        ('tval', dtype('float64')),
-        ('tvol', dtype('int64')),
-        ('tno', dtype('int64')),
+        ldf0 = await FMELLI.trade_history(2)  # pyright: ignore[reportDeprecated]
+
+    df0 = ldf0.collect()
+
+    assert list(df0.schema.items()) == [
+        ('date', pl.Date),
+        ('pmax', pl.Float64),
+        ('pmin', pl.Float64),
+        ('pc', pl.Float64),
+        ('pl', pl.Float64),
+        ('pf', pl.Float64),
+        ('py', pl.Float64),
+        ('tval', pl.Float64),
+        ('tvol', pl.Int64),
+        ('tno', pl.Int64),
     ]
-    assert df0.index.name == 'date'
-    assert isinstance(df0.index, DatetimeIndex)
+
     with warns(DeprecationWarning):
-        df1 = await FMELLI.trade_history(2, True)  # pyright: ignore[reportDeprecated]
+        ldf1 = await FMELLI.trade_history(2, True)  # pyright: ignore[reportDeprecated]
+
+    df1 = ldf1.collect()
     assert len(df1) >= len(df0)
 
 

@@ -639,7 +639,7 @@ class Instrument:
         return result  # type: ignore
 
     @_deprecated('use `Instrument.daily_closing_price` instead')
-    async def trade_history(self, top: int, all_=False) -> _DataFrame:
+    async def trade_history(self, top: int, all_=False) -> _pl.LazyFrame:
         """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
 
         :param top: number of top rows (days) to return
@@ -650,25 +650,23 @@ class Instrument:
         content = await _get_data(
             f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}'
         )
-        df = _csv2df(
+        return _pl.scan_csv(
             _BytesIO(content),
-            sep='@',
-            names=(
-                'date',
-                'pmax',
-                'pmin',
-                'pc',
-                'pl',
-                'pf',
-                'py',
-                'tval',
-                'tvol',
-                'tno',
-            ),
-            index_col='date',
-            parse_dates=True,
-        )
-        return df
+            separator='@',
+            schema={
+                'date': _pl.String,
+                'pmax': _pl.Float64,
+                'pmin': _pl.Float64,
+                'pc': _pl.Float64,
+                'pl': _pl.Float64,
+                'pf': _pl.Float64,
+                'py': _pl.Float64,
+                'tval': _pl.Float64,
+                'tvol': _pl.Int64,
+                'tno': _pl.Int64,
+            },
+            eol_char=';',
+        ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
     async def price_history(self, adjusted: bool = True) -> _pl.LazyFrame:
         content = await _get(
