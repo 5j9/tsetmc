@@ -55,11 +55,13 @@ lint.ignore = [
     'RUF059', # Unpacked variable never used
 ]
 
-[tool.pytest.ini_options]
-addopts = '--quiet --tb=short'
+[tool.pytest]
+addopts = ["--quiet", "--tb=short"]
 asyncio_mode = 'auto'
 asyncio_default_fixture_loop_scope = 'session'
 asyncio_default_test_loop_scope = 'session'
+truncation_limit_lines = 0
+truncation_limit_chars = 0
 
 [tool.pyright]
 typeCheckingMode = 'standard'
