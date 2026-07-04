@@ -95,10 +95,12 @@ async def market_map_data(
     return _pl.LazyFrame(j)
 
 
-async def major_holders_activity() -> _pl.LazyFrame:
+async def major_holders_activity() -> _pl.LazyFrame | None:
     text = await _get_par_tree('15131I')
     html = _html(text)
     trs = html.xpath('//tr')
+    if not trs:
+        return
 
     rows = []
     append_row = rows.append

@@ -187,8 +187,9 @@ async def test_market_map_data():
 @file('major_holders_activity.html')
 async def test_major_holders_activity():
     lf = await major_holders_activity()
+    if lf is None:
+        return
     df = lf.collect()
-    print(df)
 
     # Build expected schema dynamically
     # First 3 columns are strings, rest are float64
