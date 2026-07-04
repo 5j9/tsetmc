@@ -51,7 +51,7 @@ async def fund_details(reg_no: str | int) -> dict:
     df = _pl.LazyFrame(fund['stats'])
 
     # Convert recordDate to datetime
-    df = df.with_columns(_pl.col('recordDate').cast(_pl.Datetime))
+    df = df.with_columns(_pl.col('recordDate').str.to_datetime())
 
     # Sort by recordDate
     df = df.sort('recordDate')
