@@ -835,7 +835,7 @@ class Instrument:
                 schema={
                     'holder': _pl.String,
                     'shares/units': _pl.Int64,
-                    '%': _pl.Float16,
+                    '%': _pl.Float64,
                     'change': _pl.Float64,
                     'id_cisin': _pl.String,
                 }
