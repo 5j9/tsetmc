@@ -4,9 +4,7 @@ from io import BytesIO as _BytesIO, StringIO as _StringIO
 from itertools import islice
 from typing import (
     Any as _Any,
-    NotRequired as _NotRequired,
     TypedDict as _TypedDict,
-    cast as _cast,
 )
 
 import polars as _pl
@@ -15,6 +13,7 @@ from aiohttp import (
     ClientResponseError as _ClientResponseError,
 )
 from html_table_parse import to_list as _html_to_list
+from polars import LazyFrame as _LazyFrame
 
 from tsetmc import (
     MarketState,
@@ -78,13 +77,13 @@ _PRICE_UPDATE_COLUMNS = {'ins_code': _pl.String, **_COMMON_DTYPES}
 
 
 class MarketWatchInit(_TypedDict):
-    prices: _pl.LazyFrame
-    best_limits: _pl.LazyFrame
-    market_state: MarketState
+    prices: _LazyFrame | None
+    best_limits: _LazyFrame | None
+    market_state: MarketState | None
     refid: int
 
 
-def _unstack_best_limits(bl: _pl.LazyFrame, /) -> _pl.LazyFrame:
+def _unstack_best_limits(bl: _LazyFrame, /) -> _LazyFrame:
     # Polars pivot currently requires an eager Frame collection.
     df = bl.collect()
     value_cols = [c for c in df.columns if c not in ('ins_code', 'number')]
@@ -135,20 +134,17 @@ async def market_watch_init(
         _logger.error(text)
         raise
 
-    result: dict = {'refid': int(refid)}
-
     if prices:
         # Direct generation of a LazyFrame using scan_csv on the memory buffer
-        price_df = _pl.scan_csv(
+        prices_lf = _pl.scan_csv(
             _StringIO(states),
             has_header=False,
             schema=_PRICE_DTYPES_26,
             eol_char=';',
             missing_columns='insert',
         )
-        result['prices'] = price_df
     else:
-        price_df = None
+        prices_lf = None
 
     if best_limits:
         bl = _pl.scan_csv(
@@ -166,41 +162,44 @@ async def market_watch_init(
             },
             eol_char=';',
         )
-        result['best_limits'] = bl
 
-        if join and price_df is not None:
+        if join and prices_lf is not None:
             bl = _unstack_best_limits(bl)
-            joined = bl.join(price_df, on='ins_code', how='left')
-            result['prices'] = joined
+            prices_lf = bl.join(prices_lf, on='ins_code', how='left')
+    else:
+        prices_lf = bl = None
 
-    if market_state:
-        result['market_state'] = _parse_market_state(market_state_str)
-
-    return result  # type: ignore
+    return MarketWatchInit(
+        refid=int(refid),
+        best_limits=bl,
+        market_state=_parse_market_state(market_state_str)
+        if market_state
+        else None,
+        prices=prices_lf,
+    )
 
 
 class MarketWatchPlus(_TypedDict):
-    new_prices: _pl.LazyFrame
-    price_updates: _pl.LazyFrame
-    best_limits: _pl.LazyFrame
-    messages: list[str]
-    market_state: _NotRequired[MarketState]
+    new_prices: _LazyFrame | None
+    price_updates: _LazyFrame | None
+    best_limits: _LazyFrame | None
+    messages: list[str] | None
+    market_state: MarketState | None
     refid: int
 
 
 def _parse_inst_prices_str(
-    inst_prices_str: str, new_prices: bool, price_updates: bool, result: dict
-):
+    inst_prices_str: str,
+    new_prices: bool,
+    price_updates: bool,
+) -> tuple[_LazyFrame | None, _LazyFrame | None]:
+    np = pu = None
     if not inst_prices_str:
         if new_prices:
-            result['new_prices'] = _pl.DataFrame(
-                schema=_PRICE_DTYPES_26
-            ).lazy()
+            np = _pl.DataFrame(schema=_PRICE_DTYPES_26).lazy()
         if price_updates:
-            result['price_updates'] = _pl.DataFrame(
-                schema=_PRICE_UPDATE_COLUMNS
-            ).lazy()
-        return
+            pu = _pl.DataFrame(schema=_PRICE_UPDATE_COLUMNS).lazy()
+        return np, pu
 
     inst_prices = [ip.split(',') for ip in inst_prices_str.split(';')]
     inst_prices = [
@@ -213,17 +212,17 @@ def _parse_inst_prices_str(
         cols26 = not lst or len(lst[0]) == 26
         target_schema = _PRICE_DTYPES_26 if cols26 else _PRICE_DTYPES_23
         try:
-            lf = _pl.LazyFrame(lst, schema=target_schema, orient='row')
+            lf = _LazyFrame(lst, schema=target_schema, orient='row')
         except ValueError as e:
             _save_last_content(f'{e}')
-            raise e
-        result['new_prices'] = lf
+            raise
+        np = lf
 
     if price_updates:
         lst = [ip for ip in inst_prices if len(ip) == 10]
-        result['price_updates'] = _pl.LazyFrame(
-            lst, schema=_PRICE_UPDATE_COLUMNS, orient='row'
-        )
+        pu = _LazyFrame(lst, schema=_PRICE_UPDATE_COLUMNS, orient='row')
+
+    return np, pu
 
 
 async def market_watch_plus(
@@ -253,36 +252,48 @@ async def market_watch_plus(
         ) = text.split('@')
     except ValueError as e:
         _save_last_content(f'{e!r}')
-        raise e
-
-    result = {}
+        raise
     if messages:
         # whenever a new id appears, users should try to fetch new messages
         # using relevant functions
         # todo: implement functions to fetch messages using message ids
         # NewMsgNotification, NewInsStateNotification, NewCodalNotification
-        result['messages'] = handle_msg.split(',')
+        msg_list = handle_msg.split(',')
+    else:
+        msg_list = None
+
     if market_state and update_fast_view != '':
-        result['market_state'] = _parse_market_state(update_fast_view)
+        market_state_result = _parse_market_state(update_fast_view)
+    else:
+        market_state_result = None
 
     if new_prices or price_updates:
-        _parse_inst_prices_str(
-            inst_prices_str, new_prices, price_updates, result
+        np, pu = _parse_inst_prices_str(
+            inst_prices_str, new_prices, price_updates
         )
+    else:
+        np = pu = None
 
+    bl = None
     if best_limits:
-        bl = _pl.scan_csv(
-            _StringIO(best_limit),
-            has_header=False,
-            schema=_BEST_LIMITS_SCHEMA,
-            eol_char=';',
-        )
-        if best_limits_prepare_join:
-            bl = _unstack_best_limits(bl)
-        result['best_limits'] = bl
+        if best_limit:
+            bl = _pl.scan_csv(
+                _StringIO(best_limit),
+                has_header=False,
+                schema=_BEST_LIMITS_SCHEMA,
+                eol_char=';',
+            )
+            if best_limits_prepare_join:
+                bl = _unstack_best_limits(bl)
 
-    result['refid'] = int(str_refid)
-    return result  # type: ignore
+    return MarketWatchPlus(
+        new_prices=np,
+        price_updates=pu,
+        best_limits=bl,
+        messages=msg_list,
+        market_state=market_state_result,
+        refid=int(str_refid),
+    )
 
 
 def _split_id_rows(content: bytes, id_row_len: int) -> list[list[str]]:
@@ -302,7 +313,7 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list[list[str]]:
     return parsed_data
 
 
-async def closing_price_all() -> _pl.LazyFrame:
+async def closing_price_all() -> _LazyFrame:
     """Return price history dataframe.
 
     For the meaning of column names refer to
@@ -348,7 +359,7 @@ _CLIENT_TYPE_SCHEMA = {
 }
 
 
-async def client_type_all() -> _pl.LazyFrame:
+async def client_type_all() -> _LazyFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
@@ -367,7 +378,7 @@ async def client_type_all() -> _pl.LazyFrame:
     return df
 
 
-async def key_stats() -> _pl.LazyFrame:
+async def key_stats() -> _LazyFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
@@ -399,12 +410,12 @@ async def key_stats() -> _pl.LazyFrame:
     return pivoted.lazy()
 
 
-async def status_changes(top: int | str) -> _pl.LazyFrame:
+async def status_changes(top: int | str) -> _LazyFrame:
     text = await _get_par_tree(f'15131L&top={top}')
     lol = _html_to_list(text)
     assert lol[0] == ['نماد', 'نام', 'تاریخ', 'زمان', 'وضعیت جدید']
     lf = (
-        _pl.LazyFrame(
+        _LazyFrame(
             islice(lol, 1, None),
             orient='row',
             schema={
@@ -425,7 +436,7 @@ async def status_changes(top: int | str) -> _pl.LazyFrame:
 
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
-) -> _pl.LazyFrame:
+) -> _LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api(
         'ClosingPrice/GetMarketWatch'
@@ -453,7 +464,7 @@ async def get_market_watch(
     return df.lazy()
 
 
-async def get_client_type_all() -> _pl.LazyFrame:
+async def get_client_type_all() -> _LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('ClientType/GetClientTypeAll')
     if len(j.keys()) > 1:
@@ -463,7 +474,7 @@ async def get_client_type_all() -> _pl.LazyFrame:
     return _pl.DataFrame(j['clientTypeAllDto']).lazy()
 
 
-async def get_inst_value_all_inst_all_param() -> _pl.LazyFrame:
+async def get_inst_value_all_inst_all_param() -> _LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api('MarketData/GetInstValueAllInstAllParam')
     if len(j.keys()) > 1:
@@ -536,37 +547,65 @@ class MarketWatch:
         self.market_state = d.get('market_state')
 
     def _default_plus_callback(self, mwp: MarketWatchPlus):
-        kwget = self.plus_kwargs.get
         mwp_get = mwp.get
+        self.market_state = mwp_get('market_state')
+        lf = self.lf
+        if lf is None:
+            return
 
-        if kwget('best_limits'):
-            best_limits = mwp_get('best_limits')
-            self.lf = self.lf.join(best_limits, on='ins_code', how='left')
+        best_limits = mwp_get('best_limits')
+        if best_limits is not None:
+            update_cols = [
+                col
+                for col in best_limits.collect_schema().names()
+                if col != 'ins_code'
+            ]
 
-        if kwget('new_prices'):
-            new_prices = mwp_get('new_prices')
-            self.lf = _pl.concat([self.lf, new_prices], how='diagonal')
+            lf = lf.join(
+                best_limits,
+                on='ins_code',
+                how='left',
+                suffix='_limit_update',
+            )
 
-        if kwget('price_updates'):
-            price_updates = mwp_get('price_updates')
-            self.lf = self.lf.join(
+            limit_exprs = [
+                _pl.coalesce(
+                    [_pl.col(f'{col}_limit_update'), _pl.col(col)]
+                ).alias(col)
+                for col in update_cols
+            ]
+            if limit_exprs:
+                lf = lf.with_columns(limit_exprs).drop(
+                    [f'{col}_limit_update' for col in update_cols]
+                )
+
+        new_prices = mwp_get('new_prices')
+        if new_prices is not None:
+            lf = _pl.concat([lf, new_prices], how='diagonal')
+
+        price_updates = mwp_get('price_updates')
+        if price_updates is not None:
+            lf = lf.join(
                 price_updates, on='ins_code', how='left', suffix='_update'
             )
+
+            current_cols = lf.collect_schema().names()
+
             update_exprs = []
-            for col in self.lf.columns:
+            drop_cols = []
+            for col in current_cols:
                 if col.endswith('_update'):
                     base_col = col.replace('_update', '')
+                    drop_cols.append(col)
                     update_exprs.append(
                         _pl.coalesce([_pl.col(col), _pl.col(base_col)]).alias(
                             base_col
                         )
                     )
-            if update_exprs:
-                self.lf = self.lf.with_columns(update_exprs).select(
-                    [c for c in self.lf.columns if not c.endswith('_update')]
-                )
 
-        self.market_state = mwp_get('market_state')
+            if update_exprs:
+                lf = lf.with_columns(update_exprs).drop(drop_cols)
+        self.lf = lf
 
     async def start(self):
         update_event = self.update_event
@@ -584,7 +623,12 @@ class MarketWatch:
 
         self.init_callback(mwi)
 
-        heven = _cast(int, self.lf.select('heven').max().collect().item() or 0)
+        lf = self.lf
+        if lf is not None:
+            heven = lf.select('heven').max().collect().item() or 0
+        else:
+            heven = 0
+
         refid = mwi['refid']
         set_event()
         clear_event()
@@ -611,14 +655,14 @@ class MarketWatch:
 
             refid = mwp['refid']
 
-            pu_max, np_max = _pl.collect_all(
-                [
-                    mwp['price_updates'].select('heven').max(),
-                    mwp['new_prices'].select('heven').max(),
-                ]
-            )
-
-            heven = max(heven, pu_max.item() or heven, np_max.item() or heven)
+            if (pu := mwp.get('price_updates')) is not None:
+                pu_max = pu.select('heven').max().collect().item() or 0
+                if pu_max > heven:
+                    heven = pu_max
+            if (np := mwp.get('new_prices')) is not None:
+                np_max = np.select('heven').max().collect().item() or 0
+                if np_max > heven:
+                    heven = np_max
 
             set_event()
             clear_event()

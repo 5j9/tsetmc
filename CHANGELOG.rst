@@ -1,7 +1,7 @@
 Unreleased
 ----------
-* 
-
+* Fixed a bug in ``MarketWatch`` that prevented updates from being applied correctly to ``lf``.
+* ``market_watch_init`` and ``market_watch_plus`` now always return all result fields. Fields that were not requested are set to ``None`` instead of being omitted.
 v4.0.0 (2026-07-04)
 -------------------
 * BREAKING CHANGE: All method returning Pandas ``DataFrame`` now return a Polars ``LazyFrame``. ``pandas``` was removed as dependency and ``polars``` is used instead.
