@@ -1,5 +1,18 @@
-import polars as pl
+from typing import cast
+
 from jdatetime import datetime as jdatetime
+from polars import (
+    Boolean,
+    DataFrame,
+    Datetime,
+    Float64,
+    Int32,
+    Int64,
+    LazyFrame,
+    List,
+    String,
+    Struct,
+)
 from pytest import skip
 from pytest_aiohutils import file, validate_dict
 
@@ -27,32 +40,34 @@ BL_UNSTACKED_COLUMNS = [
 ]
 
 
-def assert_bl_dtypes(lf: pl.DataFrame, unstacked=True):
+def assert_bl_dtypes(lf: DataFrame, unstacked=True):
     schema = lf.collect_schema()
-    assert schema['ins_code'] == pl.String
+    assert schema['ins_code'] == String
 
     if unstacked:
         columns = BL_UNSTACKED_COLUMNS
     else:
         columns = list(BL_STACKED_COLUMNS)
-        assert schema['number'] == pl.Int64
+        assert schema['number'] == Int64
 
     for c in columns:
-        assert schema[c] in (pl.Int64, pl.Float64, pl.Int32)
+        assert schema[c] in (Int64, Float64, Int32)
 
 
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init():
     mwi = await market_watch_init(join=False, market_state=False)
-    assert mwi['prices'].collect_schema() == PRICE_DTYPES_ITEMS
+    assert (
+        cast(LazyFrame, mwi['prices']).collect_schema() == PRICE_DTYPES_ITEMS
+    )
 
-    bl_schema = mwi['best_limits'].collect_schema()
-    assert bl_schema['ins_code'] == pl.String
-    assert bl_schema['number'] == pl.Int64
-    assert 'market_state' not in mwi
+    bl_schema = cast(LazyFrame, mwi['best_limits']).collect_schema()
+    assert bl_schema['ins_code'] == String
+    assert bl_schema['number'] == Int64
+    assert mwi['market_state'] is None
 
     mwi = await market_watch_init(market_state=True)
-    prices = mwi['prices'].collect()
+    prices = cast(LazyFrame, mwi['prices']).collect()
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
     assert_bl_dtypes(prices)
@@ -60,18 +75,16 @@ async def test_market_watch_init():
     expected_combined_schema = {
         **_PRICE_DTYPES_26,
         **{
-            c: pl.Int64
-            for c in BL_UNSTACKED_COLUMNS
-            if c not in _PRICE_DTYPES_26
+            c: Int64 for c in BL_UNSTACKED_COLUMNS if c not in _PRICE_DTYPES_26
         },
     }
     assert dict(prices.collect_schema()) == expected_combined_schema
 
     mwi = await market_watch_init(prices=False, market_state=False)
-    assert 'prices' not in mwi
-    bl_schema = mwi['best_limits'].collect_schema()
-    assert bl_schema['ins_code'] == pl.String
-    assert bl_schema['number'] == pl.Int64
+    assert mwi['prices'] is None
+    bl_schema = cast(LazyFrame, mwi['best_limits']).collect_schema()
+    assert bl_schema['ins_code'] == String
+    assert bl_schema['number'] == Int64
 
 
 @file('ClosingPriceAll.aspx')
@@ -79,8 +92,8 @@ async def test_closing_price_all():
     lf = await closing_price_all()
     schema = lf.collect_schema()
 
-    assert schema['ins_code'] == pl.String
-    assert schema['n'] == pl.Int64
+    assert schema['ins_code'] == String
+    assert schema['n'] == Int64
 
     expected_cols = [
         'ins_code',
@@ -97,7 +110,7 @@ async def test_closing_price_all():
     ]
     assert list(schema.keys()) == expected_cols
     for c in expected_cols[1:]:
-        assert schema[c] == pl.Int64
+        assert schema[c] == Int64
 
 
 @file('ClientTypeAll.aspx')
@@ -117,10 +130,10 @@ async def test_client_type_all():
         'l_sell_volume',
     ]
     assert list(schema.keys()) == expected_cols
-    assert schema['ins_code'] == pl.String
+    assert schema['ins_code'] == String
 
     for c in expected_cols[1:]:
-        assert schema[c] == pl.Int64
+        assert schema[c] == Int64
 
 
 @file('InstValue.aspx')
@@ -128,11 +141,11 @@ async def test_key_stats():
     lf = await key_stats()
     schema = lf.collect_schema()
 
-    assert schema['ins_code'] == pl.String
+    assert schema['ins_code'] == String
     for col in schema.keys():
         if col != 'ins_code':
             assert col.startswith('is')
-            assert schema[col] == pl.Float64
+            assert schema[col] == Float64
 
 
 def test_parse_index():
@@ -221,13 +234,13 @@ async def test_market_watch_plus_new():
         market_state=False,
         best_limits_prepare_join=False,
     )
-    new_prices = mwp['new_prices'].collect()
+    new_prices = cast(LazyFrame, mwp['new_prices']).collect()
     assert new_prices.schema == _PRICE_DTYPES_26
 
-    best_limits = mwp['best_limits'].collect()
+    best_limits = cast(LazyFrame, mwp['best_limits']).collect()
     assert_bl_dtypes(best_limits, False)
-    assert 'messages' not in mwp
-    assert 'market_state' not in mwp
+    assert mwp.get('messages') is None
+    assert mwp.get('market_state') is None
 
 
 @file('MarketWatchPlus_2025-07-09.txt')
@@ -237,11 +250,11 @@ async def test_market_watch_plus_empty_prices_error(test_config):
     mwp = await market_watch_plus(
         0, 0, messages=True, market_state=True, best_limits_prepare_join=False
     )
-    new_prices = mwp['new_prices'].collect()
+    new_prices = cast(LazyFrame, mwp['new_prices']).collect()
     assert new_prices.is_empty()
     assert new_prices.schema == _PRICE_DTYPES_26
 
-    best_limits = mwp['best_limits'].collect()
+    best_limits = cast(LazyFrame, mwp['best_limits']).collect()
     assert_bl_dtypes(best_limits, False)
     assert 'messages' in mwp
 
@@ -251,27 +264,28 @@ async def test_market_watch_plus_update():
     mwp = await market_watch_plus(
         64130, 9540883525, best_limits_prepare_join=False
     )
-    price_updates = mwp['price_updates'].collect()
+    price_updates = cast(LazyFrame, mwp['price_updates']).collect()
     price_schema = price_updates.schema
     assert list(price_schema.keys()) == list(_PRICE_UPDATE_COLUMNS.keys())
-    assert price_schema['ins_code'] == pl.String
+    assert price_schema['ins_code'] == String
 
     for c in list(_PRICE_UPDATE_COLUMNS.keys())[1:]:
-        assert price_schema[c] in (pl.Int32, pl.Int64)
+        assert price_schema[c] in (Int32, Int64)
 
-    market_state = mwp.pop('market_state', None)
+    market_state = mwp['market_state']
     if market_state is not None:
         validate_dict(market_state, MarketState)
 
-    for m in mwp['messages']:
-        assert type(m) is str
-        assert m.isnumeric()
+    if messages := mwp['messages']:
+        for m in messages:
+            assert type(m) is str
+            assert m.isnumeric()
 
-    bl = mwp['best_limits'].collect()
+    bl = cast(LazyFrame, mwp['best_limits']).collect()
     assert_bl_dtypes(bl, False)
     assert type(mwp['refid']) == int
 
-    new_prices = mwp['new_prices'].collect()
+    new_prices = cast(LazyFrame, mwp['new_prices']).collect()
     assert new_prices.schema == _PRICE_DTYPES_26
 
 
@@ -281,12 +295,12 @@ async def test_status_changes():
     df = lf.collect()
     assert len(df) == 3
     assert list(df.schema.items()) == [
-        ('symbol', pl.String),
-        ('name', pl.String),
-        ('date', pl.String),
-        ('time', pl.String),
-        ('new_status', pl.String),
-        ('datetime', pl.Datetime('us')),
+        ('symbol', String),
+        ('name', String),
+        ('date', String),
+        ('time', String),
+        ('new_status', String),
+        ('datetime', Datetime('us')),
     ]
 
 
@@ -295,7 +309,7 @@ async def test_23_cols(test_config):
     if not test_config['OFFLINE_MODE']:
         raise skip('this test requires specific recorded input')
     mwp = await market_watch_plus(0, 0)
-    assert len(mwp['new_prices'].collect_schema()) == 23
+    assert len(cast(LazyFrame, mwp['new_prices']).collect_schema()) == 23
 
 
 def test_parse_market_state_with_18_values():
@@ -327,58 +341,58 @@ async def test_get_market_watch():
     lf = await get_market_watch()
 
     assert list(lf.collect_schema().items()) == [
-        ('lva', pl.String),
-        ('lvc', pl.String),
-        ('eps', pl.Float64),
-        ('pe', pl.Float64),
-        ('pmd', pl.Float64),
-        ('pmo', pl.Float64),
-        ('qtj', pl.Float64),
-        ('pdv', pl.Float64),
-        ('ztt', pl.Float64),
-        ('qtc', pl.Float64),
-        ('bv', pl.Float64),
-        ('pc', pl.Float64),
-        ('pcpc', pl.Float64),
-        ('pmn', pl.Float64),
-        ('pmx', pl.Float64),
-        ('py', pl.Float64),
-        ('pf', pl.Float64),
-        ('pcl', pl.Float64),
-        ('vc', pl.Int64),
-        ('csv', pl.String),
-        ('insID', pl.String),
-        ('pMax', pl.Float64),
-        ('pMin', pl.Int64),
-        ('ztd', pl.Float64),
+        ('lva', String),
+        ('lvc', String),
+        ('eps', Float64),
+        ('pe', Float64),
+        ('pmd', Float64),
+        ('pmo', Float64),
+        ('qtj', Float64),
+        ('pdv', Float64),
+        ('ztt', Float64),
+        ('qtc', Float64),
+        ('bv', Float64),
+        ('pc', Float64),
+        ('pcpc', Float64),
+        ('pmn', Float64),
+        ('pmx', Float64),
+        ('py', Float64),
+        ('pf', Float64),
+        ('pcl', Float64),
+        ('vc', Int64),
+        ('csv', String),
+        ('insID', String),
+        ('pMax', Float64),
+        ('pMin', Int64),
+        ('ztd', Float64),
         (
             'blDs',
-            pl.List(
-                pl.Struct(
+            List(
+                Struct(
                     {
-                        'n': pl.Int64,
-                        'qmd': pl.Int64,
-                        'zmd': pl.Int64,
-                        'pmd': pl.Float64,
-                        'pmo': pl.Float64,
-                        'zmo': pl.Int64,
-                        'qmo': pl.Int64,
-                        'rid': pl.Int64,
+                        'n': Int64,
+                        'qmd': Int64,
+                        'zmd': Int64,
+                        'pmd': Float64,
+                        'pmo': Float64,
+                        'zmo': Int64,
+                        'qmo': Int64,
+                        'rid': Int64,
                     }
                 )
             ),
         ),
-        ('id', pl.Int64),
-        ('insCode', pl.String),
-        ('dEven', pl.Int64),
-        ('hEven', pl.Int64),
-        ('pClosing', pl.Float64),
-        ('iClose', pl.Boolean),
-        ('yClose', pl.Boolean),
-        ('pDrCotVal', pl.Float64),
-        ('zTotTran', pl.Float64),
-        ('qTotTran5J', pl.Float64),
-        ('qTotCap', pl.Float64),
+        ('id', Int64),
+        ('insCode', String),
+        ('dEven', Int64),
+        ('hEven', Int64),
+        ('pClosing', Float64),
+        ('iClose', Boolean),
+        ('yClose', Boolean),
+        ('pDrCotVal', Float64),
+        ('zTotTran', Float64),
+        ('qTotTran5J', Float64),
+        ('qTotCap', Float64),
     ]
 
 
@@ -387,17 +401,17 @@ async def test_get_client_type_all():
     lf = await get_client_type_all()
 
     assert [*lf.collect_schema().items()] == [
-        ('insCode', pl.String),
-        ('buy_I_Volume', pl.Float64),
-        ('buy_N_Volume', pl.Float64),
-        ('buy_DDD_Volume', pl.Float64),
-        ('buy_CountI', pl.Int64),
-        ('buy_CountN', pl.Int64),
-        ('buy_CountDDD', pl.Int64),
-        ('sell_I_Volume', pl.Float64),
-        ('sell_N_Volume', pl.Float64),
-        ('sell_CountI', pl.Int64),
-        ('sell_CountN', pl.Int64),
+        ('insCode', String),
+        ('buy_I_Volume', Float64),
+        ('buy_N_Volume', Float64),
+        ('buy_DDD_Volume', Float64),
+        ('buy_CountI', Int64),
+        ('buy_CountN', Int64),
+        ('buy_CountDDD', Int64),
+        ('sell_I_Volume', Float64),
+        ('sell_N_Volume', Float64),
+        ('sell_CountI', Int64),
+        ('sell_CountN', Int64),
     ]
 
 
@@ -407,8 +421,8 @@ async def test_get_inst_value_all_inst_all_param():
     schema = lf.collect_schema()
     # Or match the exact sequential list of structural items:
     assert [*schema.items()] == [
-        ('insCode', pl.String),
-        ('dataType', pl.Int64),
-        ('dEven', pl.Int64),
-        ('dataValue', pl.String),
+        ('insCode', String),
+        ('dataType', Int64),
+        ('dEven', Int64),
+        ('dataValue', String),
     ]
