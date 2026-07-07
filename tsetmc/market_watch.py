@@ -486,10 +486,10 @@ async def get_inst_value_all_inst_all_param() -> _LazyFrame:
 
 class MarketWatch:
     __slots__ = (
+        'df',
         'init_callback',
         'init_kwargs',
         'interval',
-        'lf',
         'market_state',
         'plus_callback',
         'plus_kwargs',
@@ -522,7 +522,7 @@ class MarketWatch:
 
         If init_callback is None, then self._default_init_callback and
         self._default_plus_callback will be used which will create
-        self.lf and keep it up-to-date while the watch is running.
+        self.df and keep it up-to-date while the watch is running.
         This is convenient, but note that you may be able to be implement a
         more efficient algorith to gather specific updates by using
         custom callback functions.
@@ -541,6 +541,19 @@ class MarketWatch:
             if plus_callback is None
             else plus_callback
         )
+        self.df = None
+
+    @property
+    def lf(self) -> _LazyFrame | None:
+        if (df := self.df) is not None:
+            return df.lazy()
+
+    @lf.setter
+    def lf(self, lf: _LazyFrame | None):
+        if lf is not None:
+            self.df = lf.collect()
+        else:
+            self.df = None
 
     def _default_init_callback(self, d: MarketWatchInit):
         self.lf = d.get('prices')
@@ -605,7 +618,7 @@ class MarketWatch:
 
             if update_exprs:
                 lf = lf.with_columns(update_exprs).drop(drop_cols)
-        self.lf = lf
+        self.df = lf.collect()
 
     async def start(self):
         update_event = self.update_event
@@ -623,9 +636,9 @@ class MarketWatch:
 
         self.init_callback(mwi)
 
-        lf = self.lf
-        if lf is not None:
-            heven = lf.select('heven').max().collect().item() or 0
+        df = self.df
+        if df is not None:
+            heven = df.select('heven').max().item() or 0
         else:
             heven = 0
 

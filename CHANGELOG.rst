@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Added back ``MarketWatch.df`` property. It was removed in v4.0.0 but turned out to be useful, and the watch needs to compute it anyway.
 
 v4.0.1 (2026-07-07)
 -------------------
