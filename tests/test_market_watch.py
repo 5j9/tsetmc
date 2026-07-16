@@ -87,6 +87,12 @@ async def test_market_watch_init():
     assert bl_schema['number'] == Int64
 
 
+@file('MarketWatchInit.aspx')
+async def test_market_watch_init_no_bl():
+    mwi = await market_watch_init(best_limits=False, prices=True)
+    assert mwi['prices'] is not None
+
+
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
     lf = await closing_price_all()

@@ -167,7 +167,7 @@ async def market_watch_init(
             bl = _unstack_best_limits(bl)
             prices_lf = bl.join(prices_lf, on='ins_code', how='left')
     else:
-        prices_lf = bl = None
+        bl = None
 
     return MarketWatchInit(
         refid=int(refid),

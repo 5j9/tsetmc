@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* Fixed a bug in ``market_watch_init`` where a falsy ``best_limits`` value was causing ``prices`` to become ``None``.
 * Updated ``dataset.csv``.
 
 v4.1.0 (2026-07-07)
