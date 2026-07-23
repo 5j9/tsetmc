@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v5.0.0 (2026-07-23)
 -------------------
 * BREAKING CHANGE: Require Python 3.14.
