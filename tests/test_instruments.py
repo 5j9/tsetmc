@@ -1,9 +1,8 @@
 from datetime import date
-from unittest.mock import patch
 
 import polars as pl
 from numpy import int64
-from pytest import raises, skip, warns
+from pytest import skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
 from tsetmc import InstrumentInfo
@@ -90,25 +89,37 @@ async def test_equal():
     assert await Instrument.from_l18('فملی') == Instrument(35425587644337450)
 
 
-@file('vsadid_identification.html')
+@file('vsadid_identity.json')
 async def test_identification():
-    with warns(DeprecationWarning):
-        identification = await VSADID.identification()  # pyright: ignore[reportDeprecated]
-    assert identification == {
-        'بازار': 'بازار پایه زرد فرابورس',
-        'زیر گروه صنعت': 'استخراج سایر فلزات اساسی',
-        'نام شرکت': 'گروه\u200cصنعتی\u200cسدید',
-        'نام لاتین شرکت': 'Sadid Group',
-        'نماد 30 رقمی فارسی': 'گروه \u200cصنعتی\u200cسدید',
-        'نماد فارسی': 'وسدید - لغو پذیرش شده',
-        'کد 12 رقمی شرکت': 'IRO7SDIP0002',
-        'کد 12 رقمی نماد': 'IRO7SDIP0001',
-        'کد 4 رقمی شرکت': 'SDIP',
-        'کد 5 رقمی نماد': 'SDIP1',
-        'کد تابلو': '7',
-        'کد زیر گروه صنعت': '2799',
-        'کد گروه صنعت': '27',
-        'گروه صنعت': 'فلزات اساسی',
+    ident = await VSADID.identity()  # pyright: ignore[reportDeprecated]
+    assert ident == {
+        'baseVol': 0,
+        'cComVal': '7',
+        'cIsin': 'IRO7SDIP0002',
+        'cSocCSAC': 'SDIP',
+        'cValMne': 'SDIP1',
+        'cgrValCot': 'P1',
+        'cgrValCotTitle': 'بازار پایه زرد فرابورس',
+        'flow': 0,
+        'flowTitle': '',
+        'insCode': '0',
+        'instrumentID': 'IRO7SDIP0001',
+        'lSoc30': 'گروه\u200cصنعتی\u200cسدید',
+        'lVal18': 'Sadid Group',
+        'lVal18AFC': 'وسدید',
+        'lVal30': 'گروه \u200cصنعتی\u200cسدید',
+        'lastDate': 0,
+        'sector': {'cSecVal': '27 ', 'dEven': 0, 'lSecVal': 'فلزات اساسی'},
+        'sourceID': 0,
+        'subSector': {
+            'cSecVal': None,
+            'cSoSecVal': 2799,
+            'dEven': 0,
+            'lSoSecVal': 'استخراج سایر فلزات اساسی',
+        },
+        'yMarNSC': 'NO',
+        'yVal': '309',
+        'zTitad': 0.0,
     }
 
 
@@ -279,21 +290,6 @@ async def test_share_holders_companies_histories():
         ('changeAmount', pl.Float64),
         ('shareHolderShareID', pl.Int64),
     ]
-
-
-@file('vsadid_identification.html')
-async def test_holders_without_cisin():
-    inst = VSADID
-    with warns(DeprecationWarning):
-        d = await inst.identification()  # pyright: ignore[reportDeprecated]
-    assert d['کد 12 رقمی شرکت'] == 'IRO7SDIP0002'
-    with patch.object(
-        Instrument, 'info', side_effect=NotImplementedError
-    ) as info:
-        with patch.object(Instrument, '_ds_or_info', Instrument.info):
-            with raises(NotImplementedError), warns(DeprecationWarning):
-                await inst.holders()  # pyright: ignore[reportDeprecated]
-    info.assert_called_once()
 
 
 @file('fmelli_price_adjustment.html')

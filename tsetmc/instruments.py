@@ -743,21 +743,6 @@ class Instrument:
         j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
         return j['clientType']
 
-    @_deprecated('use `Instrument.identity` instead')
-    async def identification(self) -> dict:
-        """Return the information available in the identification (شناسه) tab.
-
-        Related API descriptions:
-            https://cdn.tsetmc.com/Site.aspx?ParTree=1114111118&LnkIdn=83
-            http://en.tsetmc.com/Site.aspx?ParTree=111411111Z
-
-        This method uses old.tsetmc.com.
-        For the new API use `Instrument.identity`.
-        """
-        text = await _get_par_tree(f'15131M&i={self.code}')
-        df = _html_to_df(text)
-        return dict(zip(df[0], df[1]))
-
     async def identity(self) -> Identity:
         j = await _api(
             f'Instrument/GetInstrumentIdentity/{self.code}', fa=True
