@@ -2,8 +2,11 @@
 https://tsetmc.com/StaticContent/WebServiceHelp
 """
 
-from aiohutils.pd import html_to_df as _html_to_df
+from itertools import islice as _islice
+
+from html_table_parse import to_list as _to_list
 from lxml.html import fromstring as _html
+from polars import LazyFrame as _LazyFrame
 
 from tsetmc import _api
 
@@ -16,9 +19,11 @@ async def _static_content(key: str):
 async def client_type() -> dict:
     """https://tsetmc.com/StaticContent/WS-ClientType"""
     text = await _static_content('ClientType')
-    out = _html_to_df(text, 2)
+    out = _to_list(text, 2)
     return {
-        'output': out,
+        'output': _LazyFrame(
+            _islice(out, 1, None), orient='row', schema=out[0]
+        ),
     }
 
 

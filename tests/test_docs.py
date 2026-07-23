@@ -1,6 +1,6 @@
+from polars import DataFrame, String
 from pytest_aiohutils import file
 
-from tests import STR
 from tsetmc.docs import (
     best_limits_all_ins,
     client_type,
@@ -14,9 +14,13 @@ from tsetmc.docs import (
 @file('client_type.json')
 async def test_client_type():
     d = await client_type()
-    out = d['output']
-    assert len(out) == 9
-    assert [*out.dtypes.items()] == [(0, STR), (1, STR), (2, STR)]
+    out: DataFrame = d['output'].collect()
+    assert len(out) == 8
+    assert [*out.schema.items()] == [
+        ('InsCode', String),
+        ('کد داخلي نماد', String),
+        ('Instrument Unique Key', String),
+    ]
 
 
 @file('instrument_filter_by_date.json')
