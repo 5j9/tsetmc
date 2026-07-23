@@ -391,15 +391,6 @@ async def test_l18_without_web_request():
     assert await Instrument(46348559193224090).l18 == 'فولاد'
 
 
-@file('fmelli_introduction.html')
-async def test_introduction():
-    with warns(DeprecationWarning):
-        d = await (await Instrument.from_l18('فملی')).introduction()  # pyright: ignore[reportDeprecated]
-    assert len(d) > 10
-    assert 'مدیر عامل' in d
-    assert all(type(k) is type(v) is str for k, v in d.items())
-
-
 @file('fmelli_publisher.json')
 async def test_publisher():
     inst = await Instrument.from_l18('فملی')

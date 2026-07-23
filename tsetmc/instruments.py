@@ -9,7 +9,6 @@ from typing import Literal as _Literal, overload as _overload
 from warnings import deprecated as _deprecated
 
 import polars as _pl
-from aiohutils.pd import html_to_df as _html_to_df
 from html_table_parse import to_list as _html_to_list
 from jdatetime import date as _jdate
 
@@ -343,7 +342,7 @@ class Instrument:
         return self._cs
 
     @staticmethod
-    async def from_l18(l18: str, /) -> 'Instrument':
+    async def from_l18(l18: str, /) -> Instrument:
         l18_info = _dataset.lazy_ds.as_dict('l18').get(l18)
         if l18_info is not None:
             l30, ins_code = l18_info.l30, l18_info.code
@@ -352,7 +351,7 @@ class Instrument:
         return Instrument(ins_code, l18, l30)
 
     @staticmethod
-    async def from_isin(isin: str, /) -> 'Instrument':
+    async def from_isin(isin: str, /) -> Instrument:
         """Create Instrument from ISIN.
 
         Raises KeyError if isin is not found in dataset.
@@ -765,13 +764,6 @@ class Instrument:
         )
         return j['instrumentIdentity']
 
-    @_deprecated('use `Instrument.publisher` instead')
-    async def introduction(self) -> dict[str, str]:
-        """Return the information available in introduction (معرفی) tab."""
-        text = await _get_par_tree(f'15131V&s={await self._arabic_l18}')
-        df = _html_to_df(text)
-        return dict(zip(df[0].str.removesuffix(' :'), df[1]))
-
     async def publisher(self) -> dict:
         j = await _api(
             f'Codal/GetCodalPublisherBySymbol/{await self._arabic_l18}',
@@ -780,7 +772,7 @@ class Instrument:
         return j['codalPublisher']
 
     @staticmethod
-    async def from_search(s: str) -> 'Instrument':
+    async def from_search(s: str) -> Instrument:
         """`Search for `s` and return the first result as an Instrument."""
         d = (await search(s))[0]
         return Instrument(d['insCode'], d['lVal18AFC'], d['lVal30'])
@@ -1010,7 +1002,7 @@ class Instrument:
             ]
         )
 
-    def on_date(self, date: int | str) -> 'InstrumentOnDate':
+    def on_date(self, date: int | str) -> InstrumentOnDate:
         """Return an object resembling Instrument on a specific date.
 
         :param date: Gregorian date in YYYYMMDD format.

@@ -3,6 +3,7 @@ Unreleased
 * BREAKING CHANGE: Require Python 3.14.
 * BREAKING CHANGE: Updated some remaining methods that used to return pandas DataFrames (via dependency) to return polars LazyFrames. ``pandas`` is now completely removed from dependency tree.
 * ``docs.client_type``: return LazyFrame instead of DataFrame.
+* ``Instrument.introduction`` was deprecated and is now removed. Use ``Instrument.publisher`` method instead.
 * Updated ``dataset.csv``.
 
 v4.1.1 (2026-07-16)
