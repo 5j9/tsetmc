@@ -8,11 +8,7 @@ version = "4.1.2.dev1"
 authors = [{ name = '5j9', email = '5j9@users.noreply.github.com' }]
 description = 'a library to retrieve data from tsetmc.com website'
 keywords = ['tsetmc', 'client']
-classifiers = [
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-    'Programming Language :: Python :: 3.12',
-]
-requires-python = '>=3.13'
+requires-python = '>=3.14'
 dependencies = [
     'aiohutils >= 0.24.0',
     "html-table-parse>=0.2.2",
