@@ -670,12 +670,10 @@ class MarketWatch:
 
             if (pu := mwp.get('price_updates')) is not None:
                 pu_max = pu.select('heven').max().collect().item() or 0
-                if pu_max > heven:
-                    heven = pu_max
+                heven = max(heven, pu_max)
             if (np := mwp.get('new_prices')) is not None:
                 np_max = np.select('heven').max().collect().item() or 0
-                if np_max > heven:
-                    heven = np_max
+                heven = max(heven, np_max)
 
             set_event()
             clear_event()
