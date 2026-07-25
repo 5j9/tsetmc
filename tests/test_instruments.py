@@ -91,7 +91,7 @@ async def test_equal():
 
 @file('vsadid_identity.json')
 async def test_identification():
-    ident = await VSADID.identity()  # pyright: ignore[reportDeprecated]
+    ident = await VSADID.identity()
     assert ident == {
         'baseVol': 0,
         'cComVal': '7',
