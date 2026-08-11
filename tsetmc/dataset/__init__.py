@@ -41,7 +41,7 @@ class _LazyDS:
         pop('lf', None)
         pop('df', None)
         pop('_lookup_list', None)
-        self.as_dict.cache_clear()
+        _lazy_ds_dict.cache_clear()
 
     @cached_property
     def lf(self) -> _pl.LazyFrame:
@@ -68,14 +68,18 @@ class _LazyDS:
             ).iter_rows()
         ]
 
-    @_cache
     def as_dict(
         self, key: _Literal['code', 'l18', 'l30', 'cisin', 'isin']
     ) -> dict[str, _LookUpResult]:
-        return {getattr(ll, key): ll for ll in self._lookup_list}
+        return _lazy_ds_dict(key)
 
 
 lazy_ds = _LazyDS()
+
+
+@_cache
+def _lazy_ds_dict(key: _Literal['code', 'l18', 'l30', 'cisin', 'isin']):
+    return {getattr(ll, key): ll for ll in lazy_ds._lookup_list}
 
 
 def _dump(df: _pl.DataFrame):
