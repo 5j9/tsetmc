@@ -3,7 +3,6 @@ from datetime import date as _date, datetime as _datetime
 from functools import partial as _partial
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from itertools import islice as _islice
-from logging import warning as _warning
 from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
 from warnings import deprecated as _deprecated
@@ -28,6 +27,7 @@ from tsetmc import (
     _rc,
     _TypedDict,
     dataset as _dataset,
+    logger as _logger,
 )
 
 
@@ -596,7 +596,7 @@ class Instrument:
                 _,
             ) = text.split(';')
         except ValueError:
-            _warning(text)  # usually means the service is unavailable
+            _logger.warning(text)  # usually means the service is unavailable
             raise
 
         if general:

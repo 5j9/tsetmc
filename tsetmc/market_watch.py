@@ -21,9 +21,9 @@ from tsetmc import (
     _get_data,
     _get_par_tree,
     _jgstrptime,
-    _logger,
     _parse_market_state,
     _save_last_content,
+    logger as _logger,
 )
 
 _BEST_LIMITS_SCHEMA = {

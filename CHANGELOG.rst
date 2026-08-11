@@ -1,5 +1,6 @@
 Unreleased
 ----------
+* ``tsetmc.logger`` is now public
 * Removed pyarrow form dependencies
 * Updated dataset
 

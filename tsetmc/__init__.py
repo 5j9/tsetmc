@@ -14,7 +14,7 @@ import polars as _pl
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
 
-_logger = _getLogger(__name__)
+logger = _getLogger(__name__)
 
 _F = r'(-?\d+(?:\.\d+)?)'  # float pattern
 _INDEX_CHANGE_MATCH = _rc(rf'<div[^>]*>(\()?{_F}\)?</div>(?: {_F}%)?').match
@@ -266,7 +266,7 @@ async def _api(path: str, *, fa=False):
     try:
         return loads(content)
     except JSONDecodeError:
-        _logger.error(f'url={_API}{path}\n{content=}')
+        logger.error(f'url={_API}{path}\n{content=}')
         raise
 
 
@@ -315,13 +315,13 @@ def _save_last_content(msg: str, /):
         'دسترسی شما بدلیل مسائل امنیتی مسدود شده است.'.encode()
         in _last_content
     ):
-        _logger.error('Your access has been blocked due to security issues.')
+        logger.error('Your access has been blocked due to security issues.')
         return
     if b'General Error Detected' in _last_content:
-        _logger.error('General Error Detected.')
+        logger.error('General Error Detected.')
         return
 
     file = __file__.removesuffix('__init__.py') + '~last_response.html'
     with open(file, 'wb') as f:
         f.write(_last_content)
-    _logger.error(f'{msg}; _LAST_CONTENT saved in {file}', stacklevel=2)
+    logger.error(f'{msg}; _LAST_CONTENT saved in {file}', stacklevel=2)
