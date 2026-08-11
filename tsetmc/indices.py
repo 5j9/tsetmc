@@ -8,7 +8,7 @@ async def last_state(i=1, /) -> _pl.LazyFrame:
 
 
 class Index:
-    __slots__ = 'code'
+    __slots__ = ('code',)
 
     def __init__(self, code: str | int):
         self.code = code

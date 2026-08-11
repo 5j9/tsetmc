@@ -362,7 +362,7 @@ class Instrument:
             row = isin_info[isin]
         except KeyError as e:
             e.add_note('isin not found in dataset, try updating the dataset.')
-            raise e
+            raise
         inst = Instrument(row.code, row.l18, row.l30)
         inst._isin = isin
         inst._cisin = row.cisin

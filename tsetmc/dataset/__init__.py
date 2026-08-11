@@ -150,7 +150,9 @@ async def add_instrument(inst: _instruments.Instrument) -> None:
 async def update(df: _pl.DataFrame | None = None) -> None:
     if df is None:
         mwi = await _market_watch_init(market_state=False, best_limits=False)
-        df = mwi['prices'].collect()
+        prices = mwi['prices']
+        assert prices is not None
+        df = prices.collect()
 
     # Filter incoming df: exclude YVAL_EXCLUSIONS and strings ending with a digit
     df = df.filter(

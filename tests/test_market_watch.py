@@ -148,7 +148,7 @@ async def test_key_stats():
     schema = lf.collect_schema()
 
     assert schema['ins_code'] == String
-    for col in schema.keys():
+    for col in schema:
         if col != 'ins_code':
             assert col.startswith('is')
             assert schema[col] == Float64
