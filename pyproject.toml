@@ -17,7 +17,6 @@ dependencies = [
     'numpy',
     # pd.options.future.infer_string = True
     "polars>=1.41.2",
-    'pyarrow',
 ]
 
 [project.license]

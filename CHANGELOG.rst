@@ -1,6 +1,7 @@
 Unreleased
 ----------
-* 
+* Removed pyarrow form dependencies
+* Updated dataset
 
 v5.0.0 (2026-07-23)
 -------------------
