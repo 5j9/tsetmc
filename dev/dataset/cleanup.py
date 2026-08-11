@@ -1,10 +1,9 @@
 from asyncio import as_completed, run
-from logging import basicConfig, info
 
-from tsetmc.dataset import YVAL_EXCLUSIONS, LazyDS, _dump
+from polars import col
+
+from tsetmc.dataset import YVAL_EXCLUSIONS, _dump, lazy_ds
 from tsetmc.instruments import Instrument
-
-basicConfig(level='INFO', force=True)
 
 TO_BE_REMOVED = []
 CHECKED: set = {*()}
@@ -17,16 +16,18 @@ async def check(l18: str):
     i = await inst.info()
     if i['yVal'] in YVAL_EXCLUSIONS:
         TO_BE_REMOVED.append(l18)
-        info(f'marked {l18} for removal')
+        print(f'marked {l18} for removal')
     CHECKED.add(l18)
 
 
 async def main():
-    df = LazyDS.df
+    df = lazy_ds.df
     for coro in as_completed([check(l18) for l18 in df['l18']]):
         await coro
-    info(f'{len(TO_BE_REMOVED) = }')
-    df = df[~df['l18'].isin(TO_BE_REMOVED)]
+    print(f'{len(TO_BE_REMOVED) = }')
+    if not TO_BE_REMOVED:
+        return
+    df = df.filter(~col('l18').is_in(TO_BE_REMOVED))
     _dump(df)
 
 
