@@ -7,7 +7,7 @@ from typing import Literal as _Literal, NamedTuple as _NamedTuple
 
 import polars as _pl
 
-from tsetmc import instruments as _instruments, logger
+from tsetmc import instruments as _instruments, logger as _logger
 from tsetmc.market_watch import market_watch_init as _market_watch_init
 
 YVAL_EXCLUSIONS = {
@@ -92,7 +92,7 @@ def _dump(df: _pl.DataFrame):
             .get_column('l18')
         )
         df = df.unique(subset='l18', keep='last')
-        logger.info(
+        _logger.info(
             'Removed duplicated l18 values:\n%s', duplicate_l18s.to_list()
         )
 
@@ -105,7 +105,7 @@ def _dump(df: _pl.DataFrame):
             .get_column('ins_code')
         )
         df = df.unique(subset='ins_code', keep='last')
-        logger.error(
+        _logger.error(
             'Removed duplicated codes:\n%s', duplicate_codes.to_list()
         )
 
@@ -141,7 +141,7 @@ async def add_instrument(inst: _instruments.Instrument) -> None:
             row.l18,
             row.l30,
         ):
-            logger.warning(f'{l18 = } already exists in dataset')
+            _logger.warning(f'{l18 = } already exists in dataset')
             return
 
     df = _pl.concat([df, new_row_df])
@@ -187,7 +187,7 @@ async def update(df: _pl.DataFrame | None = None) -> None:
     )
 
     if len(new_rows) == 0 and len(changed_rows) == 0:
-        logger.info(
+        _logger.info(
             'No new/changed entries after updating using market watch.'
         )
         return
@@ -237,7 +237,7 @@ async def update(df: _pl.DataFrame | None = None) -> None:
     lazy_ds.df = merged
     lazy_ds.lf = merged.lazy()
 
-    logger.info(
+    _logger.info(
         f'{len(new_rows)} new and {len(changed_rows)} changed '
         'entries after update using market watch.'
     )
