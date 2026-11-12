@@ -1,7 +1,20 @@
 from datetime import date
 
-import polars as pl
 from numpy import int64
+from polars import (
+    Boolean,
+    DataFrame,
+    Date,
+    Datetime,
+    Float64,
+    Int64,
+    LazyFrame,
+    Null,
+    String,
+    Time,
+    col,
+    len as pl_len,
+)
 from pytest import skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
@@ -41,16 +54,16 @@ async def test_trade_history():
     df0 = ldf0.collect()
 
     assert list(df0.schema.items()) == [
-        ('date', pl.Date),
-        ('pmax', pl.Float64),
-        ('pmin', pl.Float64),
-        ('pc', pl.Float64),
-        ('pl', pl.Float64),
-        ('pf', pl.Float64),
-        ('py', pl.Float64),
-        ('tval', pl.Float64),
-        ('tvol', pl.Int64),
-        ('tno', pl.Int64),
+        ('date', Date),
+        ('pmax', Float64),
+        ('pmin', Float64),
+        ('pc', Float64),
+        ('pl', Float64),
+        ('pf', Float64),
+        ('py', Float64),
+        ('tval', Float64),
+        ('tvol', Int64),
+        ('tno', Int64),
     ]
 
     with warns(DeprecationWarning):
@@ -131,19 +144,19 @@ async def test_client_type_history_old():
     df = ldf.collect()
 
     assert list(df.schema.items()) == [
-        ('date', pl.Date),
-        ('n_buy_count', pl.Int64),
-        ('l_buy_count', pl.Int64),
-        ('n_sell_count', pl.Int64),
-        ('l_sell_count', pl.Int64),
-        ('n_buy_volume', pl.Int64),
-        ('l_buy_volume', pl.Int64),
-        ('n_sell_volume', pl.Int64),
-        ('l_sell_volume', pl.Int64),
-        ('n_buy_value', pl.Int64),
-        ('l_buy_value', pl.Int64),
-        ('n_sell_value', pl.Int64),
-        ('l_sell_value', pl.Int64),
+        ('date', Date),
+        ('n_buy_count', Int64),
+        ('l_buy_count', Int64),
+        ('n_sell_count', Int64),
+        ('l_sell_count', Int64),
+        ('n_buy_volume', Int64),
+        ('l_buy_volume', Int64),
+        ('n_sell_volume', Int64),
+        ('l_sell_volume', Int64),
+        ('n_buy_value', Int64),
+        ('l_buy_value', Int64),
+        ('n_sell_value', Int64),
+        ('l_sell_value', Int64),
     ]
 
 
@@ -174,20 +187,20 @@ async def test_client_type_history_no_date():
     df = lf.collect()
 
     assert list(df.schema.items()) == [
-        ('recDate', pl.Int64),
-        ('insCode', pl.String),
-        ('buy_I_Volume', pl.Float64),
-        ('buy_N_Volume', pl.Float64),
-        ('buy_I_Value', pl.Float64),
-        ('buy_N_Value', pl.Float64),
-        ('buy_N_Count', pl.Int64),
-        ('sell_I_Volume', pl.Float64),
-        ('buy_I_Count', pl.Float64),
-        ('sell_N_Volume', pl.Float64),
-        ('sell_I_Value', pl.Float64),
-        ('sell_N_Value', pl.Float64),
-        ('sell_N_Count', pl.Int64),
-        ('sell_I_Count', pl.Int64),
+        ('recDate', Int64),
+        ('insCode', String),
+        ('buy_I_Volume', Float64),
+        ('buy_N_Volume', Float64),
+        ('buy_I_Value', Float64),
+        ('buy_N_Value', Float64),
+        ('buy_N_Count', Int64),
+        ('sell_I_Volume', Float64),
+        ('buy_I_Count', Float64),
+        ('sell_N_Volume', Float64),
+        ('sell_I_Value', Float64),
+        ('sell_N_Value', Float64),
+        ('sell_N_Count', Int64),
+        ('sell_I_Count', Int64),
     ]
 
 
@@ -209,11 +222,11 @@ async def test_holders_holder():
     schema = dict(df_holders.schema)
 
     assert schema == {
-        'change': pl.Int64,
-        'holder': pl.String,
-        'shares/units': pl.Int64,
-        '%': pl.Float64,
-        'id_cisin': pl.String,
+        'change': Int64,
+        'holder': String,
+        'shares/units': Int64,
+        '%': Float64,
+        'id_cisin': String,
     }
     assert not df_holders['change'].has_nulls()
     assert not df_holders['shares/units'].has_nulls()
@@ -230,24 +243,24 @@ async def test_holders_holder():
     df_oth = lf_oth.collect()
 
     assert [*df_hist.schema.items()] == [
-        ('date', pl.Date),
-        ('shares', pl.Int64),
+        ('date', Date),
+        ('shares', Int64),
     ]
 
     assert [*df_oth.schema.items()] == [
-        ('ins_code', pl.String),
-        ('name', pl.String),
-        ('shares', pl.Int64),
-        ('percent', pl.Float64),
+        ('ins_code', String),
+        ('name', String),
+        ('shares', Int64),
+        ('percent', Float64),
     ]
 
     with warns(DeprecationWarning):
         lf_hist = await AVA.holder('43789,IRT3AVAF0003', True)  # ty: ignore[deprecated]
-    assert type(lf_hist) is pl.LazyFrame
+    assert type(lf_hist) is LazyFrame
 
     with warns(DeprecationWarning):
         lf_oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # ty: ignore[deprecated]
-    assert type(lf_oth) is pl.LazyFrame
+    assert type(lf_oth) is LazyFrame
 
     with warns(DeprecationWarning):
         lf_result = await AVA.holder('43789,IRT3AVAF0003', False)  # ty: ignore[deprecated]
@@ -280,15 +293,15 @@ async def test_share_holders_companies_histories():
     df = lf.collect()
     assert len(df) == 2
     assert [*df.schema.items()] == [
-        ('shareHolderID', pl.Int64),
-        ('shareHolderName', pl.Null),
-        ('cIsin', pl.String),
-        ('dEven', pl.Date),
-        ('numberOfShares', pl.Float64),
-        ('perOfShares', pl.Float64),
-        ('change', pl.Int64),
-        ('changeAmount', pl.Float64),
-        ('shareHolderShareID', pl.Int64),
+        ('shareHolderID', Int64),
+        ('shareHolderName', Null),
+        ('cIsin', String),
+        ('dEven', Date),
+        ('numberOfShares', Float64),
+        ('perOfShares', Float64),
+        ('change', Int64),
+        ('changeAmount', Float64),
+        ('shareHolderShareID', Int64),
     ]
 
 
@@ -300,9 +313,9 @@ async def test_adjustments():
     df = lf.collect()
     assert len(df) >= 18
     assert [*df.schema.items()] == [
-        ('date', pl.Date),
-        ('adj_pc', pl.Int64),
-        ('pc', pl.Int64),
+        ('date', Date),
+        ('adj_pc', Int64),
+        ('pc', Int64),
     ]
 
 
@@ -313,14 +326,14 @@ async def test_price_adjustments_method():
 
     assert len(df) >= 18
     assert [*df.schema.items()] == [
-        ('insCode', pl.String),
-        ('dEven', pl.Date),
-        ('pClosing', pl.Float64),
-        ('pClosingNotAdjusted', pl.Float64),
-        ('corporateTypeCode', pl.Null),
+        ('insCode', String),
+        ('dEven', Date),
+        ('pClosing', Float64),
+        ('pClosingNotAdjusted', Float64),
+        ('corporateTypeCode', Null),
         (
             'instrument',
-            pl.Null,
+            Null,
         ),  # Matches Pandas dtype('O') containing all nulls/None
     ]
 
@@ -334,11 +347,11 @@ async def test_price_adjustments():
     df = lf.collect()
 
     assert list(df.schema.items()) == [
-        ('l18', pl.String),
-        ('l30', pl.String),
-        ('date', pl.Date),
-        ('adj_pc', pl.Int64),
-        ('pc', pl.Int64),
+        ('l18', String),
+        ('l30', String),
+        ('date', Date),
+        ('adj_pc', Int64),
+        ('pc', Int64),
     ]
     assert len(df) == 6
 
@@ -353,13 +366,13 @@ async def test_adjusted_price_history():
 
     # Check schema directly
     expected_schema = {
-        'date': pl.Date,
-        'pmax': pl.Int64,
-        'pmin': pl.Int64,
-        'pf': pl.Int64,
-        'pl': pl.Int64,
-        'tvol': pl.Int64,
-        'pc': pl.Int64,
+        'date': Date,
+        'pmax': Int64,
+        'pmin': Int64,
+        'pf': Int64,
+        'pl': Int64,
+        'tvol': Int64,
+        'pc': Int64,
     }
 
     assert df.schema == expected_schema
@@ -369,7 +382,7 @@ async def test_adjusted_price_history():
 async def test_old_search():
     lf = await old_search('ملت')
     df = lf.collect()
-    assert type(df) is pl.DataFrame
+    assert type(df) is DataFrame
     assert len(df) > 40
 
     # Clean dictionary check against Polars types
@@ -440,9 +453,9 @@ async def test_ombud_messages():
 
     df = lf.collect()
     assert list(df.schema.items()) == [
-        ('header', pl.String),
-        ('date', pl.Datetime),
-        ('description', pl.String),
+        ('header', String),
+        ('date', Datetime),
+        ('description', String),
     ]
 
 
@@ -459,13 +472,13 @@ async def test_dps_history():
     if df.is_empty():
         skip('dps_history returned empty df')
     assert dict(df.schema) == {
-        'publish_date': pl.Date,
-        'meeting_date': pl.Date,
-        'fiscal_year': pl.Date,
-        'profit_or_loss_after_tax': pl.Float64,
-        'distributable_profit': pl.Float64,
-        'accumulated_profit_at_the_end_of_the_period': pl.Float64,
-        'cash_earnings_per_share': pl.Float64,
+        'publish_date': Date,
+        'meeting_date': Date,
+        'fiscal_year': Date,
+        'profit_or_loss_after_tax': Float64,
+        'distributable_profit': Float64,
+        'accumulated_profit_at_the_end_of_the_period': Float64,
+        'cash_earnings_per_share': Float64,
     }
 
 
@@ -517,19 +530,19 @@ async def test_trades():
 
     # Polars .schema returns a mapping of {name: DataType}
     assert list(df.collect_schema().items()) == [
-        ('insCode', pl.Null),
-        ('dEven', pl.Int64),
-        ('nTran', pl.Int64),
-        ('hEven', pl.Int64),
-        ('qTitTran', pl.Int64),
-        ('pTran', pl.Float64),
-        ('qTitNgJ', pl.Int64),
-        ('iSensVarP', pl.String),
-        ('pPhSeaCotJ', pl.Float64),
-        ('pPbSeaCotJ', pl.Float64),
-        ('iAnuTran', pl.Int64),
-        ('xqVarPJDrPRf', pl.Float64),
-        ('canceled', pl.Int64),
+        ('insCode', Null),
+        ('dEven', Int64),
+        ('nTran', Int64),
+        ('hEven', Int64),
+        ('qTitTran', Int64),
+        ('pTran', Float64),
+        ('qTitNgJ', Int64),
+        ('iSensVarP', String),
+        ('pPhSeaCotJ', Float64),
+        ('pPbSeaCotJ', Float64),
+        ('iAnuTran', Int64),
+        ('xqVarPJDrPRf', Float64),
+        ('canceled', Int64),
     ]
 
 
@@ -546,26 +559,26 @@ async def test_daily_closing_price():
     # Collect for further testing
     df = result.collect()
     expected_schema = {
-        'priceChange': pl.Float64,
-        'priceMin': pl.Float64,
-        'priceMax': pl.Float64,
-        'priceYesterday': pl.Float64,
-        'priceFirst': pl.Float64,
-        'last': pl.Boolean,
-        'id': pl.Int64,
-        'insCode': pl.String,
-        'dEven': pl.Int64,
-        'hEven': pl.Int64,
-        'pClosing': pl.Float64,
-        'iClose': pl.Boolean,
-        'yClose': pl.Boolean,
-        'pDrCotVal': pl.Float64,
-        'zTotTran': pl.Float64,
-        'qTotTran5J': pl.Float64,
-        'qTotCap': pl.Float64,
-        'date': pl.Date,
-        'time': pl.Time,
-        'datetime': pl.Datetime(time_unit='us'),
+        'priceChange': Float64,
+        'priceMin': Float64,
+        'priceMax': Float64,
+        'priceYesterday': Float64,
+        'priceFirst': Float64,
+        'last': Boolean,
+        'id': Int64,
+        'insCode': String,
+        'dEven': Int64,
+        'hEven': Int64,
+        'pClosing': Float64,
+        'iClose': Boolean,
+        'yClose': Boolean,
+        'pDrCotVal': Float64,
+        'zTotTran': Float64,
+        'qTotTran5J': Float64,
+        'qTotCap': Float64,
+        'date': Date,
+        'time': Time,
+        'datetime': Datetime(time_unit='us'),
     }
     assert df.schema == expected_schema
     assert len(df) == 3
@@ -585,15 +598,15 @@ async def test_best_limits():
     if df.is_empty():
         return
     assert list(df.schema.items()) == [
-        ('number', pl.Int64),
-        ('qTitMeDem', pl.Int64),
-        ('zOrdMeDem', pl.Int64),
-        ('pMeDem', pl.Float64),
-        ('pMeOf', pl.Float64),
-        ('zOrdMeOf', pl.Int64),
-        ('qTitMeOf', pl.Int64),
-        ('title', pl.Null),
-        ('insCode', pl.Null),
+        ('number', Int64),
+        ('qTitMeDem', Int64),
+        ('zOrdMeDem', Int64),
+        ('pMeDem', Float64),
+        ('pMeOf', Float64),
+        ('zOrdMeOf', Int64),
+        ('qTitMeOf', Int64),
+        ('title', Null),
+        ('insCode', Null),
     ]
     assert len(df) <= 5, len(df)
 
@@ -619,72 +632,72 @@ async def test_related_companies():
 
     # Check relatedCompany schema - columns that are always null
     expected_c_schema = {
-        'instrumentState': pl.Null,  # Always null
-        'lastHEven': pl.Int64,
-        'finalLastDate': pl.Int64,
-        'nvt': pl.Float64,
-        'mop': pl.Int64,
-        'pRedTran': pl.Float64,
-        'thirtyDayClosingHistory': pl.Null,  # Always null
-        'priceChange': pl.Float64,
-        'priceMin': pl.Float64,
-        'priceMax': pl.Float64,
-        'priceYesterday': pl.Float64,
-        'priceFirst': pl.Float64,
-        'last': pl.Boolean,
-        'id': pl.Int64,
-        'insCode': pl.String,
-        'dEven': pl.Int64,
-        'hEven': pl.Int64,
-        'pClosing': pl.Float64,
-        'iClose': pl.Boolean,
-        'yClose': pl.Boolean,
-        'pDrCotVal': pl.Float64,
-        'zTotTran': pl.Float64,
-        'qTotTran5J': pl.Float64,
-        'qTotCap': pl.Float64,
+        'instrumentState': Null,  # Always null
+        'lastHEven': Int64,
+        'finalLastDate': Int64,
+        'nvt': Float64,
+        'mop': Int64,
+        'pRedTran': Float64,
+        'thirtyDayClosingHistory': Null,  # Always null
+        'priceChange': Float64,
+        'priceMin': Float64,
+        'priceMax': Float64,
+        'priceYesterday': Float64,
+        'priceFirst': Float64,
+        'last': Boolean,
+        'id': Int64,
+        'insCode': String,
+        'dEven': Int64,
+        'hEven': Int64,
+        'pClosing': Float64,
+        'iClose': Boolean,
+        'yClose': Boolean,
+        'pDrCotVal': Float64,
+        'zTotTran': Float64,
+        'qTotTran5J': Float64,
+        'qTotCap': Float64,
         # Flattened instrument fields
-        'cValMne': pl.Null,  # Always null
-        'lVal18': pl.Null,  # Always null
-        'cSocCSAC': pl.Null,  # Always null
-        'lSoc30': pl.Null,  # Always null
-        'yMarNSC': pl.Null,  # Always null
-        'yVal': pl.Null,  # Always null
-        'lVal30': pl.String,
-        'lVal18AFC': pl.String,
-        'flow': pl.Int64,
-        'cIsin': pl.Null,  # Always null
-        'zTitad': pl.Float64,
-        'baseVol': pl.Int64,
-        'instrumentID': pl.Null,  # Always null
-        'cgrValCot': pl.Null,  # Always null
-        'cComVal': pl.Null,  # Always null
-        'lastDate': pl.Int64,
-        'sourceID': pl.Int64,
-        'flowTitle': pl.Null,  # Always null
-        'cgrValCotTitle': pl.Null,  # Always null
+        'cValMne': Null,  # Always null
+        'lVal18': Null,  # Always null
+        'cSocCSAC': Null,  # Always null
+        'lSoc30': Null,  # Always null
+        'yMarNSC': Null,  # Always null
+        'yVal': Null,  # Always null
+        'lVal30': String,
+        'lVal18AFC': String,
+        'flow': Int64,
+        'cIsin': Null,  # Always null
+        'zTitad': Float64,
+        'baseVol': Int64,
+        'instrumentID': Null,  # Always null
+        'cgrValCot': Null,  # Always null
+        'cComVal': Null,  # Always null
+        'lastDate': Int64,
+        'sourceID': Int64,
+        'flowTitle': Null,  # Always null
+        'cgrValCotTitle': Null,  # Always null
     }
     assert dict(c.collect_schema()) == expected_c_schema
 
     # Check relatedCompanyThirtyDayHistory schema
     expected_h_schema = {
-        'id': pl.Int64,
-        'insCode': pl.String,
-        'dEven': pl.Int64,
-        'hEven': pl.Int64,
-        'pClosing': pl.Float64,
-        'iClose': pl.Boolean,
-        'yClose': pl.Boolean,
-        'pDrCotVal': pl.Float64,
-        'zTotTran': pl.Float64,
-        'qTotTran5J': pl.Float64,
-        'qTotCap': pl.Float64,
+        'id': Int64,
+        'insCode': String,
+        'dEven': Int64,
+        'hEven': Int64,
+        'pClosing': Float64,
+        'iClose': Boolean,
+        'yClose': Boolean,
+        'pDrCotVal': Float64,
+        'zTotTran': Float64,
+        'qTotTran5J': Float64,
+        'qTotCap': Float64,
     }
     assert dict(h.collect_schema()) == expected_h_schema
 
     # Check that each insCode appears more than 20 times
-    counts = h.group_by('insCode').agg(pl.len().alias('count'))
-    mode_count = counts.select(pl.col('count').mode().first()).collect().item()
+    counts = h.group_by('insCode').agg(pl_len().alias('count'))
+    mode_count = counts.select(col('count').mode().first()).collect().item()
     assert mode_count > 20
 
 

@@ -7,9 +7,21 @@ from re import Match as _Match, findall as _findall
 from typing import Literal as _Literal, overload as _overload
 from warnings import deprecated as _deprecated
 
-import polars as _pl
 from html_table_parse import to_list as _html_to_list
 from jdatetime import date as _jdate
+from polars import (
+    Date as _Date,
+    Datetime as _Datetime,
+    Duration as _Duration,
+    Float16 as _Float16,
+    Float64 as _Float64,
+    Int64 as _Int64,
+    LazyFrame as _LazyFrame,
+    String as _String,
+    col as _col,
+    scan_csv as _scan_csv,
+    time as _time,
+)
 
 from tsetmc import (
     _F,
@@ -84,7 +96,7 @@ _STR_TO_NUM = _partial(_rc(rf"'{_F}'").sub, r'\1')
 
 
 class LiveData(_TypedDict, total=False):
-    best_limits: _pl.LazyFrame
+    best_limits: _LazyFrame
     market_state: MarketState
     nav: int
     nav_datatime: _datetime
@@ -261,13 +273,13 @@ class ClientTypeOnDate(_TypedDict):
 
 
 _DPS_HISTORY_SCHEMA = {
-    'publish_date': _pl.String,
-    'meeting_date': _pl.String,
-    'fiscal_year': _pl.String,
-    'profit_or_loss_after_tax': _pl.Float64,
-    'distributable_profit': _pl.Float64,
-    'accumulated_profit_at_the_end_of_the_period': _pl.Float64,
-    'cash_earnings_per_share': _pl.Float64,
+    'publish_date': _String,
+    'meeting_date': _String,
+    'fiscal_year': _String,
+    'profit_or_loss_after_tax': _Float64,
+    'distributable_profit': _Float64,
+    'accumulated_profit_at_the_end_of_the_period': _Float64,
+    'cash_earnings_per_share': _Float64,
 }
 
 
@@ -379,9 +391,9 @@ class Instrument:
         self._l30 = d['lVal30']
         return d
 
-    async def trades(self) -> _pl.LazyFrame:
+    async def trades(self) -> _LazyFrame:
         j = await _api(f'Trade/GetTrade/{self.code}')
-        return _pl.LazyFrame(j['trade'])
+        return _LazyFrame(j['trade'])
 
     async def codal(self, n=9) -> list[Codal]:
         j = await _api(
@@ -389,7 +401,7 @@ class Instrument:
         )
         return j['preparedData']
 
-    async def daily_closing_price(self, n=0) -> _pl.LazyFrame:
+    async def daily_closing_price(self, n=0) -> _LazyFrame:
         """n is the number of days. Use 0 (default) to fetch all.
 
         result columns: [
@@ -403,7 +415,7 @@ class Instrument:
         j = await _api(
             f'ClosingPrice/GetClosingPriceDailyList/{self.code}/{n}'
         )
-        lf = _pl.LazyFrame(j['closingPriceDaily'])
+        lf = _LazyFrame(j['closingPriceDaily'])
 
         # Convert dEven (int like 20231225) to Date
         # Convert hEven (int like 93000 or 123456) to Time
@@ -411,23 +423,23 @@ class Instrument:
             lf.with_columns(
                 [
                     # Parse date: dEven is YYYYMMDD
-                    _pl.col('dEven')
-                    .cast(_pl.String)
-                    .str.strptime(_pl.Date, format='%Y%m%d')
+                    _col('dEven')
+                    .cast(_String)
+                    .str.strptime(_Date, format='%Y%m%d')
                     .alias('date'),
                     # Parse time: hEven is HHMMSS (without leading zeros)
-                    _pl.time(
-                        _pl.col('hEven') // 10000,  # hours
-                        (_pl.col('hEven') // 100) % 100,  # minutes
-                        _pl.col('hEven') % 100,  # seconds
+                    _time(
+                        _col('hEven') // 10000,  # hours
+                        (_col('hEven') // 100) % 100,  # minutes
+                        _col('hEven') % 100,  # seconds
                     ).alias('time'),
                 ]
             ).with_columns(
                 [
                     # Combine date and time into datetime
                     (
-                        _pl.col('date').cast(_pl.Datetime)
-                        + _pl.col('time').cast(_pl.Duration)
+                        _col('date').cast(_Datetime)
+                        + _col('time').cast(_Duration)
                     ).alias('datetime')
                 ]
             )
@@ -441,9 +453,9 @@ class Instrument:
         )
         return j['closingPriceInfo']
 
-    async def best_limits(self) -> _pl.LazyFrame:
+    async def best_limits(self) -> _LazyFrame:
         j = await _api(f'BestLimits/{self.code}')
-        return _pl.LazyFrame(j['bestLimits'])
+        return _LazyFrame(j['bestLimits'])
 
     async def client_type(self) -> ClientType:
         j = await _api(f'ClientType/GetClientType/{self.code}/1/0')
@@ -457,7 +469,7 @@ class Instrument:
         j = await _api(f'Fund/GetETFByInsCode/{self.code}')
         return j['etf']
 
-    async def related_companies(self, cs=None) -> dict[str, _pl.LazyFrame]:
+    async def related_companies(self, cs=None) -> dict[str, _LazyFrame]:
         if cs is None:
             cs = await self.cs
 
@@ -529,21 +541,21 @@ class Instrument:
             m = _TRADE_HISTORY(text, pos=m.end())  # type: ignore
             th = _literal_eval(_STR_TO_NUM(m[1]))
             # Construct a Polars LazyFrame from evaluated Python rows
-            result['trade_history'] = _pl.LazyFrame(
+            result['trade_history'] = _LazyFrame(
                 th,
                 schema={
-                    'date': _pl.String,
-                    'pc': _pl.Float64,
-                    'py': _pl.Float64,
-                    'pmin': _pl.Float64,
-                    'pmax': _pl.Float64,
-                    'tno': _pl.Int64,
-                    'tvol': _pl.Int64,
-                    'tval': _pl.Float64,
+                    'date': _String,
+                    'pc': _Float64,
+                    'py': _Float64,
+                    'pmin': _Float64,
+                    'pmax': _Float64,
+                    'tno': _Int64,
+                    'tvol': _Int64,
+                    'tval': _Float64,
                 },
                 orient='row',
             ).with_columns(
-                _pl.col('date').str.to_date(format='%Y%m%d', strict=False)
+                _col('date').str.to_date(format='%Y%m%d', strict=False)
             )
 
         if related_companies:
@@ -610,25 +622,25 @@ class Instrument:
 
         if best_limits:
             # Leverage our unified schema mapping pattern with strict data types
-            result['best_limits'] = _pl.scan_csv(
+            result['best_limits'] = _scan_csv(
                 _StringIO(orders_info),
                 has_header=False,
                 separator='@',
                 eol_char=',',
                 schema={
-                    'zd': _pl.Int64,
-                    'qd': _pl.Int64,
-                    'pd': _pl.Int64,
-                    'po': _pl.Int64,
-                    'qo': _pl.Int64,
-                    'zo': _pl.Int64,
+                    'zd': _Int64,
+                    'qd': _Int64,
+                    'pd': _Int64,
+                    'po': _Int64,
+                    'qo': _Int64,
+                    'zo': _Int64,
                 },
             )
 
         return result  # type: ignore
 
     @_deprecated('use `Instrument.daily_closing_price` instead')
-    async def trade_history(self, top: int, all_=False) -> _pl.LazyFrame:
+    async def trade_history(self, top: int, all_=False) -> _LazyFrame:
         """Get history of pmax, pmin, pc, pl, pf, py, tval, tvol, and tno.
 
         :param top: number of top rows (days) to return
@@ -639,47 +651,47 @@ class Instrument:
         content = await _get_data(
             f'InstTradeHistory.aspx?i={self.code}&Top={top}&A={all_:d}'
         )
-        return _pl.scan_csv(
+        return _scan_csv(
             _BytesIO(content),
             separator='@',
             schema={
-                'date': _pl.String,
-                'pmax': _pl.Float64,
-                'pmin': _pl.Float64,
-                'pc': _pl.Float64,
-                'pl': _pl.Float64,
-                'pf': _pl.Float64,
-                'py': _pl.Float64,
-                'tval': _pl.Float64,
-                'tvol': _pl.Int64,
-                'tno': _pl.Int64,
+                'date': _String,
+                'pmax': _Float64,
+                'pmin': _Float64,
+                'pc': _Float64,
+                'pl': _Float64,
+                'pf': _Float64,
+                'py': _Float64,
+                'tval': _Float64,
+                'tvol': _Int64,
+                'tno': _Int64,
             },
             eol_char=';',
             has_header=False,
-        ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
+        ).with_columns(_col('date').str.to_date('%Y%m%d'))
 
-    async def price_history(self, adjusted: bool = True) -> _pl.LazyFrame:
+    async def price_history(self, adjusted: bool = True) -> _LazyFrame:
         content = await _get(
             f'https://members.tsetmc.com/tsev2/chart/data/Financial.aspx?i={self.code}&t=ph&a={adjusted:d}'
         )
-        return _pl.scan_csv(
+        return _scan_csv(
             _BytesIO(content),
             eol_char=';',
             has_header=False,
             new_columns=['date', 'pmax', 'pmin', 'pf', 'pl', 'tvol', 'pc'],
             schema_overrides={
-                'date': _pl.String,
-                'pmax': _pl.Int64,
-                'pmin': _pl.Int64,
-                'pf': _pl.Int64,
-                'pl': _pl.Int64,
-                'tvol': _pl.Int64,
-                'pc': _pl.Int64,
+                'date': _String,
+                'pmax': _Int64,
+                'pmin': _Int64,
+                'pf': _Int64,
+                'pl': _Int64,
+                'tvol': _Int64,
+                'pc': _Int64,
             },
-        ).with_columns(_pl.col('date').str.strptime(_pl.Date, format='%Y%m%d'))
+        ).with_columns(_col('date').str.strptime(_Date, format='%Y%m%d'))
 
     @_deprecated('use `Instrument.client_type_history` instead')
-    async def client_type_history_old(self) -> _pl.LazyFrame:
+    async def client_type_history_old(self) -> _LazyFrame:
         """Get daily natural/legal history.
 
         In column names `n_` prefix stands for natural and `l_` for legal.
@@ -695,38 +707,36 @@ class Instrument:
             :meth:`Instrument.client_type_history`
         """
         content = await _get_data(f'clienttype.aspx?i={self.code}')
-        return _pl.scan_csv(
+        return _scan_csv(
             _BytesIO(content),
             schema={
-                'date': _pl.String,
-                'n_buy_count': _pl.Int64,
-                'l_buy_count': _pl.Int64,
-                'n_sell_count': _pl.Int64,
-                'l_sell_count': _pl.Int64,
-                'n_buy_volume': _pl.Int64,
-                'l_buy_volume': _pl.Int64,
-                'n_sell_volume': _pl.Int64,
-                'l_sell_volume': _pl.Int64,
-                'n_buy_value': _pl.Int64,
-                'l_buy_value': _pl.Int64,
-                'n_sell_value': _pl.Int64,
-                'l_sell_value': _pl.Int64,
+                'date': _String,
+                'n_buy_count': _Int64,
+                'l_buy_count': _Int64,
+                'n_sell_count': _Int64,
+                'l_sell_count': _Int64,
+                'n_buy_volume': _Int64,
+                'l_buy_volume': _Int64,
+                'n_sell_volume': _Int64,
+                'l_sell_volume': _Int64,
+                'n_buy_value': _Int64,
+                'l_buy_value': _Int64,
+                'n_sell_value': _Int64,
+                'l_sell_value': _Int64,
             },
             eol_char=';',
             has_header=False,
-        ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
+        ).with_columns(_col('date').str.to_date('%Y%m%d'))
 
     @_overload
-    async def client_type_history(
-        self, date: None = None
-    ) -> _pl.LazyFrame: ...
+    async def client_type_history(self, date: None = None) -> _LazyFrame: ...
     @_overload
     async def client_type_history(
         self, date: int | str
     ) -> ClientTypeOnDate: ...
     async def client_type_history(
         self, date: int | str | None = None
-    ) -> _pl.LazyFrame | ClientTypeOnDate:
+    ) -> _LazyFrame | ClientTypeOnDate:
         """Return natural/legal client type history.
 
         :param date: Gregorian date in YYYYMMDD format. If None, return the
@@ -740,7 +750,7 @@ class Instrument:
         """
         if date is None:
             j = await _api(f'ClientType/GetClientTypeHistory/{self.code}')
-            return _pl.LazyFrame(j['clientType'])
+            return _LazyFrame(j['clientType'])
 
         j = await _api(f'ClientType/GetClientTypeHistory/{self.code}/{date}')
         return j['clientType']
@@ -775,7 +785,7 @@ class Instrument:
         self,
         share_holder_id: int,
         days: int = 90,
-    ) -> _pl.LazyFrame:
+    ) -> _LazyFrame:
         """Return history of share changes of a particular holder.
 
         Obtain `share_holder_id` from `self.share_holders`.
@@ -786,14 +796,14 @@ class Instrument:
             f'Shareholder/GetShareHolderHistory/{self.code}/{share_holder_id}/{days}',
             fa=True,
         )
-        return _pl.LazyFrame(j['shareHolder']).with_columns(
-            _pl.col('dEven')
-            .cast(_pl.String)
+        return _LazyFrame(j['shareHolder']).with_columns(
+            _col('dEven')
+            .cast(_String)
             .str.to_date(format='%Y%m%d', strict=False)
         )
 
     @_deprecated('use `Instrument.share_holders` instead')
-    async def holders(self, cisin=None) -> _pl.LazyFrame:
+    async def holders(self, cisin=None) -> _LazyFrame:
         """Get list of current major unit/shareholders.
 
         If `cisin` is not provided, it will be fetched using a web request.
@@ -810,13 +820,13 @@ class Instrument:
 
         if not raw_data or len(raw_data) <= 1:
             # Return an empty LazyFrame matching the expected schema structure
-            return _pl.LazyFrame(
+            return _LazyFrame(
                 schema={
-                    'holder': _pl.String,
-                    'shares/units': _pl.Int64,
-                    '%': _pl.Float64,
-                    'change': _pl.Int64,
-                    'id_cisin': _pl.String,
+                    'holder': _String,
+                    'shares/units': _Int64,
+                    '%': _Float64,
+                    'change': _Int64,
+                    'id_cisin': _String,
                 }
             )
 
@@ -828,24 +838,24 @@ class Instrument:
             row.append(id_cisin)
 
         # Build the DataFrame directly with the correct column names
-        lf = _pl.LazyFrame(
+        lf = _LazyFrame(
             data_rows,
             schema={
-                'holder': _pl.String,
-                'shares/units': _pl.String,
-                '%': _pl.Float16,
-                'change': _pl.String,
-                'id_cisin': _pl.String,
+                'holder': _String,
+                'shares/units': _String,
+                '%': _Float16,
+                'change': _String,
+                'id_cisin': _String,
             },
             orient='row',
-        ).with_columns(_pl.col('%').cast(_pl.Float64, strict=False))
+        ).with_columns(_col('%').cast(_Float64, strict=False))
         lf = _numerize(lf, ['change', 'shares/units'])
 
         # Convert final float structures to Int64 matching original logic
         lf = lf.with_columns(
             [
-                _pl.col('shares/units').cast(_pl.Int64, strict=False),
-                _pl.col('change').cast(_pl.Int64, strict=False),
+                _col('shares/units').cast(_Int64, strict=False),
+                _col('change').cast(_Int64, strict=False),
             ]
         )
 
@@ -855,13 +865,13 @@ class Instrument:
     @staticmethod
     async def holder(
         id_cisin, history: _Literal[True], other_holdings: _Literal[True]
-    ) -> tuple[_pl.LazyFrame, _pl.LazyFrame]: ...
+    ) -> tuple[_LazyFrame, _LazyFrame]: ...
 
     @_overload
     @staticmethod
     async def holder(
         id_cisin, history: bool = True, other_holdings: bool = False
-    ) -> _pl.LazyFrame: ...
+    ) -> _LazyFrame: ...
 
     @staticmethod
     @_deprecated(
@@ -869,7 +879,7 @@ class Instrument:
     )
     async def holder(
         id_cisin, history=True, other_holdings=False
-    ) -> _pl.LazyFrame | tuple[_pl.LazyFrame, _pl.LazyFrame]:
+    ) -> _LazyFrame | tuple[_LazyFrame, _LazyFrame]:
         """Return history/other holdings for the given holder id_cisin.
 
         `id_cisin` is usually obtained using `self.holders`.
@@ -880,24 +890,24 @@ class Instrument:
         text = await _get_data(f'ShareHolder.aspx?i={id_cisin}', fa=True)
         hist, _, oth = text.partition('#')
 
-        def history_df() -> _pl.LazyFrame:
+        def history_df() -> _LazyFrame:
             # We encode to bytes since scan_csv requires a file path or byte stream
-            return _pl.scan_csv(
+            return _scan_csv(
                 _BytesIO(hist.encode()),
                 new_columns=['date', 'shares'],
-                schema_overrides={'date': _pl.String, 'shares': _pl.Int64},
+                schema_overrides={'date': _String, 'shares': _Int64},
                 eol_char=';',
-            ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
+            ).with_columns(_col('date').str.to_date('%Y%m%d'))
 
-        def other_holdings_df() -> _pl.LazyFrame:
-            return _pl.scan_csv(
+        def other_holdings_df() -> _LazyFrame:
+            return _scan_csv(
                 _BytesIO(oth.encode()),
                 new_columns=['ins_code', 'name', 'shares', 'percent'],
                 schema_overrides={
-                    'ins_code': _pl.String,
-                    'name': _pl.String,
-                    'shares': _pl.Int64,
-                    'percent': _pl.Float64,
+                    'ins_code': _String,
+                    'name': _String,
+                    'shares': _Int64,
+                    'percent': _Float64,
                 },
                 eol_char=';',
             )
@@ -910,43 +920,41 @@ class Instrument:
             return other_holdings_df()
 
     @_deprecated('use `Instrument.price_adjustments` instead')
-    async def adjustments(self) -> _pl.LazyFrame:
+    async def adjustments(self) -> _LazyFrame:
         content = await _get_par_tree(f'15131G&i={self.code}', fa=False)
         raw_data = _html_to_list(content.decode())
 
         if not raw_data or len(raw_data) <= 1:
-            return _pl.LazyFrame(
+            return _LazyFrame(
                 schema={
-                    'date': _pl.Date,
-                    'adj_pc': _pl.Int64,
-                    'pc': _pl.Int64,
+                    'date': _Date,
+                    'adj_pc': _Int64,
+                    'pc': _Int64,
                 }
             )
 
-        return _pl.LazyFrame(
+        return _LazyFrame(
             _islice(raw_data, 1, None),
             schema={
-                'date': _pl.String,
-                'adj_pc': _pl.String,
-                'pc': _pl.String,
+                'date': _String,
+                'adj_pc': _String,
+                'pc': _String,
             },
             orient='row',
         ).with_columns(
             [
-                _pl.col('date').map_elements(
-                    _jg_ymd_parse, return_dtype=_pl.Date
-                ),
-                _pl.col('adj_pc').str.replace_all(',', '').cast(_pl.Int64),
-                _pl.col('pc').str.replace_all(',', '').cast(_pl.Int64),
+                _col('date').map_elements(_jg_ymd_parse, return_dtype=_Date),
+                _col('adj_pc').str.replace_all(',', '').cast(_Int64),
+                _col('pc').str.replace_all(',', '').cast(_Int64),
             ]
         )
 
-    async def price_adjustments(self) -> _pl.LazyFrame:
+    async def price_adjustments(self) -> _LazyFrame:
         j = await _api(f'ClosingPrice/GetPriceAdjustList/{self.code}')
-        lf = _pl.LazyFrame(
+        lf = _LazyFrame(
             j['priceAdjust'],
-            schema_overrides={'dEven': _pl.String, 'insCode': _pl.String},
-        ).with_columns(_pl.col('dEven').str.to_date(format='%Y%m%d'))
+            schema_overrides={'dEven': _String, 'insCode': _String},
+        ).with_columns(_col('dEven').str.to_date(format='%Y%m%d'))
         return lf
 
     async def messages(self) -> list[Message]:
@@ -955,12 +963,12 @@ class Instrument:
         return j['msg']
 
     @_deprecated('use `Instrument.messages` instead')
-    async def ombud_messages(self) -> _pl.LazyFrame:
+    async def ombud_messages(self) -> _LazyFrame:
         return _parse_ombud_messages(
             await _get_par_tree(f'15131W&i={self.code}')
         )
 
-    async def dps_history(self) -> _pl.LazyFrame:
+    async def dps_history(self) -> _LazyFrame:
         """Get DPS history.
 
         :raises polars.exceptions.NoDataError: If the source content is completely empty
@@ -968,7 +976,7 @@ class Instrument:
         content = await _get_data(f'DPSData.aspx?s={await self._arabic_l18}')
 
         # Eagerly load via scan_csv + collect
-        lf = _pl.scan_csv(
+        lf = _scan_csv(
             _BytesIO(content),
             has_header=False,
             separator='@',
@@ -981,9 +989,9 @@ class Instrument:
 
         return lf.with_columns(
             [
-                _pl.col(c).map_elements(
+                _col(c).map_elements(
                     lambda d: _jg_ymd_parse(d) if d else None,
-                    return_dtype=_pl.Date,
+                    return_dtype=_Date,
                 )
                 for c in date_cols
             ]
@@ -1052,14 +1060,14 @@ class InstrumentOnDate:
         )
         return j['closingPriceDaily']
 
-    async def closing_price_history(self) -> _pl.LazyFrame:
+    async def closing_price_history(self) -> _LazyFrame:
         """Get intraday closing price history."""
         j = await _api(
             f'ClosingPrice/GetClosingPriceHistory/{self.code}/{self.date}'
         )
-        return _pl.LazyFrame(j['closingPriceHistory'])
+        return _LazyFrame(j['closingPriceHistory'])
 
-    async def states(self) -> _pl.LazyFrame:
+    async def states(self) -> _LazyFrame:
         """Get intraday instrument states.
 
         http://www.tsetmc.com/Site.aspx?ParTree=111411111Y&LnkIdn=833
@@ -1067,7 +1075,7 @@ class InstrumentOnDate:
         j = await _api(
             f'MarketData/GetInstrumentState/{self.code}/{self.date}'
         )
-        return _pl.LazyFrame(j['instrumentState'])
+        return _LazyFrame(j['instrumentState'])
 
     async def client_type(self) -> ClientTypeOnDate:
         return await self.inst.client_type_history(self.date)
@@ -1076,7 +1084,7 @@ class InstrumentOnDate:
     async def client_types(self) -> ClientTypeOnDate:
         return await self.client_type()
 
-    async def holders(self) -> _pl.LazyFrame:
+    async def holders(self) -> _LazyFrame:
         """Return share/unit holders for a specific date and a day before that.
 
         See also:
@@ -1084,14 +1092,14 @@ class InstrumentOnDate:
             holders.
         """
         j = await _api(f'Shareholder/{self.code}/{self.date}')
-        return _pl.LazyFrame(j['shareShareholder'])
+        return _LazyFrame(j['shareShareholder'])
 
-    async def best_limits(self) -> _pl.LazyFrame:
+    async def best_limits(self) -> _LazyFrame:
         """Get intraday best limits history."""
         j = await _api(f'BestLimits/{self.code}/{self.date}')
-        return _pl.LazyFrame(j['bestLimitsHistory'])
+        return _LazyFrame(j['bestLimitsHistory'])
 
-    async def trades(self) -> _pl.LazyFrame:
+    async def trades(self) -> _LazyFrame:
         """Get intraday trades.
 
         See also:
@@ -1099,14 +1107,14 @@ class InstrumentOnDate:
         """
         # todo: true vs false
         j = await _api(f'Trade/GetTradeHistory/{self.code}/{self.date}/true')
-        return _pl.LazyFrame(j['tradeHistory'])
+        return _LazyFrame(j['tradeHistory'])
 
-    async def static_thresholds(self) -> _pl.LazyFrame:
+    async def static_thresholds(self) -> _LazyFrame:
         """Get intraday static thresholds."""
         j = await _api(
             f'MarketData/GetStaticThreshold/{self.code}/{self.date}'
         )
-        return _pl.LazyFrame(j['staticThreshold'])
+        return _LazyFrame(j['staticThreshold'])
 
     async def data(self) -> dict:
         """Get general info about the instrument on the specific date.
@@ -1122,7 +1130,7 @@ class InstrumentOnDate:
         return j['instrumentHistory']
 
 
-async def price_adjustments(flow: _FlowType) -> _pl.LazyFrame:
+async def price_adjustments(flow: _FlowType) -> _LazyFrame:
     """Get price adjustments for a particular flow.
 
     Related APIs:
@@ -1132,44 +1140,44 @@ async def price_adjustments(flow: _FlowType) -> _pl.LazyFrame:
     raw_data = _html_to_list(text)
 
     if not raw_data or len(raw_data) <= 1:
-        return _pl.LazyFrame(
+        return _LazyFrame(
             schema={
-                'l18': _pl.String,
-                'l30': _pl.String,
-                'date': _pl.Date,
-                'adj_pc': _pl.Int64,
-                'pc': _pl.Int64,
+                'l18': _String,
+                'l30': _String,
+                'date': _Date,
+                'adj_pc': _Int64,
+                'pc': _Int64,
             }
         )
 
     # Slice out the header row
-    return _pl.LazyFrame(
+    return _LazyFrame(
         _islice(raw_data, 1, None),
         schema=['l18', 'l30', 'date', 'adj_pc', 'pc'],
         orient='row',
     ).with_columns(
-        _pl.col('date').map_elements(_jg_ymd_parse, return_dtype=_pl.Date),
-        _pl.col('adj_pc').str.replace_all(',', '').cast(_pl.Int64),
-        _pl.col('pc').str.replace_all(',', '').cast(_pl.Int64),
+        _col('date').map_elements(_jg_ymd_parse, return_dtype=_Date),
+        _col('adj_pc').str.replace_all(',', '').cast(_Int64),
+        _col('pc').str.replace_all(',', '').cast(_Int64),
     )
 
 
 _SEARCH_SCHEMA = {
-    'l18': _pl.String,
-    'l30': _pl.String,
-    'ins_code': _pl.String,
-    'retail': _pl.Int64,
-    'compensation': _pl.Int64,
-    'wholesale': _pl.Int64,
-    '_unknown1': _pl.Int64,
-    '_unknown2': _pl.Int64,
-    '_unknown3': _pl.Int64,
-    '_unknown4': _pl.Int64,
-    '_unknown5': _pl.String,  # Matches your string test assertion
+    'l18': _String,
+    'l30': _String,
+    'ins_code': _String,
+    'retail': _Int64,
+    'compensation': _Int64,
+    'wholesale': _Int64,
+    '_unknown1': _Int64,
+    '_unknown2': _Int64,
+    '_unknown3': _Int64,
+    '_unknown4': _Int64,
+    '_unknown5': _String,  # Matches your string test assertion
 }
 
 
-async def old_search(skey: str, /) -> _pl.LazyFrame:
+async def old_search(skey: str, /) -> _LazyFrame:
     """`skey` (search key) is usually part of the l18 or l30.
 
     Terminology reference for trade types:
@@ -1181,7 +1189,7 @@ async def old_search(skey: str, /) -> _pl.LazyFrame:
     """
     data = await _get_data('search.aspx?skey=' + skey, fa=True)
 
-    return _pl.scan_csv(
+    return _scan_csv(
         _StringIO(data),
         has_header=False,
         schema=_SEARCH_SCHEMA,
@@ -1309,21 +1317,21 @@ def _parse_price_info(price_info):
     return result
 
 
-def _parse_ombud_messages(text) -> _pl.LazyFrame:
+def _parse_ombud_messages(text) -> _LazyFrame:
     headers = _findall(r'<th>(.+?)</th>', text)
     dates = _findall(r"<th class='ltr'>(.+?)</th>", text)
     descriptions = _findall(r'<td colspan="2">(.+?)<hr />\s*</td>', text)
 
-    return _pl.LazyFrame(
+    return _LazyFrame(
         {'header': headers, 'date': dates, 'description': descriptions},
         schema={
-            'header': _pl.String,
-            'date': _pl.String,
-            'description': _pl.String,
+            'header': _String,
+            'date': _String,
+            'description': _String,
         },
     ).with_columns(
-        _pl.col('date').map_elements(
+        _col('date').map_elements(
             lambda d: _jgstrptime(f'14{d}', format='%Y/%m/%d %H:%M'),
-            return_dtype=_pl.Datetime,
+            return_dtype=_Datetime,
         )
     )

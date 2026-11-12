@@ -1,0 +1,61 @@
+{
+    "preparedData": [
+        {
+            "id": 885193,
+            "symbol": "آب",
+            "name": "مهندسی توسعه آب آسیا",
+            "title": "افشای اطلاعات بااهمیت - (سایر اطلاعات بااهمیت - تائیدیه بازرس قانونی زمین و ساختمان- گروه ب) منتهی به سال مالی 1405/12/29",
+            "sentDateTime_Gregorian": "2026-11-12T16:16:58",
+            "publishDateTime_Gregorian": "2026-11-12T16:16:58",
+            "publishDateTime_DEven": 20261112,
+            "mainTableRowID": 888488,
+            "hasHtmlReport": 2,
+            "hasExcelReport": 0,
+            "hasPDFReport": 2,
+            "hasXMLReport": 0,
+            "attachmentID": 0,
+            "contentType": 0,
+            "fileName": null,
+            "fileExtension": null,
+            "tracingNo": "1633346"
+        },
+        {
+            "id": 885192,
+            "symbol": "آب",
+            "name": "مهندسی توسعه آب آسیا",
+            "title": "افشای اطلاعات بااهمیت - (سایر اطلاعات بااهمیت - مفاصا حساب بدهی بیمه تامین اجتماعی سال 1403 شرکت- گروه ب) منتهی به سال مالی 1405/12/29",
+            "sentDateTime_Gregorian": "2026-11-12T16:00:18",
+            "publishDateTime_Gregorian": "2026-11-12T16:00:18",
+            "publishDateTime_DEven": 20261112,
+            "mainTableRowID": 888487,
+            "hasHtmlReport": 2,
+            "hasExcelReport": 0,
+            "hasPDFReport": 2,
+            "hasXMLReport": 0,
+            "attachmentID": 0,
+            "contentType": 0,
+            "fileName": null,
+            "fileExtension": null,
+            "tracingNo": "1633343"
+        },
+        {
+            "id": 885191,
+            "symbol": "ستران",
+            "name": "سیمان تهران",
+            "title": "معرفی /تغییر در ترکیب اعضای هیئت مدیره/مدیر عامل(اصلاحیه)",
+            "sentDateTime_Gregorian": "2026-11-12T16:00:16",
+            "publishDateTime_Gregorian": "2026-11-12T16:00:16",
+            "publishDateTime_DEven": 20261112,
+            "mainTableRowID": 888486,
+            "hasHtmlReport": 2,
+            "hasExcelReport": 0,
+            "hasPDFReport": 2,
+            "hasXMLReport": 0,
+            "attachmentID": 0,
+            "contentType": 0,
+            "fileName": null,
+            "fileExtension": null,
+            "tracingNo": "1633333"
+        }
+    ]
+}

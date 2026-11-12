@@ -2,12 +2,17 @@ from datetime import datetime as _datetime
 from typing import Literal as _Literal, TypedDict as _TypedDict
 from warnings import deprecated as _deprecated
 
-import polars as _pl
 from html_table_parse import (
     to_dict as _html_to_dict,
     to_list as _html_to_list,
 )
 from lxml.html import fromstring as _html
+from polars import (
+    Int64 as _Int64,
+    LazyFrame as _LazyFrame,
+    String as _String,
+    col as _col,
+)
 
 from tsetmc import (
     Flow as _Flow,
@@ -34,13 +39,13 @@ async def cs_codes() -> dict[str, str]:
     return dict(zip(table['کد گروه های صنعت'], table['گروه های صنعت']))
 
 
-async def sectors_summary() -> _pl.LazyFrame:
+async def sectors_summary() -> _LazyFrame:
     j = await _api('MarketData/GetSectorsSummary', fa=True)
-    return _pl.LazyFrame(j['sectorSummeries'])
+    return _LazyFrame(j['sectorSummeries'])
 
 
 @_deprecated('use sectors_summary instead')
-async def industrial_groups_overview() -> _pl.LazyFrame:
+async def industrial_groups_overview() -> _LazyFrame:
     """Return a LazyFrame of industrial groups.
 
     The result contains info about each group's price change.
@@ -50,32 +55,32 @@ async def industrial_groups_overview() -> _pl.LazyFrame:
     table = _html_to_list(content)
 
     return (
-        _pl.LazyFrame(table, orient='row')
+        _LazyFrame(table, orient='row')
         .with_columns(
-            _pl.col('column_1')
+            _col('column_1')
             .str.extract(r'showBar\(([^)]*)\)')
             .alias('showbar_content')
         )
         .with_columns(
-            _pl.col('showbar_content')
+            _col('showbar_content')
             .str.split(',')
             .list.get(1)
-            .cast(_pl.Int64)
+            .cast(_Int64)
             .alias(':-2'),
-            _pl.col('showbar_content')
+            _col('showbar_content')
             .str.split(',')
             .list.get(2)
-            .cast(_pl.Int64)
+            .cast(_Int64)
             .alias('-2:0'),
-            _pl.col('showbar_content')
+            _col('showbar_content')
             .str.split(',')
             .list.get(3)
-            .cast(_pl.Int64)
+            .cast(_Int64)
             .alias('0:2'),
-            _pl.col('showbar_content')
+            _col('showbar_content')
             .str.split(',')
             .list.get(4)
-            .cast(_pl.Int64)
+            .cast(_Int64)
             .alias('2:'),
         )
         .drop(['column_1', 'showbar_content'])
@@ -85,17 +90,17 @@ async def industrial_groups_overview() -> _pl.LazyFrame:
 
 async def market_map_data(
     *, market=0, size=9999, sector=0, typeSelected=1, heven=0
-) -> _pl.LazyFrame:
+) -> _LazyFrame:
     j = await _api(
         f'ClosingPrice/GetMarketMap'
         f'?market={market}&size={size}&sector={sector}'
         f'&typeSelected={typeSelected}&hEven={heven}',
         fa=True,
     )
-    return _pl.LazyFrame(j)
+    return _LazyFrame(j)
 
 
-async def major_holders_activity() -> _pl.LazyFrame | None:
+async def major_holders_activity() -> _LazyFrame | None:
     text = await _get_par_tree('15131I')
     html = _html(text)
     trs = html.xpath('//tr')
@@ -139,15 +144,15 @@ async def major_holders_activity() -> _pl.LazyFrame | None:
             rows[i] = row[:max_cols]
 
     # Create LazyFrame and forward fill nulls in ins_code and l30
-    return _pl.LazyFrame(rows, schema=columns, orient='row').with_columns(
+    return _LazyFrame(rows, schema=columns, orient='row').with_columns(
         [
-            _pl.col('ins_code').fill_null(strategy='forward'),
-            _pl.col('l30').fill_null(strategy='forward'),
+            _col('ins_code').fill_null(strategy='forward'),
+            _col('l30').fill_null(strategy='forward'),
         ]
     )
 
 
-async def top_industry_groups() -> _pl.LazyFrame:
+async def top_industry_groups() -> _LazyFrame:
     """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
     table = _html_to_list(text)
@@ -156,7 +161,7 @@ async def top_industry_groups() -> _pl.LazyFrame:
     data_rows = table[1:] if table else []
 
     return (
-        _pl.LazyFrame(data_rows, orient='row')
+        _LazyFrame(data_rows, orient='row')
         .rename(
             {
                 'column_0': 'group',
@@ -210,11 +215,11 @@ async def market_overview(*, flow: _FlowType = _Flow.BOURSE) -> MarketOverview:
     return overview
 
 
-async def related_companies(cs: str) -> dict[str, _pl.LazyFrame]:
+async def related_companies(cs: str) -> dict[str, _LazyFrame]:
     j = await _api(f'ClosingPrice/GetRelatedCompany/{cs}')
 
     data = j['relatedCompany']
-    df = _pl.LazyFrame(data)
+    df = _LazyFrame(data)
 
     # Handle the instrument struct specifically (similar to trade_top)
     if data and isinstance(data[0], dict) and 'instrument' in data[0]:
@@ -223,7 +228,7 @@ async def related_companies(cs: str) -> dict[str, _pl.LazyFrame]:
         df = df.unnest('instrument')
 
     # Convert relatedCompanyThirtyDayHistory (no nested structs)
-    related_history = _pl.LazyFrame(j['relatedCompanyThirtyDayHistory'])
+    related_history = _LazyFrame(j['relatedCompanyThirtyDayHistory'])
 
     return {
         'relatedCompany': df,
@@ -233,19 +238,19 @@ async def related_companies(cs: str) -> dict[str, _pl.LazyFrame]:
 
 async def messages(
     *, flow: _FlowType = _Flow.GENERAL, top: int | str = 200
-) -> _pl.LazyFrame:
+) -> _LazyFrame:
     """See also: ``search_messages`` and ``Instrument.messages``."""
     j = await _api(f'Msg/GetMsgByFlow/{flow}/{top}', fa=True)
-    return _pl.LazyFrame(j['msg'])
+    return _LazyFrame(j['msg'])
 
 
-async def instrument_states(*, top: int = 200) -> _pl.LazyFrame:
+async def instrument_states(*, top: int = 200) -> _LazyFrame:
     """See also: ``Instrument.states``."""
     j = await _api(f'MarketData/GetInstrumentStateTop/{top}')
-    return _pl.LazyFrame(j['instrumentState'])
+    return _LazyFrame(j['instrumentState'])
 
 
-async def search_messages(*, sh_date: str, term: str) -> _pl.LazyFrame:
+async def search_messages(*, sh_date: str, term: str) -> _LazyFrame:
     """https://tsetmc.com/MsgTop
 
     :param term: Only return messages containing this term.
@@ -254,7 +259,7 @@ async def search_messages(*, sh_date: str, term: str) -> _pl.LazyFrame:
     See also: ``messages`` and ``Instrument.messages``.
     """
     j = await _api(f'Msg/GetMsgByDevenAndLVal18AFC/{sh_date}/{term}', fa=True)
-    return _pl.LazyFrame(j['msg'])
+    return _LazyFrame(j['msg'])
 
 
 async def trade_top(
@@ -269,13 +274,13 @@ async def trade_top(
     ],
     flow: _FlowType = _Flow.BOURSE,
     top: int | str = '9999',
-) -> _pl.LazyFrame:
+) -> _LazyFrame:
     j = await _api(
         f'ClosingPrice/GetTradeTop/{category}/{flow}/{top}', fa=True
     )
 
     data = j['tradeTop']
-    df = _pl.LazyFrame(data)
+    df = _LazyFrame(data)
 
     # Check if the data has the 'instrument' field by looking at the first item
     if data and isinstance(data[0], dict) and 'instrument' in data[0]:
@@ -284,3 +289,30 @@ async def trade_top(
         df = df.unnest('instrument')
 
     return df
+
+
+PREPARED_DATA_SCHEMA = {
+    'id': _Int64,
+    'symbol': _String,
+    'name': _String,
+    'title': _String,
+    'sentDateTime_Gregorian': _String,
+    'publishDateTime_Gregorian': _String,
+    'publishDateTime_DEven': _Int64,
+    'mainTableRowID': _Int64,
+    'hasHtmlReport': _Int64,
+    'hasExcelReport': _Int64,
+    'hasPDFReport': _Int64,
+    'hasXMLReport': _Int64,
+    'attachmentID': _Int64,
+    'contentType': _Int64,
+    'fileName': _String,
+    'fileExtension': _String,
+    'tracingNo': _String,
+}
+
+
+async def prepared_data(*, top: int = 200) -> _LazyFrame:
+    """Get the latest prepared Codal data."""
+    j = await _api(f'Codal/GetPreparedData/{top}')
+    return _LazyFrame(j['preparedData'], schema=PREPARED_DATA_SCHEMA)

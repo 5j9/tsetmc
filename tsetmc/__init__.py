@@ -10,9 +10,14 @@ from typing import (
     overload as _overload,
 )
 
-import polars as _pl
 from aiohutils.session import SessionManager
 from jdatetime import datetime as _jdatetime
+from polars import (
+    Float64 as _Float64,
+    LazyFrame as _LazyFrame,
+    col as _col,
+    when as _when,
+)
 
 logger = _getLogger(__name__)
 
@@ -271,20 +276,20 @@ async def _api(path: str, *, fa=False):
 
 
 def _numerize(
-    df: _pl.LazyFrame,
+    df: _LazyFrame,
     cols: list[str] | tuple[str, ...] | str,
-) -> _pl.LazyFrame:
+) -> _LazyFrame:
     """Numerize columns in a Polars LazyFrame (handles commas and K/M/B/T suffixes with optional spaces)."""
     if isinstance(cols, str):
         cols = [cols]
 
     expressions = []
     for col in cols:
-        cleaned = _pl.col(col).str.replace_all(',', '')
+        cleaned = _col(col).str.replace_all(',', '')
         has_suffix = cleaned.str.contains(r'\s*[KMBT]$')
         number_part = cleaned.str.replace(r'\s*[KMBT]$', '').str.strip_chars()
         multiplier = (
-            _pl.when(cleaned.str.contains(r'\s*K$'))
+            _when(cleaned.str.contains(r'\s*K$'))
             .then(10**3)
             .when(cleaned.str.contains(r'\s*M$'))
             .then(10**6)
@@ -295,14 +300,12 @@ def _numerize(
             .otherwise(1)
         )
         expr = (
-            _pl.when(has_suffix)
+            _when(has_suffix)
             .then(
-                number_part.cast(_pl.Float64, strict=False)
-                * multiplier.cast(_pl.Float64)
+                number_part.cast(_Float64, strict=False)
+                * multiplier.cast(_Float64)
             )
-            .otherwise(
-                cleaned.str.strip_chars().cast(_pl.Float64, strict=False)
-            )
+            .otherwise(cleaned.str.strip_chars().cast(_Float64, strict=False))
             .alias(col)
         )
         expressions.append(expr)

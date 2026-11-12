@@ -4,6 +4,7 @@ from pytest_aiohutils import file, validate_dict
 
 from tsetmc import Flow
 from tsetmc.general import (
+    PREPARED_DATA_SCHEMA,
     MarketOverview,
     boards,
     cs_codes,
@@ -13,6 +14,7 @@ from tsetmc.general import (
     market_map_data,
     market_overview,
     messages,
+    prepared_data,
     search_messages,
     sectors_summary,
     top_industry_groups,
@@ -303,3 +305,21 @@ async def test_search_messages():
     # Check that all messages contain the search term
     assert df['tseDesc'].str.contains(term, literal=True).all()
     assert dict(df.schema) == MSG_SCHEMA
+
+
+@file('prepared_data.json')
+async def test_prepared_data():
+    lf = await prepared_data(top=3)
+    df = lf.collect()
+
+    # Check length
+    assert df.height == 3
+
+    # Check schema
+    assert dict(df.schema) == PREPARED_DATA_SCHEMA
+
+    # Check that all IDs are non-null
+    assert df['id'].is_not_null().all()
+
+    # Check that all titles are non-empty
+    assert (df['title'].str.len_chars() > 0).all()
