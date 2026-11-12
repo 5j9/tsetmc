@@ -7,13 +7,25 @@ from typing import (
     TypedDict as _TypedDict,
 )
 
-import polars as _pl
 from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
     ClientResponseError as _ClientResponseError,
 )
 from html_table_parse import to_list as _html_to_list
-from polars import LazyFrame as _LazyFrame
+from polars import (
+    DataFrame as _DataFrame,
+    Datetime as _Datetime,
+    Float64 as _Float64,
+    Int16 as _Int16,
+    Int32 as _Int32,
+    Int64 as _Int64,
+    LazyFrame as _LazyFrame,
+    String as _String,
+    coalesce as _coalesce,
+    col as _col,
+    concat as _concat,
+    scan_csv as _scan_csv,
+)
 
 from tsetmc import (
     MarketState,
@@ -27,53 +39,53 @@ from tsetmc import (
 )
 
 _BEST_LIMITS_SCHEMA = {
-    'ins_code': _pl.String,
-    'number': _pl.Int64,
-    'zo': _pl.Float64,
-    'zd': _pl.Float64,
-    'pd': _pl.Float64,
-    'po': _pl.Float64,
-    'qd': _pl.Float64,
-    'qo': _pl.Float64,
+    'ins_code': _String,
+    'number': _Int64,
+    'zo': _Float64,
+    'zd': _Float64,
+    'pd': _Float64,
+    'po': _Float64,
+    'qd': _Float64,
+    'qo': _Float64,
 }
 
 _COMMON_DTYPES = {
-    'heven': _pl.Int32,
-    'pf': _pl.Int64,
-    'pc': _pl.Int64,
-    'pl': _pl.Int64,
-    'tno': _pl.Int64,
-    'tvol': _pl.Int64,
-    'tval': _pl.Int64,
-    'pmin': _pl.Int64,
-    'pmax': _pl.Int64,
+    'heven': _Int32,
+    'pf': _Int64,
+    'pc': _Int64,
+    'pl': _Int64,
+    'tno': _Int64,
+    'tvol': _Int64,
+    'tval': _Int64,
+    'pmin': _Int64,
+    'pmax': _Int64,
 }
 
 _PRICE_DTYPES_23 = {
-    'ins_code': _pl.String,
-    'isin': _pl.String,
-    'l18': _pl.String,
-    'l30': _pl.String,
+    'ins_code': _String,
+    'isin': _String,
+    'l18': _String,
+    'l30': _String,
     **_COMMON_DTYPES,
-    'py': _pl.Int64,
-    'eps': _pl.Float64,
-    'bvol': _pl.Int64,
-    'visitcount': _pl.Int64,
-    'flow': _pl.Int16,
-    'cs': _pl.String,
-    'tmax': _pl.Float64,
-    'tmin': _pl.Float64,
-    'z': _pl.Int64,
-    'yval': _pl.String,
+    'py': _Int64,
+    'eps': _Float64,
+    'bvol': _Int64,
+    'visitcount': _Int64,
+    'flow': _Int16,
+    'cs': _String,
+    'tmax': _Float64,
+    'tmin': _Float64,
+    'z': _Int64,
+    'yval': _String,
 }
 
 _PRICE_DTYPES_26 = _PRICE_DTYPES_23 | {
-    'predtran': _pl.Float64,
-    'buyop': _pl.Int64,
-    'cgrvalcot': _pl.String,
+    'predtran': _Float64,
+    'buyop': _Int64,
+    'cgrvalcot': _String,
 }
 
-_PRICE_UPDATE_COLUMNS = {'ins_code': _pl.String, **_COMMON_DTYPES}
+_PRICE_UPDATE_COLUMNS = {'ins_code': _String, **_COMMON_DTYPES}
 
 
 class MarketWatchInit(_TypedDict):
@@ -136,7 +148,7 @@ async def market_watch_init(
 
     if prices:
         # Direct generation of a LazyFrame using scan_csv on the memory buffer
-        prices_lf = _pl.scan_csv(
+        prices_lf = _scan_csv(
             _StringIO(states),
             has_header=False,
             schema=_PRICE_DTYPES_26,
@@ -147,18 +159,18 @@ async def market_watch_init(
         prices_lf = None
 
     if best_limits:
-        bl = _pl.scan_csv(
+        bl = _scan_csv(
             _StringIO(price_rows),
             has_header=False,
             schema={
-                'ins_code': _pl.String,
-                'number': _pl.Int64,
-                'zo': _pl.Int64,
-                'zd': _pl.Int64,
-                'pd': _pl.Int64,
-                'po': _pl.Int64,
-                'qd': _pl.Int64,
-                'qo': _pl.Int64,
+                'ins_code': _String,
+                'number': _Int64,
+                'zo': _Int64,
+                'zd': _Int64,
+                'pd': _Int64,
+                'po': _Int64,
+                'qd': _Int64,
+                'qo': _Int64,
             },
             eol_char=';',
         )
@@ -196,9 +208,9 @@ def _parse_inst_prices_str(
     np = pu = None
     if not inst_prices_str:
         if new_prices:
-            np = _pl.DataFrame(schema=_PRICE_DTYPES_26).lazy()
+            np = _DataFrame(schema=_PRICE_DTYPES_26).lazy()
         if price_updates:
-            pu = _pl.DataFrame(schema=_PRICE_UPDATE_COLUMNS).lazy()
+            pu = _DataFrame(schema=_PRICE_UPDATE_COLUMNS).lazy()
         return np, pu
 
     inst_prices = [ip.split(',') for ip in inst_prices_str.split(';')]
@@ -277,7 +289,7 @@ async def market_watch_plus(
     bl = None
     if best_limits:
         if best_limit:
-            bl = _pl.scan_csv(
+            bl = _scan_csv(
                 _StringIO(best_limit),
                 has_header=False,
                 schema=_BEST_LIMITS_SCHEMA,
@@ -338,24 +350,24 @@ async def closing_price_all() -> _LazyFrame:
         'pf',
     ]
 
-    df = _pl.DataFrame(data, schema=columns, orient='row')
+    df = _DataFrame(data, schema=columns, orient='row')
     df = df.with_columns(
-        [_pl.col(c).cast(_pl.Int64, strict=False) for c in columns[1:]]
-    ).with_columns(_pl.col('ins_code').cast(_pl.String))
+        [_col(c).cast(_Int64, strict=False) for c in columns[1:]]
+    ).with_columns(_col('ins_code').cast(_String))
 
     return df.lazy()
 
 
 _CLIENT_TYPE_SCHEMA = {
-    'ins_code': _pl.String,
-    'n_buy_count': _pl.Int64,
-    'l_buy_count': _pl.Int64,
-    'n_buy_volume': _pl.Int64,
-    'l_buy_volume': _pl.Int64,
-    'n_sell_count': _pl.Int64,
-    'l_sell_count': _pl.Int64,
-    'n_sell_volume': _pl.Int64,
-    'l_sell_volume': _pl.Int64,
+    'ins_code': _String,
+    'n_buy_count': _Int64,
+    'l_buy_count': _Int64,
+    'n_buy_volume': _Int64,
+    'l_buy_volume': _Int64,
+    'n_sell_count': _Int64,
+    'l_sell_count': _Int64,
+    'n_sell_volume': _Int64,
+    'l_sell_volume': _Int64,
 }
 
 
@@ -369,7 +381,7 @@ async def client_type_all() -> _LazyFrame:
     """
     content = await _get_data('ClientTypeAll.aspx')
 
-    df = _pl.scan_csv(
+    df = _scan_csv(
         _BytesIO(content),
         has_header=False,
         schema=_CLIENT_TYPE_SCHEMA,
@@ -392,12 +404,12 @@ async def key_stats() -> _LazyFrame:
     data = _split_id_rows(content, id_row_len=3)
     columns = ('ins_code', 'n', 'value')
 
-    df = _pl.DataFrame(data, schema=columns, orient='row')
+    df = _DataFrame(data, schema=columns, orient='row')
     df = df.with_columns(
         [
-            _pl.col('ins_code').cast(_pl.String),
-            _pl.col('n').cast(_pl.String),
-            _pl.col('value').cast(_pl.Float64, strict=False),
+            _col('ins_code').cast(_String),
+            _col('n').cast(_String),
+            _col('value').cast(_Float64, strict=False),
         ]
     )
 
@@ -419,15 +431,15 @@ async def status_changes(top: int | str) -> _LazyFrame:
             islice(lol, 1, None),
             orient='row',
             schema={
-                k: _pl.String
+                k: _String
                 for k in ['symbol', 'name', 'date', 'time', 'new_status']
             },
         )
-        .with_columns(datetime=_pl.col('date') + ' ' + _pl.col('time'))
+        .with_columns(datetime=_col('date') + ' ' + _col('time'))
         .with_columns(
-            _pl.col('datetime').map_elements(
+            _col('datetime').map_elements(
                 lambda e: _jgstrptime(e, format='%Y/%m/%d %H:%M:%S'),
-                return_dtype=_pl.Datetime,
+                return_dtype=_Datetime,
             )
         )
     )
@@ -456,10 +468,10 @@ async def get_market_watch(
         f'&hEven={h_even}'
         f'&RefID={ref_id}'
     )
-    df = _pl.DataFrame(j['marketwatch'])
+    df = _DataFrame(j['marketwatch'])
     if 'pe' in df.columns:
         df = df.with_columns(
-            _pl.col('pe').replace('-', None).cast(_pl.Float64, strict=False)
+            _col('pe').replace('-', None).cast(_Float64, strict=False)
         )
     return df.lazy()
 
@@ -471,7 +483,7 @@ async def get_client_type_all() -> _LazyFrame:
         _logger.warning(
             f'Unexpected keys in get_client_type_all response: {j.keys()=}'
         )
-    return _pl.DataFrame(j['clientTypeAllDto']).lazy()
+    return _DataFrame(j['clientTypeAllDto']).lazy()
 
 
 async def get_inst_value_all_inst_all_param() -> _LazyFrame:
@@ -481,7 +493,7 @@ async def get_inst_value_all_inst_all_param() -> _LazyFrame:
         _logger.warning(
             f'Unexpected keys in get_inst_value_all_inst_all_param response: {j.keys()=}'
         )
-    return _pl.DataFrame(j['instValueAllInstAllParam']).lazy()
+    return _DataFrame(j['instValueAllInstAllParam']).lazy()
 
 
 class MarketWatch:
@@ -582,9 +594,7 @@ class MarketWatch:
             )
 
             limit_exprs = [
-                _pl.coalesce(
-                    [_pl.col(f'{col}_limit_update'), _pl.col(col)]
-                ).alias(col)
+                _coalesce([_col(f'{col}_limit_update'), _col(col)]).alias(col)
                 for col in update_cols
             ]
             if limit_exprs:
@@ -594,7 +604,7 @@ class MarketWatch:
 
         new_prices = mwp_get('new_prices')
         if new_prices is not None:
-            lf = _pl.concat([lf, new_prices], how='diagonal')
+            lf = _concat([lf, new_prices], how='diagonal')
 
         price_updates = mwp_get('price_updates')
         if price_updates is not None:
@@ -611,9 +621,7 @@ class MarketWatch:
                     base_col = col.replace('_update', '')
                     drop_cols.append(col)
                     update_exprs.append(
-                        _pl.coalesce([_pl.col(col), _pl.col(base_col)]).alias(
-                            base_col
-                        )
+                        _coalesce([_col(col), _col(base_col)]).alias(base_col)
                     )
 
             if update_exprs:
