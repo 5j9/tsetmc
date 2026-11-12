@@ -1,6 +1,10 @@
 Unreleased
 ----------
 * Updated dataset
+* New async functions: ``general.prepared_data`` and ``genera.instrument_states``
+* Fixed: Polars 2 only: issue in ``Instrument.trade_history`` and ``Instrument.client_type_history_old``
+
+polars 2 requires explicit header false
 
 v5.1.0 (2026-08-11)
 -------------------
