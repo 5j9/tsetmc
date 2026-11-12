@@ -46,6 +46,7 @@ ignore = [
     'BLE001', # blind-except
     'DTZ', # flake8-datetimez
     'E721', # Do not compare types, use `isinstance()`
+    'PLE2502', # bidirectional-unicode
     'PLW1510', # subprocess-run-without-check
     'RUF001', # ambiguous-unicode-character-string
     'RUF002', # ambiguous-unicode-character-docstring
@@ -61,30 +62,21 @@ ignore = [
 combine-as-imports = true
 
 [tool.pytest]
-addopts = ["--quiet", "--tb=short"]
+addopts = ["--quiet", "--tb=short", "--report-chars=N"]
 asyncio_mode = 'auto'
 asyncio_default_fixture_loop_scope = 'session'
 asyncio_default_test_loop_scope = 'session'
-truncation_limit_lines = '0'
-truncation_limit_chars = '0'
-
-[tool.pyright]
-typeCheckingMode = 'standard'
-reportDeprecated = "warning"
-reportPropertyTypeMismatch = "warning"
-reportUnnecessaryCast = "warning"
-reportUnnecessaryContains = "warning"
-reportUnnecessaryIsInstance = "warning"
-reportUnnecessaryTypeIgnoreComment = true
-reportInvalidStringEscapeSequence = false
-reportConstantRedefinition = 'error'
-reportTypeCommentUsage = 'warning'
-reportUnnecessaryComparison = 'warning'
-venvPath = "."
-venv = ".venv"
+truncation_limit_lines = 0
+truncation_limit_chars = 0
 
 [tool.uv.build-backend]
 module-name = "tsetmc"
 module-root = ""
+
+[tool.pyrefly]
+infer-with-first-use = false
+min-severity = "info"
+[tool.pyrefly.errors]
+incompatible-comparison = "warn"
 [dependency-groups]
-dev = ["pytest-aiohutils>=0.22.6"]
+dev = ["pytest-aiohutils>=0.23.2"]
