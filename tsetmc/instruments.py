@@ -655,6 +655,7 @@ class Instrument:
                 'tno': _pl.Int64,
             },
             eol_char=';',
+            has_header=False,
         ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
     async def price_history(self, adjusted: bool = True) -> _pl.LazyFrame:
@@ -712,6 +713,7 @@ class Instrument:
                 'l_sell_value': _pl.Int64,
             },
             eol_char=';',
+            has_header=False,
         ).with_columns(_pl.col('date').str.to_date('%Y%m%d'))
 
     @_overload
