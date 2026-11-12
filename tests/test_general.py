@@ -1,4 +1,4 @@
-import polars as pl
+from polars import Float64, Int64, String
 from pytest import warns
 from pytest_aiohutils import file, validate_dict
 
@@ -7,7 +7,8 @@ from tsetmc.general import (
     MarketOverview,
     boards,
     cs_codes,
-    industrial_groups_overview,  # pyright: ignore[reportDeprecated]
+    industrial_groups_overview,  # ty: ignore[deprecated]
+    instrument_states,
     major_holders_activity,
     market_map_data,
     market_overview,
@@ -114,12 +115,12 @@ async def test_sectors_summary():
 
     # Check full schema
     expected_schema = {
-        'cSecVal': pl.String,
-        'lSecVal': pl.String,
-        'c1': pl.Int64,
-        'c2': pl.Int64,
-        'c3': pl.Int64,
-        'c4': pl.Int64,
+        'cSecVal': String,
+        'lSecVal': String,
+        'c1': Int64,
+        'c2': Int64,
+        'c3': Int64,
+        'c4': Int64,
     }
 
     assert dict(df.schema) == expected_schema
@@ -129,17 +130,17 @@ async def test_sectors_summary():
 @file('industrial_groups_overview.html')
 async def test_industrial_groups_overview():
     with warns(DeprecationWarning):
-        lf = await industrial_groups_overview()  # pyright: ignore[reportDeprecated]
+        lf = await industrial_groups_overview()  # ty: ignore[deprecated]
 
     df = lf.collect()
 
     # Check both column names and dtypes
     expected = {
-        'group': pl.String,
-        ':-2': pl.Int64,
-        '-2:0': pl.Int64,
-        '0:2': pl.Int64,
-        '2:': pl.Int64,
+        'group': String,
+        ':-2': Int64,
+        '-2:0': Int64,
+        '0:2': Int64,
+        '2:': Int64,
     }
 
     assert dict(df.schema) == expected
@@ -159,26 +160,26 @@ async def test_market_map_data():
 
     # Check schema
     expected_schema = {
-        'insCode': pl.String,
-        'dEven': pl.Int64,
-        'hEven': pl.Int64,
-        'pClosing': pl.Float64,
-        'pDrCotVal': pl.Float64,
-        'zTotTran': pl.Float64,
-        'qTotTran5J': pl.Float64,
-        'qTotCap': pl.Float64,
-        'priceYesterday': pl.Float64,
-        'lVal18AFC': pl.String,
-        'lVal30': pl.String,
-        'lSecVal': pl.String,
-        'marketCap': pl.Float64,
-        'percent': pl.Float64,
-        'priceChangePercent': pl.Float64,
-        'hEvenShow': pl.String,
-        'color': pl.String,
-        'fontSize': pl.Int64,
-        'fontColor': pl.String,
-        'customLabel': pl.String,
+        'insCode': String,
+        'dEven': Int64,
+        'hEven': Int64,
+        'pClosing': Float64,
+        'pDrCotVal': Float64,
+        'zTotTran': Float64,
+        'qTotTran5J': Float64,
+        'qTotCap': Float64,
+        'priceYesterday': Float64,
+        'lVal18AFC': String,
+        'lVal30': String,
+        'lSecVal': String,
+        'marketCap': Float64,
+        'percent': Float64,
+        'priceChangePercent': Float64,
+        'hEvenShow': String,
+        'color': String,
+        'fontSize': Int64,
+        'fontColor': String,
+        'customLabel': String,
     }
 
     assert dict(df.schema) == expected_schema
@@ -194,14 +195,14 @@ async def test_major_holders_activity():
     # Build expected schema dynamically
     # First 3 columns are strings, rest are float64
     expected_schema: dict = {
-        'ins_code': pl.String,
-        'l30': pl.String,
-        'holder': pl.String,
+        'ins_code': String,
+        'l30': String,
+        'holder': String,
     }
 
     # Remaining columns have dates as names and should be float64
     for col in df.columns[3:]:
-        expected_schema[col] = pl.Float64
+        expected_schema[col] = Float64
 
     assert dict(df.schema) == expected_schema
 
@@ -217,11 +218,11 @@ async def test_top_industry_groups():
 
     # Check full schema
     expected_schema = {
-        'group': pl.String,
-        'mv': pl.Float64,
-        'tno': pl.Float64,
-        'tvol': pl.Float64,
-        'tval': pl.Float64,
+        'group': String,
+        'mv': Float64,
+        'tno': Float64,
+        'tvol': Float64,
+        'tval': Float64,
     }
 
     # Check each column's dtype
@@ -239,12 +240,12 @@ async def test_market_overview():
 
 
 MSG_SCHEMA = {
-    'tseMsgIdn': pl.Int64,
-    'dEven': pl.Int64,
-    'hEven': pl.Int64,
-    'tseTitle': pl.String,
-    'tseDesc': pl.String,
-    'flow': pl.Int64,
+    'tseMsgIdn': Int64,
+    'dEven': Int64,
+    'hEven': Int64,
+    'tseTitle': String,
+    'tseDesc': String,
+    'flow': Int64,
 }
 
 
@@ -261,6 +262,36 @@ async def test_messages():
 
     # Check that all titles contain 'بورس انرژی'
     assert df['tseTitle'].str.contains('بورس انرژی', literal=True).all()
+
+
+INSTRUMENT_STATE_SCHEMA = {
+    'idn': Int64,
+    'dEven': Int64,
+    'hEven': Int64,
+    'insCode': String,
+    'lVal18AFC': String,
+    'lVal30': String,
+    'cEtaval': String,
+    'realHeven': Int64,
+    'underSupervision': Int64,
+    'cEtavalTitle': String,
+}
+
+
+@file('instrument_states.json')
+async def test_instrument_states():
+    lf = await instrument_states(top=3)
+    df = lf.collect()
+
+    # Check length
+    assert df.height == 3
+
+    # Check schema
+    assert dict(df.schema) == INSTRUMENT_STATE_SCHEMA
+
+    # Check that all instrument codes are non-empty
+    assert df['insCode'].is_not_null().all()
+    assert (df['insCode'] != '').all()
 
 
 @file('search_messages.json')

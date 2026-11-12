@@ -239,6 +239,12 @@ async def messages(
     return _pl.LazyFrame(j['msg'])
 
 
+async def instrument_states(*, top: int = 200) -> _pl.LazyFrame:
+    """See also: ``Instrument.states``."""
+    j = await _api(f'MarketData/GetInstrumentStateTop/{top}')
+    return _pl.LazyFrame(j['instrumentState'])
+
+
 async def search_messages(*, sh_date: str, term: str) -> _pl.LazyFrame:
     """https://tsetmc.com/MsgTop
 

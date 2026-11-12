@@ -1,0 +1,40 @@
+{
+    "instrumentState": [
+        {
+            "idn": 2124495,
+            "dEven": 20261111,
+            "hEven": 174453,
+            "insCode": "54493234408301135",
+            "lVal18AFC": "بنو",
+            "lVal30": "بيمه تجارت نو",
+            "cEtaval": "IS",
+            "realHeven": 0,
+            "underSupervision": 0,
+            "cEtavalTitle": "ممنوع-متوقف"
+        },
+        {
+            "idn": 2124494,
+            "dEven": 20261111,
+            "hEven": 174452,
+            "insCode": "20826020920207636",
+            "lVal18AFC": "بنو2",
+            "lVal30": "بيمه تجارت نو",
+            "cEtaval": "IS",
+            "realHeven": 0,
+            "underSupervision": 0,
+            "cEtavalTitle": "ممنوع-متوقف"
+        },
+        {
+            "idn": 2124493,
+            "dEven": 20261111,
+            "hEven": 174452,
+            "insCode": "20826020920207636",
+            "lVal18AFC": "بنو2",
+            "lVal30": "بيمه تجارت نو",
+            "cEtaval": "I ",
+            "realHeven": 0,
+            "underSupervision": 0,
+            "cEtavalTitle": "ممنوع"
+        }
+    ]
+}
