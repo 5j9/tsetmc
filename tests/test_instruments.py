@@ -36,7 +36,7 @@ FMELLI = Instrument(35425587644337450)
 @file('fmelli_trade_history_top2.txt')
 async def test_trade_history():
     with warns(DeprecationWarning):
-        ldf0 = await FMELLI.trade_history(2)  # pyright: ignore[reportDeprecated]
+        ldf0 = await FMELLI.trade_history(2)  # ty: ignore[deprecated]
 
     df0 = ldf0.collect()
 
@@ -54,7 +54,7 @@ async def test_trade_history():
     ]
 
     with warns(DeprecationWarning):
-        ldf1 = await FMELLI.trade_history(2, True)  # pyright: ignore[reportDeprecated]
+        ldf1 = await FMELLI.trade_history(2, True)  # ty: ignore[deprecated]
 
     df1 = ldf1.collect()
     assert len(df1) >= len(df0)
@@ -126,7 +126,7 @@ async def test_identification():
 @file('opal_client_types.txt')
 async def test_client_type_history_old():
     with warns(DeprecationWarning):
-        ldf = await Instrument(655060129740445).client_type_history_old()  # pyright: ignore[reportDeprecated]
+        ldf = await Instrument(655060129740445).client_type_history_old()  # ty: ignore[deprecated]
 
     df = ldf.collect()
 
@@ -203,7 +203,7 @@ AVA = Instrument('18007109712724189')
 )
 async def test_holders_holder():
     with warns(DeprecationWarning):
-        lf_holders = await AVA.holders(cisin='IRT3AVAF0003')  # pyright: ignore[reportDeprecated]
+        lf_holders = await AVA.holders(cisin='IRT3AVAF0003')  # ty: ignore[deprecated]
 
     df_holders = lf_holders.collect()
     schema = dict(df_holders.schema)
@@ -224,7 +224,7 @@ async def test_holders_holder():
     id_cisin = df_holders['id_cisin'][-1]
 
     with warns(DeprecationWarning):
-        lf_hist, lf_oth = await AVA.holder(id_cisin, True, True)  # pyright: ignore[reportDeprecated]
+        lf_hist, lf_oth = await AVA.holder(id_cisin, True, True)  # ty: ignore[deprecated]
 
     df_hist = lf_hist.collect()
     df_oth = lf_oth.collect()
@@ -242,15 +242,15 @@ async def test_holders_holder():
     ]
 
     with warns(DeprecationWarning):
-        lf_hist = await AVA.holder('43789,IRT3AVAF0003', True)  # pyright: ignore[reportDeprecated]
+        lf_hist = await AVA.holder('43789,IRT3AVAF0003', True)  # ty: ignore[deprecated]
     assert type(lf_hist) is pl.LazyFrame
 
     with warns(DeprecationWarning):
-        lf_oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # pyright: ignore[reportDeprecated]
+        lf_oth = await AVA.holder('43789,IRT3AVAF0003', False, True)  # ty: ignore[deprecated]
     assert type(lf_oth) is pl.LazyFrame
 
     with warns(DeprecationWarning):
-        lf_result = await AVA.holder('43789,IRT3AVAF0003', False)  # pyright: ignore[reportDeprecated]
+        lf_result = await AVA.holder('43789,IRT3AVAF0003', False)  # ty: ignore[deprecated]
 
     # Polars equals check on LazyFrame queries or collected DataFrames
     assert lf_oth.collect().equals(lf_result.collect())
@@ -295,7 +295,7 @@ async def test_share_holders_companies_histories():
 @file('fmelli_price_adjustment.html')
 async def test_adjustments():
     with warns(DeprecationWarning):
-        lf = await FMELLI.adjustments()  # pyright: ignore[reportDeprecated]
+        lf = await FMELLI.adjustments()  # ty: ignore[deprecated]
 
     df = lf.collect()
     assert len(df) >= 18
@@ -436,7 +436,7 @@ async def test_publisher():
 @file('tajalli_ombud_messages.html')
 async def test_ombud_messages():
     with warns(DeprecationWarning):
-        lf = await Instrument(1301069819790264).ombud_messages()  # pyright: ignore[reportDeprecated]
+        lf = await Instrument(1301069819790264).ombud_messages()  # ty: ignore[deprecated]
 
     df = lf.collect()
     assert list(df.schema.items()) == [
