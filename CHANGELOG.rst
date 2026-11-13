@@ -1,8 +1,13 @@
 Unreleased
 ----------
 * Updated dataset
-* New async functions: ``general.prepared_data`` and ``genera.instrument_states``
-* Fixed: Polars 2 only: issue in ``Instrument.trade_history`` and ``Instrument.client_type_history_old``
+* New async functions:
+  * ``general.prepared_data()``
+  * ``general.instrument_states()``
+  * ``market_watch.closing_prices_daily_all()``
+* Deprecated:
+  * ``market_watch.closing_price_all`` which used to use the old API is now deprecated in favour if the new ``market_watch.closing_prices_daily_all()`` function.
+* Fixed: Polars 2 only: issue in ``Instrument.trade_history`` and ``Instrument.client_type_history_old``. These are deprecated functions btw, and will probably be removed soon.
 
 polars 2 requires explicit header false
 

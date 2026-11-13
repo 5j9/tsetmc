@@ -6,6 +6,7 @@ from typing import (
     Any as _Any,
     TypedDict as _TypedDict,
 )
+from warnings import deprecated
 
 from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
@@ -13,6 +14,7 @@ from aiohttp import (
 )
 from html_table_parse import to_list as _html_to_list
 from polars import (
+    Boolean as _Boolean,
     DataFrame as _DataFrame,
     Datetime as _Datetime,
     Float64 as _Float64,
@@ -325,6 +327,7 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list[list[str]]:
     return parsed_data
 
 
+@deprecated('use closing_prices_daily_all instead')
 async def closing_price_all() -> _LazyFrame:
     """Return price history dataframe.
 
@@ -494,6 +497,34 @@ async def get_inst_value_all_inst_all_param() -> _LazyFrame:
             f'Unexpected keys in get_inst_value_all_inst_all_param response: {j.keys()=}'
         )
     return _DataFrame(j['instValueAllInstAllParam']).lazy()
+
+
+CLOSING_PRICE_DAILY_ALL_SCHEMA = {
+    'offset': _Int64,
+    'priceMin': _Float64,
+    'priceMax': _Float64,
+    'priceYesterday': _Float64,
+    'priceFirst': _Float64,
+    'id': _Int64,
+    'insCode': _String,
+    'dEven': _Int64,
+    'hEven': _Int64,
+    'pClosing': _Float64,
+    'iClose': _Boolean,
+    'yClose': _Boolean,
+    'pDrCotVal': _Float64,
+    'zTotTran': _Float64,
+    'qTotTran5J': _Float64,
+    'qTotCap': _Float64,
+}
+
+
+async def closing_prices_daily_all() -> _LazyFrame:
+    """Get daily closing prices for all instruments."""
+    j = await _api('ClosingPrice/GetClosingPriceDailyAllInst')
+    return _LazyFrame(
+        j['closingPriceDailyAllInst'], schema=CLOSING_PRICE_DAILY_ALL_SCHEMA
+    )
 
 
 class MarketWatch:

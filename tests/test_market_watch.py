@@ -13,7 +13,7 @@ from polars import (
     String,
     Struct,
 )
-from pytest import skip
+from pytest import skip, warns
 from pytest_aiohutils import file, validate_dict
 
 from tsetmc import MarketState
@@ -21,9 +21,11 @@ from tsetmc.market_watch import (
     _BEST_LIMITS_SCHEMA,
     _PRICE_DTYPES_26,
     _PRICE_UPDATE_COLUMNS,
+    CLOSING_PRICE_DAILY_ALL_SCHEMA,
     _parse_market_state,
     client_type_all,
-    closing_price_all,
+    closing_price_all,  # ty: ignore[deprecated]
+    closing_prices_daily_all,
     get_client_type_all,
     get_inst_value_all_inst_all_param,
     get_market_watch,
@@ -95,7 +97,8 @@ async def test_market_watch_init_no_bl():
 
 @file('ClosingPriceAll.aspx')
 async def test_closing_price_all():
-    lf = await closing_price_all()
+    with warns(DeprecationWarning):
+        lf = await closing_price_all()  # ty: ignore[deprecated]
     schema = lf.collect_schema()
 
     assert schema['ins_code'] == String
@@ -432,3 +435,11 @@ async def test_get_inst_value_all_inst_all_param():
         ('dEven', Int64),
         ('dataValue', String),
     ]
+
+
+@file('closing_price_daily_all.json')
+async def test_closing_prices_daily_all():
+    lf = await closing_prices_daily_all()
+    schema = lf.collect_schema()
+
+    assert schema == CLOSING_PRICE_DAILY_ALL_SCHEMA
