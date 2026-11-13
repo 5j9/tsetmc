@@ -22,12 +22,15 @@ from polars import (
     Int32 as _Int32,
     Int64 as _Int64,
     LazyFrame as _LazyFrame,
+    List as _List,
     String as _String,
+    Struct as _Struct,
     coalesce as _coalesce,
     col as _col,
     concat as _concat,
     scan_csv as _scan_csv,
 )
+from pytest import warns
 
 from tsetmc import (
     MarketState,
@@ -121,6 +124,7 @@ def _unstack_best_limits(bl: _LazyFrame, /) -> _LazyFrame:
     return pivoted.lazy()
 
 
+@deprecated('use get_market_watch instead')
 async def market_watch_init(
     *, market_state=True, prices=True, best_limits=True, join=True
 ) -> MarketWatchInit:
@@ -136,9 +140,6 @@ async def market_watch_init(
         For persian translation of `flow` and `yval` codes use
         `tsetmc.docs.instrument`.
         `heven` is the time of the last transaction in HHMMSS format.
-
-    See also the new experimental equivallent of this function:
-        ``get_market_watch``
     """
     text = await _get_data('MarketWatchInit.aspx?h=0&r=0', fa=True)
     try:
@@ -239,6 +240,7 @@ def _parse_inst_prices_str(
     return np, pu
 
 
+@deprecated('use get_market_watch instead')
 async def market_watch_plus(
     heven: int,
     refid: int,
@@ -449,6 +451,59 @@ async def status_changes(top: int | str) -> _LazyFrame:
     return lf
 
 
+__BL_DS_STRUCT = _Struct(
+    {
+        'n': _Int64,
+        'qmd': _Int64,
+        'zmd': _Int64,
+        'pmd': _Float64,
+        'pmo': _Float64,
+        'zmo': _Int64,
+        'qmo': _Int64,
+        'rid': _Int64,
+    }
+)
+
+_MARKET_WATCH_SCHEMA = {
+    'lva': _String,
+    'lvc': _String,
+    'eps': _Float64,
+    'pe': _String,
+    'pmd': _Float64,
+    'pmo': _Float64,
+    'qtj': _Float64,
+    'pdv': _Float64,
+    'ztt': _Float64,
+    'qtc': _Float64,
+    'bv': _Float64,
+    'pc': _Float64,
+    'pcpc': _Float64,
+    'pmn': _Float64,
+    'pmx': _Float64,
+    'py': _Float64,
+    'pf': _Float64,
+    'pcl': _Float64,
+    'vc': _Int64,
+    'csv': _String,
+    'insID': _String,
+    'pMax': _Float64,
+    'pMin': _Int64,
+    'ztd': _Float64,
+    'blDs': _List(__BL_DS_STRUCT),
+    'id': _Int64,
+    'insCode': _String,
+    'dEven': _Int64,
+    'hEven': _Int64,
+    'pClosing': _Float64,
+    'iClose': _Boolean,
+    'yClose': _Boolean,
+    'pDrCotVal': _Float64,
+    'zTotTran': _Float64,
+    'qTotTran5J': _Float64,
+    'qTotCap': _Float64,
+}
+
+
 async def get_market_watch(
     h_even=0, ref_id=0, with_best_limits=True, show_traded=False
 ) -> _LazyFrame:
@@ -471,7 +526,7 @@ async def get_market_watch(
         f'&hEven={h_even}'
         f'&RefID={ref_id}'
     )
-    df = _DataFrame(j['marketwatch'])
+    df = _DataFrame(j['marketwatch'], schema=_MARKET_WATCH_SCHEMA)
     if 'pe' in df.columns:
         df = df.with_columns(
             _col('pe').replace('-', None).cast(_Float64, strict=False)
@@ -480,7 +535,7 @@ async def get_market_watch(
 
 
 async def get_client_type_all() -> _LazyFrame:
-    """This function uses the new *experimental* market watch API."""
+    """This function uses the new market watch API. Replaces client_type_all."""
     j = await _api('ClientType/GetClientTypeAll')
     if len(j.keys()) > 1:
         _logger.warning(
@@ -490,7 +545,7 @@ async def get_client_type_all() -> _LazyFrame:
 
 
 async def get_inst_value_all_inst_all_param() -> _LazyFrame:
-    """This function uses the new *experimental* market watch API."""
+    """This function uses the new market watch API. Replaces key_stats function."""
     j = await _api('MarketData/GetInstValueAllInstAllParam')
     if len(j.keys()) > 1:
         _logger.warning(
@@ -539,6 +594,7 @@ class MarketWatch:
         'update_event',
     )
 
+    @deprecated('use MarketWatchNew instead')
     def __init__(
         self,
         *,
@@ -666,7 +722,8 @@ class MarketWatch:
 
         while True:
             try:
-                mwi = await market_watch_init(**self.init_kwargs)
+                with warns(DeprecationWarning):
+                    mwi = await market_watch_init(**self.init_kwargs)  # ty: ignore[deprecated]
             except Exception as e:
                 _logger.error(f'{e!r} while awaiting market_watch_init')
                 await _sleep(self.interval)
@@ -688,9 +745,10 @@ class MarketWatch:
         while True:
             await _sleep(self.interval)
             try:
-                mwp = await market_watch_plus(
-                    refid=refid, heven=heven, **self.plus_kwargs
-                )
+                with warns(DeprecationWarning):
+                    mwp = await market_watch_plus(  # ty: ignore[deprecated]
+                        refid=refid, heven=heven, **self.plus_kwargs
+                    )
             except _ClientResponseError as e:
                 _logger.warning(
                     f'{e.status} status while awaiting market_watch_plus'
@@ -716,3 +774,7 @@ class MarketWatch:
 
             set_event()
             clear_event()
+
+
+class MarketWatchNew:
+    pass

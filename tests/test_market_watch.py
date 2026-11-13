@@ -1,17 +1,15 @@
 from typing import cast
+from unittest.mock import patch
 
 from jdatetime import datetime as jdatetime
 from polars import (
-    Boolean,
     DataFrame,
     Datetime,
     Float64,
     Int32,
     Int64,
     LazyFrame,
-    List,
     String,
-    Struct,
 )
 from pytest import skip, warns
 from pytest_aiohutils import file, validate_dict
@@ -19,6 +17,7 @@ from pytest_aiohutils import file, validate_dict
 from tsetmc import MarketState
 from tsetmc.market_watch import (
     _BEST_LIMITS_SCHEMA,
+    _MARKET_WATCH_SCHEMA,
     _PRICE_DTYPES_26,
     _PRICE_UPDATE_COLUMNS,
     CLOSING_PRICE_DAILY_ALL_SCHEMA,
@@ -30,8 +29,8 @@ from tsetmc.market_watch import (
     get_inst_value_all_inst_all_param,
     get_market_watch,
     key_stats,
-    market_watch_init,
-    market_watch_plus,
+    market_watch_init,  # ty: ignore[deprecated]
+    market_watch_plus,  # ty: ignore[deprecated]
     status_changes,
 )
 
@@ -58,7 +57,8 @@ def assert_bl_dtypes(lf: DataFrame, unstacked=True):
 
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init():
-    mwi = await market_watch_init(join=False, market_state=False)
+    with warns(DeprecationWarning):
+        mwi = await market_watch_init(join=False, market_state=False)  # ty: ignore[deprecated]
     assert (
         cast(LazyFrame, mwi['prices']).collect_schema() == PRICE_DTYPES_ITEMS
     )
@@ -68,7 +68,8 @@ async def test_market_watch_init():
     assert bl_schema['number'] == Int64
     assert mwi['market_state'] is None
 
-    mwi = await market_watch_init(market_state=True)
+    with warns(DeprecationWarning):
+        mwi = await market_watch_init(market_state=True)  # ty: ignore[deprecated]
     prices = cast(LazyFrame, mwi['prices']).collect()
     assert 'market_state' in mwi
     assert 'best_limits' in mwi
@@ -82,7 +83,8 @@ async def test_market_watch_init():
     }
     assert dict(prices.collect_schema()) == expected_combined_schema
 
-    mwi = await market_watch_init(prices=False, market_state=False)
+    with warns(DeprecationWarning):
+        mwi = await market_watch_init(prices=False, market_state=False)  # ty: ignore[deprecated]
     assert mwi['prices'] is None
     bl_schema = cast(LazyFrame, mwi['best_limits']).collect_schema()
     assert bl_schema['ins_code'] == String
@@ -91,7 +93,8 @@ async def test_market_watch_init():
 
 @file('MarketWatchInit.aspx')
 async def test_market_watch_init_no_bl():
-    mwi = await market_watch_init(best_limits=False, prices=True)
+    with warns(DeprecationWarning):
+        mwi = await market_watch_init(best_limits=False, prices=True)  # ty: ignore[deprecated]
     assert mwi['prices'] is not None
 
 
@@ -231,18 +234,20 @@ async def test_market_watch_init_non_int_tmin_tmax():
     # ins_code 12785301426418659
     # used to raise
     # TypeError: cannot safely cast non-equivalent float64 to int64
-    await market_watch_init()
+    with warns(DeprecationWarning):
+        await market_watch_init()  # ty: ignore[deprecated]
 
 
 @file('MarketWatchPlus00.txt')
 async def test_market_watch_plus_new():
-    mwp = await market_watch_plus(
-        0,
-        0,
-        messages=False,
-        market_state=False,
-        best_limits_prepare_join=False,
-    )
+    with warns(DeprecationWarning):
+        mwp = await market_watch_plus(  # ty: ignore[deprecated]
+            0,
+            0,
+            messages=False,
+            market_state=False,
+            best_limits_prepare_join=False,
+        )
     new_prices = cast(LazyFrame, mwp['new_prices']).collect()
     assert new_prices.schema == _PRICE_DTYPES_26
 
@@ -256,9 +261,14 @@ async def test_market_watch_plus_new():
 async def test_market_watch_plus_empty_prices_error(test_config):
     if not test_config['OFFLINE_MODE']:
         raise skip('this test requires specific recorded input')
-    mwp = await market_watch_plus(
-        0, 0, messages=True, market_state=True, best_limits_prepare_join=False
-    )
+    with warns(DeprecationWarning):
+        mwp = await market_watch_plus(  # ty: ignore[deprecated]
+            0,
+            0,
+            messages=True,
+            market_state=True,
+            best_limits_prepare_join=False,
+        )
     new_prices = cast(LazyFrame, mwp['new_prices']).collect()
     assert new_prices.is_empty()
     assert new_prices.schema == _PRICE_DTYPES_26
@@ -270,9 +280,10 @@ async def test_market_watch_plus_empty_prices_error(test_config):
 
 @file('MarketWatchPlus_h64130_r9540883525.txt')
 async def test_market_watch_plus_update():
-    mwp = await market_watch_plus(
-        64130, 9540883525, best_limits_prepare_join=False
-    )
+    with warns(DeprecationWarning):
+        mwp = await market_watch_plus(  # ty: ignore[deprecated]
+            64130, 9540883525, best_limits_prepare_join=False
+        )
     price_updates = cast(LazyFrame, mwp['price_updates']).collect()
     price_schema = price_updates.schema
     assert list(price_schema.keys()) == list(_PRICE_UPDATE_COLUMNS.keys())
@@ -317,7 +328,8 @@ async def test_status_changes():
 async def test_23_cols(test_config):
     if not test_config['OFFLINE_MODE']:
         raise skip('this test requires specific recorded input')
-    mwp = await market_watch_plus(0, 0)
+    with warns(DeprecationWarning):
+        mwp = await market_watch_plus(0, 0)  # ty: ignore[deprecated]
     assert len(cast(LazyFrame, mwp['new_prices']).collect_schema()) == 23
 
 
@@ -348,61 +360,8 @@ def test_parse_market_state_with_18_values():
 @file('get_market_watch_0.json')
 async def test_get_market_watch():
     lf = await get_market_watch()
-
-    assert list(lf.collect_schema().items()) == [
-        ('lva', String),
-        ('lvc', String),
-        ('eps', Float64),
-        ('pe', Float64),
-        ('pmd', Float64),
-        ('pmo', Float64),
-        ('qtj', Float64),
-        ('pdv', Float64),
-        ('ztt', Float64),
-        ('qtc', Float64),
-        ('bv', Float64),
-        ('pc', Float64),
-        ('pcpc', Float64),
-        ('pmn', Float64),
-        ('pmx', Float64),
-        ('py', Float64),
-        ('pf', Float64),
-        ('pcl', Float64),
-        ('vc', Int64),
-        ('csv', String),
-        ('insID', String),
-        ('pMax', Float64),
-        ('pMin', Int64),
-        ('ztd', Float64),
-        (
-            'blDs',
-            List(
-                Struct(
-                    {
-                        'n': Int64,
-                        'qmd': Int64,
-                        'zmd': Int64,
-                        'pmd': Float64,
-                        'pmo': Float64,
-                        'zmo': Int64,
-                        'qmo': Int64,
-                        'rid': Int64,
-                    }
-                )
-            ),
-        ),
-        ('id', Int64),
-        ('insCode', String),
-        ('dEven', Int64),
-        ('hEven', Int64),
-        ('pClosing', Float64),
-        ('iClose', Boolean),
-        ('yClose', Boolean),
-        ('pDrCotVal', Float64),
-        ('zTotTran', Float64),
-        ('qTotTran5J', Float64),
-        ('qTotCap', Float64),
-    ]
+    with patch.dict(_MARKET_WATCH_SCHEMA, {'pe': Float64}):
+        assert lf.collect_schema() == _MARKET_WATCH_SCHEMA
 
 
 @file('get_client_type_all.json')

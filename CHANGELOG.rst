@@ -7,6 +7,8 @@ Unreleased
   * ``market_watch.closing_prices_daily_all()``
 * Deprecated:
   * ``market_watch.closing_price_all`` which used to use the old API is now deprecated in favour if the new ``market_watch.closing_prices_daily_all()`` function.
+  * ``market_watch.market_watch_init`` (using the old tsetmc site)
+  * ``market_watch.market_watch_plus`` (using the old tsetmc site)
 * Fixed: Polars 2 only: issue in ``Instrument.trade_history`` and ``Instrument.client_type_history_old``. These are deprecated functions btw, and will probably be removed soon.
 
 polars 2 requires explicit header false
