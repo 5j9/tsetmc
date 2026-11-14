@@ -3,17 +3,22 @@ Unreleased
 
 * Updated dataset.
 * New:
+
   * ``general.prepared_data()``
   * ``general.instrument_states()``
   * ``market_watch.closing_prices_daily_all()``
   * ``market_watch.MarketWatchNew()``: This watch class uses the APIs behind the `new TSETMC market watch <https://tsetmc.com/marketwatchnew>`_. It is intended to replace the old ``MarketWatch`` class, which relies on the ``old.tsetmc.com`` APIs.
   * ``market_watch.adapt_for_old_watch_consumers()``: A helper function that makes the new watch DataFrame more compatible with the old watch DataFrame's column names.
+
 * Deprecated:
+
   * ``market_watch.closing_price_all()``: The old-API implementation is now deprecated in favour of the new ``market_watch.closing_prices_daily_all()`` function.
   * ``market_watch.market_watch_init()`` (uses the old TSETMC site).
   * ``market_watch.market_watch_plus()`` (uses the old TSETMC site).
   * ``market_watch.MarketWatch``.
+
 * Fixed:
+
   * Polars 2 compatibility issues in ``Instrument.trade_history()`` and ``Instrument.client_type_history_old()``. Both are already deprecated and will probably be removed soon. Polars 2 requires explicitly setting ``has_header=False`` when reading these datasets.
 
 v5.1.0 (2026-08-11)
