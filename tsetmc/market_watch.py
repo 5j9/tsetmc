@@ -291,16 +291,15 @@ async def market_watch_plus(
         np = pu = None
 
     bl = None
-    if best_limits:
-        if best_limit:
-            bl = _scan_csv(
-                _StringIO(best_limit),
-                has_header=False,
-                schema=_BEST_LIMITS_SCHEMA,
-                eol_char=';',
-            )
-            if best_limits_prepare_join:
-                bl = _unstack_best_limits(bl)
+    if best_limits and best_limit:
+        bl = _scan_csv(
+            _StringIO(best_limit),
+            has_header=False,
+            schema=_BEST_LIMITS_SCHEMA,
+            eol_char=';',
+        )
+        if best_limits_prepare_join:
+            bl = _unstack_best_limits(bl)
 
     return MarketWatchPlus(
         new_prices=np,
