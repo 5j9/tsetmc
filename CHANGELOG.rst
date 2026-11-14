@@ -6,7 +6,7 @@ Unreleased
   * ``general.prepared_data()``
   * ``general.instrument_states()``
   * ``market_watch.closing_prices_daily_all()``
-  * ``market_watch.MarketWatchNew()``: This watch class uses the APIs behind the [new TSETMC market watch](https://tsetmc.com/marketwatchnew). It is intended to replace the old ``MarketWatch`` class, which relies on the ``old.tsetmc.com`` APIs.
+  * ``market_watch.MarketWatchNew()``: This watch class uses the APIs behind the `new TSETMC market watch <https://tsetmc.com/marketwatchnew>`_. It is intended to replace the old ``MarketWatch`` class, which relies on the ``old.tsetmc.com`` APIs.
   * ``market_watch.adapt_for_old_watch_consumers()``: A helper function that makes the new watch DataFrame more compatible with the old watch DataFrame's column names.
 * Deprecated:
   * ``market_watch.closing_price_all()``: The old-API implementation is now deprecated in favour of the new ``market_watch.closing_prices_daily_all()`` function.
