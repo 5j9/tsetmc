@@ -2,10 +2,7 @@ from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from itertools import islice
-from typing import (
-    Any as _Any,
-    TypedDict as _TypedDict,
-)
+from typing import Any as _Any, TypedDict as _TypedDict
 from warnings import deprecated
 
 from aiohttp import (
@@ -28,6 +25,8 @@ from polars import (
     coalesce as _coalesce,
     col as _col,
     concat as _concat,
+    lit as _lit,
+    max_horizontal as _max_horizontal,
     scan_csv as _scan_csv,
 )
 from pytest import warns
@@ -450,7 +449,7 @@ async def status_changes(top: int | str) -> _LazyFrame:
     return lf
 
 
-__BL_DS_STRUCT = _Struct(
+_BL_DS_STRUCT = _Struct(
     {
         'n': _Int64,
         'qmd': _Int64,
@@ -488,7 +487,7 @@ _MARKET_WATCH_SCHEMA = {
     'pMax': _Float64,
     'pMin': _Int64,
     'ztd': _Float64,
-    'blDs': _List(__BL_DS_STRUCT),
+    'blDs': _List(_BL_DS_STRUCT),
     'id': _Int64,
     'insCode': _String,
     'dEven': _Int64,
@@ -503,8 +502,84 @@ _MARKET_WATCH_SCHEMA = {
 }
 
 
+def _unstack_market_watch_best_limits(df: _DataFrame) -> _DataFrame:
+    bl = (
+        df.select('insCode', 'blDs')
+        .explode('blDs')
+        .filter(_col('blDs').is_not_null())
+        .unnest('blDs')
+        .filter(_col('n').is_not_null())
+        .select(
+            'insCode',
+            _col('n'),
+            'rid',
+            'pmd',
+            'qmd',
+            'zmd',
+            'pmo',
+            'qmo',
+            'zmo',
+        )
+    )
+
+    df = df.drop('blDs')
+
+    unexpected = bl.filter(~_col('n').is_between(1, 5))
+
+    if not unexpected.is_empty():
+        _logger.warning(
+            'Unexpected best-limit levels: %s',
+            unexpected['n'].unique().sort().to_list(),
+        )
+
+    bl = bl.filter(_col('n').is_between(1, 5))
+
+    # Expected output columns and their dtypes.
+    expected = {
+        f'{field.name}{n}': field.dtype
+        for field in _BL_DS_STRUCT.fields
+        if field.name != 'n'
+        for n in range(1, 6)
+    }
+
+    if bl.is_empty():
+        return df.with_columns(
+            _lit(None, dtype=dtype).alias(name)
+            for name, dtype in expected.items()
+        )
+
+    pivoted = bl.pivot(
+        on='n',
+        index='insCode',
+        values=['rid', 'pmd', 'qmd', 'zmd', 'pmo', 'qmo', 'zmo'],
+        aggregate_function='first',
+    )
+
+    pivoted.columns = [
+        'insCode' if col == 'insCode' else ''.join(col.rsplit('_', 1))
+        for col in pivoted.columns
+    ]
+
+    pivoted = pivoted.with_columns(
+        _lit(None, dtype=dtype).alias(name)
+        for name, dtype in expected.items()
+        if name not in pivoted.columns
+    ).select('insCode', *expected)
+
+    return df.join(
+        pivoted,
+        on='insCode',
+        how='left',
+        maintain_order='left',
+    )
+
+
 async def get_market_watch(
-    h_even=0, ref_id=0, with_best_limits=True, show_traded=False
+    h_even=0,
+    ref_id=0,
+    with_best_limits=True,
+    show_traded=False,
+    unstack_best_limits=False,
 ) -> _LazyFrame:
     """This function uses the new *experimental* market watch API."""
     j = await _api(
@@ -523,13 +598,20 @@ async def get_market_watch(
         f'&showTraded={show_traded}'
         f'&withBestLimits={with_best_limits}'
         f'&hEven={h_even}'
-        f'&RefID={ref_id}'
+        f'&RefID={ref_id}',
+        fa=True,
     )
+
     df = _DataFrame(j['marketwatch'], schema=_MARKET_WATCH_SCHEMA)
+
     if 'pe' in df.columns:
         df = df.with_columns(
             _col('pe').replace('-', None).cast(_Float64, strict=False)
         )
+
+    if with_best_limits and unstack_best_limits:
+        df = _unstack_market_watch_best_limits(df)
+
     return df.lazy()
 
 
@@ -775,5 +857,168 @@ class MarketWatch:
             clear_event()
 
 
+_NEW_MW_COL_NAMES_TO_OLD = {
+    'insCode': 'ins_code',
+    'lva': 'l18',
+    'lvc': 'l30',
+    'pdv': 'pl',
+    'pcl': 'pc',
+    'pc': 'plc',
+    'pcpc': 'pcc',
+    'ztt': 'tno',
+    'qtj': 'tvol',
+    'qtc': 'tval',
+    'pmn': 'pmin',
+    'pmx': 'pmax',
+    'pMin': 'tmin',
+    'pMax': 'tmax',
+    'bv': 'bvol',
+    'csv': 'cs',
+    'ztd': 'z',
+    'pmd1': 'pd1',
+    'qmd1': 'qd1',
+    'zmd1': 'zd1',
+    'pmo1': 'po1',
+    'qmo1': 'qo1',
+    'zmo1': 'zo1',
+    'pmd2': 'pd2',
+    'qmd2': 'qd2',
+    'zmd2': 'zd2',
+    'pmo2': 'po2',
+    'qmo2': 'qo2',
+    'zmo2': 'zo2',
+    'pmd3': 'pd3',
+    'qmd3': 'qd3',
+    'zmd3': 'zd3',
+    'pmo3': 'po3',
+    'qmo3': 'qo3',
+    'zmo3': 'zo3',
+    'pmd4': 'pd4',
+    'qmd4': 'qd4',
+    'zmd4': 'zd4',
+    'pmo4': 'po4',
+    'qmo4': 'qo4',
+    'zmo4': 'zo4',
+    'pmd5': 'pd5',
+    'qmd5': 'qd5',
+    'zmd5': 'zd5',
+    'pmo5': 'po5',
+    'qmo5': 'qo5',
+    'zmo5': 'zo5',
+}
+
+
+def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame:
+    """Adapt MarketWatchNew.df for consumers of the old MarketWatch.df.
+
+    Renames columns to their old API equivalents. Best-limit data must
+    already be unstacked to be renamed, otherwise they will remain unchanged.
+
+    Be aware that the new API has omitted some columns
+    including `yval` and `flow` so the compatibility will not be 100%.
+    Use `csv` (sector name code) or some other source for those missing
+    columns.
+    """
+    # Generated from tsetmc/dev/tsetmc_source_files/MWNewOldMigration.js
+    return mw_df.rename(_NEW_MW_COL_NAMES_TO_OLD, strict=False)
+
+
 class MarketWatchNew:
-    pass
+    __slots__ = (
+        'df',
+        'h_even',
+        'interval',
+        'ref_id',
+        'update_event',
+    )
+
+    def __init__(
+        self,
+        *,
+        interval=1,
+        h_even=0,
+        ref_id=0,
+    ):
+        """Create an object that helps with watching the market watch.
+
+        :param interval: The polling interval.
+        :param h_even: Initial hEven cursor.
+        :param ref_id: Initial RefID cursor.
+
+        Each time new data is received, self.update_event will be set.
+        Users can wait for this event to get notified of updates.
+
+        To stop the watch, cancel the task running self.start().
+        """
+        self.interval = interval
+        self.h_even = h_even
+        self.ref_id = ref_id
+        self.update_event = _Event()
+        self.df = None
+
+    def update_cursors(self, df: _DataFrame) -> None:
+        """Update cursors from an unstacked market-watch DataFrame."""
+        if df.is_empty():
+            return
+        rid_cols = [f'rid{i}' for i in range(1, 6)]
+
+        exprs = [
+            _col('hEven').max(),
+            _max_horizontal(*(_col(col) for col in rid_cols)).max(),
+        ]
+
+        h_even, ref_id = df.select(exprs).row(0)
+
+        if h_even is not None:
+            self.h_even = max(self.h_even, h_even)
+
+        if ref_id is not None:
+            self.ref_id = max(self.ref_id, ref_id)
+
+    def handle_update(self, update: _DataFrame) -> None:
+        """Update self.df using the new data received from market-watch."""
+        current = self.df
+
+        if current is None or current.is_empty():
+            self.df = update
+            return
+
+        if update.is_empty():
+            return
+
+        self.df = _concat([current, update], how='diagonal').unique(
+            subset='insCode',
+            keep='last',
+            maintain_order=True,
+        )
+
+    async def start(self):
+        while True:
+            try:
+                lf = await get_market_watch(
+                    h_even=self.h_even,
+                    ref_id=self.ref_id,
+                    with_best_limits=True,
+                    unstack_best_limits=True,
+                )
+            except _ClientResponseError as e:
+                _logger.warning(
+                    f'{e.status} status while awaiting get_market_watch'
+                )
+                continue
+            except _ClientConnectorDNSError as e:
+                _logger.warning(f'{e!r} while awaiting get_market_watch')
+                continue
+            except Exception as e:
+                _logger.exception(f'{e!r} while awaiting get_market_watch')
+                continue
+            else:
+                df = lf.collect()
+                self.update_cursors(df)
+                self.handle_update(df)
+
+                update_event = self.update_event
+                update_event.set()
+                update_event.clear()
+            finally:
+                await _sleep(self.interval)
