@@ -421,6 +421,7 @@ async def key_stats() -> _LazyFrame:
     return pivoted.lazy()
 
 
+@_deprecated('status_changes is deprecated')
 async def status_changes(top: int | str) -> _LazyFrame:
     text = await _get_par_tree(f'15131L&top={top}')
     lol = _html_to_list(text)

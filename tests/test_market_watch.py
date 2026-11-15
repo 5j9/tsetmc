@@ -31,7 +31,7 @@ from tsetmc.market_watch import (
     key_stats,  # ty: ignore[deprecated]
     market_watch_init,  # ty: ignore[deprecated]
     market_watch_plus,  # ty: ignore[deprecated]
-    status_changes,
+    status_changes,  # ty: ignore[deprecated]
 )
 
 PRICE_DTYPES_ITEMS = _PRICE_DTYPES_26
@@ -313,7 +313,8 @@ async def test_market_watch_plus_update():
 
 @file('status_changes.html')
 async def test_status_changes():
-    lf = await status_changes(3)
+    with warns(DeprecationWarning):
+        lf = await status_changes(3)  # ty: ignore[deprecated]
     df = lf.collect()
     assert len(df) == 3
     assert list(df.schema.items()) == [

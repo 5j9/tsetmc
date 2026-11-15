@@ -123,6 +123,8 @@ class Flow(_StrEnum):
     UTP = '4'  # Unlisted Trading Privileges, بازار پایه
     ENERGY = '6'
     MERCANTILE = '7'  # commodities
+    BOURSE_FIRST_MARKET = '11'  # بازار اول (تابلوی اصلی)
+    BOURSE_SECOND_MARKET = '12'  # بازار دوم (تابلوی اصلی)
     ETFS = '18'
     PROFESSIONAL = '19'  # professional market
 

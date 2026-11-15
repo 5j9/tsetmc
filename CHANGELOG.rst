@@ -11,6 +11,7 @@ Unreleased
   * ``market_watch.MarketWatchNew()``: This watch class uses the APIs behind the `new TSETMC market watch <https://tsetmc.com/marketwatchnew>`_. It is intended to replace the old ``MarketWatch`` class, which relies on the ``old.tsetmc.com`` APIs.
   * ``market_watch.adapt_for_old_watch_consumers()``: A helper function that makes the new watch DataFrame more compatible with the old watch DataFrame's column names.
   * ``Instrument.share_changes()``
+  * ``instruments.share_change_by_flow()``
 
 * Deprecated: (these functions all use the old TSETMC site APIs)
 
@@ -18,7 +19,8 @@ Unreleased
   * ``market_watch.market_watch_init()``
   * ``market_watch.market_watch_plus()``
   * ``market_watch.client_type_all()``
-  * ``market_watch.MarketWatch``.
+  * ``market_watch.MarketWatch``
+  * ``market_watch.status_changes()``
   * ``Instrument.dps_history()``
   * ``instruments.old_search()``
   * ``instruments.price_adjustments()``

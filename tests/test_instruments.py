@@ -18,7 +18,7 @@ from polars import (
 from pytest import skip, warns
 from pytest_aiohutils import file, files, validate_dict
 
-from tsetmc import InstrumentInfo
+from tsetmc import Flow, InstrumentInfo
 
 # noinspection PyProtectedMember
 from tsetmc.instruments import (
@@ -35,8 +35,9 @@ from tsetmc.instruments import (
     ShareHolderCompany,
     _parse_price_info,
     old_search,  # ty: ignore[deprecated]
-    price_adjustments,
+    price_adjustments,  # ty: ignore[deprecated]
     search,
+    share_change_by_flow,
     share_holder_companies,
 )
 
@@ -738,3 +739,19 @@ async def test_from_isin():
     assert await inst.l18 == 'فملی'
     assert await inst.isin == 'IRO1MSMI0001'
     assert await inst.cisin == 'IRO1MSMI0000'
+
+
+@file('share_change_by_flow.json')
+async def test_share_change_by_flow():
+    lf = await share_change_by_flow(top=5, flow=Flow.BOURSE_FIRST_MARKET)
+    df = lf.collect()
+    assert df.height > 4
+    assert dict(df.schema) == {
+        'dEven': Int64,
+        'idn': Int64,
+        'insCode': String,
+        'lVal18AFC': String,
+        'lVal30': String,
+        'numberOfShareNew': Float64,
+        'numberOfShareOld': Float64,
+    }

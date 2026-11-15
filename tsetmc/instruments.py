@@ -1174,6 +1174,28 @@ async def price_adjustments(flow: _FlowType) -> _LazyFrame:
     )
 
 
+async def share_change_by_flow(
+    *, top: int = 9999, flow: _FlowType
+) -> _LazyFrame:
+    """Note: it seems that the API ignores top parameter."""
+    j = await _api(
+        f'Instrument/GetInstrumentShareChangeByFlow/{flow}/{top}', fa=True
+    )
+    return _LazyFrame(
+        j['instrumentShareChange'],
+        schema={
+            'idn': _Int64,
+            'insCode': _String,
+            'dEven': _Int64,
+            'numberOfShareNew': _Float64,
+            'numberOfShareOld': _Float64,
+            'lVal30': _String,
+            'lVal18AFC': _String,
+        },
+        orient='row',
+    )
+
+
 _SEARCH_SCHEMA = {
     'l18': _String,
     'l30': _String,
