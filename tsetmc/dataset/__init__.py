@@ -8,12 +8,10 @@ from typing import Literal as _Literal, NamedTuple as _NamedTuple
 import polars as _pl
 
 from tsetmc import instruments as _instruments, logger as _logger
-from tsetmc.market_watch import market_watch_init as _market_watch_init
-
-YVAL_EXCLUSIONS = {
-    '306',  # مهرایران
-    '327',  # شیشه01ن
-}
+from tsetmc.market_watch import (
+    adapt_for_old_watch_consumers,
+    get_market_watch as _get_market_watch,
+)
 
 
 class _LookUpResult(_NamedTuple):
@@ -153,20 +151,14 @@ async def add_instrument(inst: _instruments.Instrument) -> None:
 
 async def update(df: _pl.DataFrame | None = None) -> None:
     if df is None:
-        mwi = await _market_watch_init(market_state=False, best_limits=False)
-        prices = mwi['prices']
-        assert prices is not None
-        df = prices.collect()
+        lf = await _get_market_watch(with_best_limits=False)
+        df = lf.collect()
 
-    # Filter incoming df: exclude YVAL_EXCLUSIONS and strings ending with a digit
-    df = df.filter(
-        ~(
-            _pl.col('yval').is_in(YVAL_EXCLUSIONS)
-            | _pl.col('l18').str.contains(r'\d$')
-        )
-    ).select(['ins_code', 'l18', 'l30'])
+    df = adapt_for_old_watch_consumers(df)
+    df = df.filter(~(_pl.col('l18').str.contains(r'\d$'))).select(
+        'ins_code', 'l18', 'l30'
+    )
 
-    # Access current dataset from lazy_ds
     ds = lazy_ds.df
 
     # --- 1. Identify New Rows ---
