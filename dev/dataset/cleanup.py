@@ -2,11 +2,17 @@ from asyncio import as_completed, run
 
 from polars import col
 
-from tsetmc.dataset import YVAL_EXCLUSIONS, _dump, lazy_ds
+from tsetmc.dataset import _dump, lazy_ds
 from tsetmc.instruments import Instrument
 
 TO_BE_REMOVED = []
 CHECKED: set = {*()}
+
+
+YVAL_EXCLUSIONS = {
+    '306',  # مهرایران
+    '327',  # شیشه01ن
+}
 
 
 async def check(l18: str):

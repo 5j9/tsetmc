@@ -1,6 +1,6 @@
 from asyncio import gather, run
 
-from tsetmc.dataset import LazyDS, _dump
+from tsetmc.dataset import _dump, lazy_ds
 from tsetmc.instruments import Instrument
 
 
@@ -11,7 +11,7 @@ async def get_isin(l18: str):
 
 
 async def main():
-    df = LazyDS.df
+    df = lazy_ds.df
     coros = [get_isin(l18) for l18 in df['l18']]
     isin = await gather(*coros)
     df[['isin', 'cisin']] = isin
