@@ -6,19 +6,21 @@ Unreleased
 
   * ``general.prepared_data()``
   * ``general.instrument_states()``
+  * ``general.get_sector_top()``
   * ``market_watch.closing_prices_daily_all()``
   * ``market_watch.MarketWatchNew()``: This watch class uses the APIs behind the `new TSETMC market watch <https://tsetmc.com/marketwatchnew>`_. It is intended to replace the old ``MarketWatch`` class, which relies on the ``old.tsetmc.com`` APIs.
   * ``market_watch.adapt_for_old_watch_consumers()``: A helper function that makes the new watch DataFrame more compatible with the old watch DataFrame's column names.
 
-* Deprecated:
+* Deprecated: (these functions all use the old TSETMC site APIs)
 
-  * ``market_watch.closing_price_all()``: The old-API implementation is now deprecated in favour of the new ``market_watch.closing_prices_daily_all()`` function.
-  * ``market_watch.market_watch_init()`` (uses the old TSETMC site).
-  * ``market_watch.market_watch_plus()`` (uses the old TSETMC site).
-  * ``market_watch.client_type_all()`` (uses the old TSETMC site).
-  * ``instruments.old_search()`` (uses the old TSETMC site).
-  * ``Instrument.dps_history()`` (uses the old TSETMC site).
+  * ``market_watch.closing_price_all()``: in favour of the new ``market_watch.closing_prices_daily_all()`` function.
+  * ``market_watch.market_watch_init()``
+  * ``market_watch.market_watch_plus()``
+  * ``market_watch.client_type_all()``
   * ``market_watch.MarketWatch``.
+  * ``instruments.old_search()``
+  * ``Instrument.dps_history()``
+  * ``general.top_industry_groups()``; use ``get_sector_top()`` instead.
 
 * Fixed:
 

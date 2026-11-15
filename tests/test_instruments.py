@@ -34,7 +34,7 @@ from tsetmc.instruments import (
     ShareHolder,
     ShareHolderCompany,
     _parse_price_info,
-    old_search,
+    old_search,  # ty: ignore[deprecated]
     price_adjustments,
     search,
     share_holder_companies,
@@ -380,7 +380,8 @@ async def test_adjusted_price_history():
 
 @file('search_mellat.txt')
 async def test_old_search():
-    lf = await old_search('ملت')
+    with warns(DeprecationWarning):
+        lf = await old_search('ملت')  # ty: ignore[deprecated]
     df = lf.collect()
     assert type(df) is DataFrame
     assert len(df) > 40
@@ -467,7 +468,8 @@ async def test_messages():
 
 @file('fmelli_dps.txt')
 async def test_dps_history():
-    lf = await FMELLI.dps_history()
+    with warns(DeprecationWarning):
+        lf = await FMELLI.dps_history()  # ty: ignore[deprecated]
     df = lf.collect()
     if df.is_empty():
         skip('dps_history returned empty df')

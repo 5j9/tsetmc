@@ -100,6 +100,9 @@ async def market_map_data(
     return _LazyFrame(j)
 
 
+@_deprecated(
+    'major_holders_activity relies on the old tsetmc.com site. No alternative on the new site.'
+)
 async def major_holders_activity() -> _LazyFrame | None:
     text = await _get_par_tree('15131I')
     html = _html(text)
@@ -152,6 +155,7 @@ async def major_holders_activity() -> _LazyFrame | None:
     )
 
 
+@_deprecated('use get_sector_top instead')
 async def top_industry_groups() -> _LazyFrame:
     """http://old.tsetmc.com/Loader.aspx?Partree=15131O"""
     text = await _get_par_tree('15131O')
@@ -173,6 +177,20 @@ async def top_industry_groups() -> _LazyFrame:
         )
         .pipe(_numerize, ['mv', 'tno', 'tvol', 'tval'])
     )
+
+
+class SectorTop(_TypedDict):
+    lVal30: str
+    marketCap: float
+    zTotTran: int
+    qTotTran5J: float
+    qTotCap: float
+
+
+async def get_sector_top(n: int = 9999) -> list[SectorTop]:
+    """tsetmc.com > برترین گروه‌های صنعت > شاخص‌ها"""
+    j = await _api(f'MarketData/GetSectorTop/{n}')
+    return j['sectorTop']
 
 
 def _parse_tds(tds):

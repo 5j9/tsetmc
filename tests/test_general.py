@@ -6,18 +6,20 @@ from tsetmc import Flow
 from tsetmc.general import (
     PREPARED_DATA_SCHEMA,
     MarketOverview,
+    SectorTop,
     boards,
     cs_codes,
+    get_sector_top,
     industrial_groups_overview,  # ty: ignore[deprecated]
     instrument_states,
-    major_holders_activity,
+    major_holders_activity,  # ty: ignore[deprecated]
     market_map_data,
     market_overview,
     messages,
     prepared_data,
     search_messages,
     sectors_summary,
-    top_industry_groups,
+    top_industry_groups,  # ty: ignore[deprecated]
 )
 
 
@@ -189,7 +191,8 @@ async def test_market_map_data():
 
 @file('major_holders_activity.html')
 async def test_major_holders_activity():
-    lf = await major_holders_activity()
+    with warns(DeprecationWarning):
+        lf = await major_holders_activity()  # ty: ignore[deprecated]
     if lf is None:
         return
     df = lf.collect()
@@ -211,7 +214,8 @@ async def test_major_holders_activity():
 
 @file('top_industry_groups.html')
 async def test_top_industry_groups():
-    lf = await top_industry_groups()
+    with warns(DeprecationWarning):
+        lf = await top_industry_groups()  # ty: ignore[deprecated]
     df = lf.collect()
 
     # Check if DataFrame is empty
@@ -323,3 +327,9 @@ async def test_prepared_data():
 
     # Check that all titles are non-empty
     assert (df['title'].str.len_chars() > 0).all()
+
+
+@file('get_sector_top.json')
+async def test_get_sector_top():
+    d = await get_sector_top()
+    validate_dict(d[0], SectorTop)

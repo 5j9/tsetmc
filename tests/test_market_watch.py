@@ -22,13 +22,13 @@ from tsetmc.market_watch import (
     _PRICE_UPDATE_COLUMNS,
     CLOSING_PRICE_DAILY_ALL_SCHEMA,
     _parse_market_state,
-    client_type_all,
+    client_type_all,  # ty: ignore[deprecated]
     closing_price_all,  # ty: ignore[deprecated]
     closing_prices_daily_all,
     get_client_type_all,
     get_inst_value_all_inst_all_param,
     get_market_watch,
-    key_stats,
+    key_stats,  # ty: ignore[deprecated]
     market_watch_init,  # ty: ignore[deprecated]
     market_watch_plus,  # ty: ignore[deprecated]
     status_changes,
@@ -127,7 +127,8 @@ async def test_closing_price_all():
 
 @file('ClientTypeAll.aspx')
 async def test_client_type_all():
-    lf = await client_type_all()
+    with warns(DeprecationWarning):
+        lf = await client_type_all()  # ty: ignore[deprecated]
     schema = lf.collect_schema()
 
     expected_cols = [
@@ -150,7 +151,8 @@ async def test_client_type_all():
 
 @file('InstValue.aspx')
 async def test_key_stats():
-    lf = await key_stats()
+    with warns(DeprecationWarning):
+        lf = await key_stats()  # ty: ignore[deprecated]
     schema = lf.collect_schema()
 
     assert schema['ins_code'] == String
