@@ -15,6 +15,7 @@ Unreleased
   * ``market_watch.closing_price_all()``: The old-API implementation is now deprecated in favour of the new ``market_watch.closing_prices_daily_all()`` function.
   * ``market_watch.market_watch_init()`` (uses the old TSETMC site).
   * ``market_watch.market_watch_plus()`` (uses the old TSETMC site).
+  * ``market_watch.client_type_all()`` (uses the old TSETMC site).
   * ``market_watch.MarketWatch``.
 
 * Fixed:

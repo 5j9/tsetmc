@@ -3,7 +3,7 @@ from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from itertools import islice
 from typing import Any as _Any, TypedDict as _TypedDict
-from warnings import deprecated
+from warnings import deprecated as _deprecated
 
 from aiohttp import (
     ClientConnectorDNSError as _ClientConnectorDNSError,
@@ -123,7 +123,7 @@ def _unstack_best_limits(bl: _LazyFrame, /) -> _LazyFrame:
     return pivoted.lazy()
 
 
-@deprecated('use get_market_watch instead')
+@_deprecated('use get_market_watch instead')
 async def market_watch_init(
     *, market_state=True, prices=True, best_limits=True, join=True
 ) -> MarketWatchInit:
@@ -239,7 +239,7 @@ def _parse_inst_prices_str(
     return np, pu
 
 
-@deprecated('use get_market_watch instead')
+@_deprecated('use get_market_watch instead')
 async def market_watch_plus(
     heven: int,
     refid: int,
@@ -327,7 +327,7 @@ def _split_id_rows(content: bytes, id_row_len: int) -> list[list[str]]:
     return parsed_data
 
 
-@deprecated('use closing_prices_daily_all instead')
+@_deprecated('use closing_prices_daily_all instead')
 async def closing_price_all() -> _LazyFrame:
     """Return price history dataframe.
 
@@ -374,13 +374,11 @@ _CLIENT_TYPE_SCHEMA = {
 }
 
 
+@_deprecated('use get_client_type_all instead')
 async def client_type_all() -> _LazyFrame:
     """Return client types (natural/legal stats) as a DataFrame.
 
     In column names `n_` prefix stands for natural and `l_` for legal.
-
-    See also the new experimental equivalent of this function:
-        ``get_client_type_all``
     """
     content = await _get_data('ClientTypeAll.aspx')
 
@@ -393,15 +391,13 @@ async def client_type_all() -> _LazyFrame:
     return df
 
 
+@_deprecated('use get_inst_value_all_inst_all_param instead')
 async def key_stats() -> _LazyFrame:
     """Return key statistics as a DataFrame.
 
     For the meaning of column names refer to
         https://old.tsetmc.com/Site.aspx?ParTree=151715&LnkIdn=3199 or
         https://old.tsetmc.com/Site.aspx?ParTree=151713
-
-    See also the new experimental equivallent of this function:
-        ``get_inst_value_all_inst_all_param``
     """
     content = await _get_data('InstValue.aspx?t=a')
     data = _split_id_rows(content, id_row_len=3)
@@ -675,7 +671,7 @@ class MarketWatch:
         'update_event',
     )
 
-    @deprecated('use MarketWatchNew instead')
+    @_deprecated('use MarketWatchNew instead')
     def __init__(
         self,
         *,
