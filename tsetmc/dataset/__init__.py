@@ -5,7 +5,16 @@ from functools import cache as _cache, cached_property
 from pathlib import Path as _Path
 from typing import Literal as _Literal, NamedTuple as _NamedTuple
 
-import polars as _pl
+from polars import (
+    DataFrame as _DataFrame,
+    LazyFrame as _LazyFrame,
+    Series as _Series,
+    String as _String,
+    col as _col,
+    concat as _concat,
+    len as _len,
+    scan_csv as _scan_csv,
+)
 
 from tsetmc import instruments as _instruments, logger as _logger
 from tsetmc.market_watch import (
@@ -23,11 +32,11 @@ class _LookUpResult(_NamedTuple):
 
 
 _DS_SCHEMA = {
-    'ins_code': _pl.String,
-    'isin': _pl.String,
-    'cisin': _pl.String,
-    'l18': _pl.String,
-    'l30': _pl.String,
+    'ins_code': _String,
+    'isin': _String,
+    'cisin': _String,
+    'l18': _String,
+    'l30': _String,
 }
 
 
@@ -42,8 +51,8 @@ class _LazyDS:
         _lazy_ds_dict.cache_clear()
 
     @cached_property
-    def lf(self) -> _pl.LazyFrame:
-        return _pl.scan_csv(
+    def lf(self) -> _LazyFrame:
+        return _scan_csv(
             self.path,
             low_memory=False,
             eol_char='\n',
@@ -52,7 +61,7 @@ class _LazyDS:
         )
 
     @cached_property
-    def df(self) -> _pl.DataFrame:
+    def df(self) -> _DataFrame:
         df = self.lf.collect()
         self.lf = df.lazy()  # avoid disk read in future calls
         return df
@@ -80,13 +89,13 @@ def _lazy_ds_dict(key: _Literal['code', 'l18', 'l30', 'cisin', 'isin']):
     return {getattr(ll, key): ll for ll in lazy_ds._lookup_list}
 
 
-def _dump(df: _pl.DataFrame):
+def _dump(df: _DataFrame):
     if not df['l18'].is_unique().all():
         # Identify group keys that possess duplicate records
         duplicate_l18s = (
             df.group_by('l18')
-            .agg(_pl.len())
-            .filter(_pl.col('len') > 1)
+            .agg(_len())
+            .filter(_col('len') > 1)
             .get_column('l18')
         )
         df = df.unique(subset='l18', keep='last')
@@ -98,8 +107,8 @@ def _dump(df: _pl.DataFrame):
         # Identify group keys that possess duplicate records
         duplicate_codes = (
             df.group_by('ins_code')
-            .agg(_pl.len())
-            .filter(_pl.col('len') > 1)
+            .agg(_len())
+            .filter(_col('len') > 1)
             .get_column('ins_code')
         )
         df = df.unique(subset='ins_code', keep='last')
@@ -116,7 +125,7 @@ async def add_instrument(inst: _instruments.Instrument) -> None:
     info = await inst.info()
     df = lazy_ds.df
     l18, l30 = info['lVal18AFC'], info['lVal30']
-    new_row_df = _pl.DataFrame(
+    new_row_df = _DataFrame(
         {
             'ins_code': [code],
             'isin': [await inst.isin],
@@ -142,20 +151,20 @@ async def add_instrument(inst: _instruments.Instrument) -> None:
             _logger.warning(f'{l18 = } already exists in dataset')
             return
 
-    df = _pl.concat([df, new_row_df])
+    df = _concat([df, new_row_df])
     _dump(df)
     lazy_ds.clear_cache()
     lazy_ds.df = df
     lazy_ds.lf = df.lazy()
 
 
-async def update(df: _pl.DataFrame | None = None) -> None:
+async def update(df: _DataFrame | None = None) -> None:
     if df is None:
         lf = await _get_market_watch(with_best_limits=False)
         df = lf.collect()
 
     df = adapt_for_old_watch_consumers(df)
-    df = df.filter(~(_pl.col('l18').str.contains(r'\d$'))).select(
+    df = df.filter(~(_col('l18').str.contains(r'\d$'))).select(
         'ins_code', 'l18', 'l30'
     )
 
@@ -174,8 +183,7 @@ async def update(df: _pl.DataFrame | None = None) -> None:
     # Compare matching codes to see if values actually differ
     comparison = existing_updates.join(ds, on='ins_code', suffix='_old')
     changed_rows = comparison.filter(
-        (_pl.col('l18') != _pl.col('l18_old'))
-        | (_pl.col('l30') != _pl.col('l30_old'))
+        (_col('l18') != _col('l18_old')) | (_col('l30') != _col('l30_old'))
     )
 
     if len(new_rows) == 0 and len(changed_rows) == 0:
@@ -191,8 +199,8 @@ async def update(df: _pl.DataFrame | None = None) -> None:
             ds.join(df, on='ins_code', how='left', suffix='_new')
             .with_columns(
                 [
-                    _pl.col('l18_new').fill_null(_pl.col('l18')).alias('l18'),
-                    _pl.col('l30_new').fill_null(_pl.col('l30')).alias('l30'),
+                    _col('l18_new').fill_null(_col('l18')).alias('l18'),
+                    _col('l30_new').fill_null(_col('l30')).alias('l30'),
                 ]
             )
             .drop(['l18_new', 'l30_new'])
@@ -211,13 +219,13 @@ async def update(df: _pl.DataFrame | None = None) -> None:
 
         new_rows = new_rows.with_columns(
             [
-                _pl.Series('isin', isins, dtype=_pl.String),
-                _pl.Series('cisin', cisins, dtype=_pl.String),
+                _Series('isin', isins, dtype=_String),
+                _Series('cisin', cisins, dtype=_String),
             ]
         )
 
         # Concat new records to dataset (explicitly ensuring schema alignment)
-        merged = _pl.concat([ds, new_rows.select(ds.columns)])
+        merged = _concat([ds, new_rows.select(ds.columns)])
     else:
         merged = ds
 
