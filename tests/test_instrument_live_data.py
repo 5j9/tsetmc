@@ -57,14 +57,14 @@ def assert_live_data(
 @file('fmelli.txt')
 async def test_fmelli_instant():
     with warns(DeprecationWarning):
-        d = await FMELLI.live_data(best_limits=False)  # pyright: ignore[reportDeprecated]
+        d = await FMELLI.live_data(best_limits=False)  # ty: ignore[deprecated]
     assert_live_data(d, best_limits=False)
 
 
 @file('dara_yekom.txt')
 async def test_dara1_instant():
     with warns(DeprecationWarning):
-        d = await Instrument(62235397452612911).live_data(  # pyright: ignore[reportDeprecated]
+        d = await Instrument(62235397452612911).live_data(  # ty: ignore[deprecated]
             market_state=True, best_limits=True
         )
     assert_live_data(d, best_limits=True, market_state=True, nav=True)
@@ -73,24 +73,24 @@ async def test_dara1_instant():
 @file('asam.txt')
 async def test_asam_instant():
     with warns(DeprecationWarning):
-        d = await Instrument(36592972482259020).live_data(best_limits=True)  # pyright: ignore[reportDeprecated]
+        d = await Instrument(36592972482259020).live_data(best_limits=True)  # ty: ignore[deprecated]
     assert_live_data(d, best_limits=True, nav=True)
 
 
 @file('vskhooz_short_response.txt')
 async def test_vskhooz_short():
     with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
+        assert_live_data(await Instrument(5454781314262062).live_data())  # ty: ignore[deprecated]
 
 
 @file('vskhooz_long_response.txt')
 async def test_vskhooz_long():
     with warns(DeprecationWarning):
-        assert_live_data(await Instrument(5454781314262062).live_data())  # pyright: ignore[reportDeprecated]
+        assert_live_data(await Instrument(5454781314262062).live_data())  # ty: ignore[deprecated]
 
 
 @file('vsadid.txt')
 async def test_vsadid():
     with warns(DeprecationWarning):
-        d = await Instrument('41713045190742691').live_data()  # pyright: ignore[reportDeprecated]
+        d = await Instrument('41713045190742691').live_data()  # ty: ignore[deprecated]
     assert_live_data(d)

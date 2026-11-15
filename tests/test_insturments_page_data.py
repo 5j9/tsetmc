@@ -65,7 +65,7 @@ async def test_page_data():
     ins = Instrument(35425587644337450)
     assert getattr(ins, '_l18', None) is getattr(ins, '_l30', None) is None
     with warns(DeprecationWarning):
-        d = await ins.page_data(True, True, True)  # pyright: ignore[reportDeprecated]
+        d = await ins.page_data(True, True, True)  # ty: ignore[deprecated]
 
     # Assert type is LazyFrame instead of DataFrame before validation
     assert isinstance(d['trade_history'], pl.LazyFrame)
@@ -75,19 +75,19 @@ async def test_page_data():
 @file('dey.html')
 async def test_page_data_no_free_float():
     with warns(DeprecationWarning):
-        d = await Instrument(44818950263583523).page_data()  # pyright: ignore[reportDeprecated]
+        d = await Instrument(44818950263583523).page_data()  # ty: ignore[deprecated]
     assert_page_data(d)
 
 
 @file('kala.html')
 async def test_page_data_no_eps():
     with warns(DeprecationWarning):
-        d = await Instrument(44549439964296944).page_data()  # pyright: ignore[reportDeprecated]
+        d = await Instrument(44549439964296944).page_data()  # ty: ignore[deprecated]
     assert_page_data(d)
 
 
 @file('khgostar.html')
 async def test_page_data_negative_sector_pe():
     with warns(DeprecationWarning):
-        d = await Instrument(48990026850202503).page_data()  # pyright: ignore[reportDeprecated]
+        d = await Instrument(48990026850202503).page_data()  # ty: ignore[deprecated]
     assert_page_data(d)
