@@ -957,6 +957,14 @@ class Instrument:
         ).with_columns(_col('dEven').str.to_date(format='%Y%m%d'))
         return lf
 
+    async def share_changes(self) -> _LazyFrame:
+        j = await _api(f'Instrument/GetInstrumentShareChange/{self.code}')
+        lf = _LazyFrame(
+            j['instrumentShareChange'],
+            schema_overrides={'dEven': _String, 'insCode': _String},
+        ).with_columns(_col('dEven').str.to_date(format='%Y%m%d'))
+        return lf
+
     async def messages(self) -> list[Message]:
         """See also: ``general.messages`` and ``general.search_messages``."""
         j = await _api(f'Msg/GetMsgByInsCode/{self.code}', fa=True)
@@ -1133,6 +1141,7 @@ class InstrumentOnDate:
         return j['instrumentHistory']
 
 
+@_deprecated('price_adjustments is deprecated')
 async def price_adjustments(flow: _FlowType) -> _LazyFrame:
     """Get price adjustments for a particular flow.
 

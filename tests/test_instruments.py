@@ -341,9 +341,32 @@ async def test_price_adjustments_method():
     assert df['dEven'][-1] == date(2009, 7, 15)
 
 
+@file('test_share_changes_method.json')
+async def test_share_changes_method():
+    lf = await FMELLI.share_changes()
+    df = lf.collect()
+
+    assert len(df) >= 3
+    assert [*df.schema.items()] == [
+        ('idn', Int64),
+        ('insCode', String),
+        ('dEven', Date),
+        ('numberOfShareNew', Float64),
+        ('numberOfShareOld', Float64),
+        ('lVal30', Null),
+        ('lVal18AFC', Null),
+    ]
+
+    # Oldest change (append-only history, so [-1] is stable)
+    assert df['dEven'][-1] == date(2011, 7, 5)
+    assert df['numberOfShareNew'][-1] == 17_368_933_800
+    assert df['numberOfShareOld'][-1] == 5_789_644_600
+
+
 @file('adjustments_flow_7.html')
 async def test_price_adjustments():
-    lf = await price_adjustments(7)
+    with warns(DeprecationWarning):
+        lf = await price_adjustments(7)  # ty: ignore[deprecated]
     df = lf.collect()
 
     assert list(df.schema.items()) == [
