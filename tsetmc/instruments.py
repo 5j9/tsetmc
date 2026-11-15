@@ -968,6 +968,9 @@ class Instrument:
             await _get_par_tree(f'15131W&i={self.code}')
         )
 
+    @_deprecated(
+        'dps_history endpoint has been deprecated and has no alternative'
+    )
     async def dps_history(self) -> _LazyFrame:
         """Get DPS history.
 
@@ -1177,6 +1180,7 @@ _SEARCH_SCHEMA = {
 }
 
 
+@_deprecated('use `search` instead')
 async def old_search(skey: str, /) -> _LazyFrame:
     """`skey` (search key) is usually part of the l18 or l30.
 

@@ -16,6 +16,8 @@ Unreleased
   * ``market_watch.market_watch_init()`` (uses the old TSETMC site).
   * ``market_watch.market_watch_plus()`` (uses the old TSETMC site).
   * ``market_watch.client_type_all()`` (uses the old TSETMC site).
+  * ``instruments.old_search()`` (uses the old TSETMC site).
+  * ``Instrument.dps_history()`` (uses the old TSETMC site).
   * ``market_watch.MarketWatch``.
 
 * Fixed:
