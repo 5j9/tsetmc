@@ -1,0 +1,91 @@
+{
+    "priceAdjust": [
+        {
+            "insCode": 0,
+            "dEven": 20261111,
+            "pClosing": 23500.0,
+            "pClosingNotAdjusted": 25500.0,
+            "corporateTypeCode": null,
+            "instrument": {
+                "cValMne": null,
+                "lVal18": null,
+                "cSocCSAC": null,
+                "lSoc30": null,
+                "yMarNSC": null,
+                "yVal": null,
+                "insCode": "67030488744129337",
+                "lVal30": "فرآورده‌هاي‌غدايي‌وقندپيرانشهر",
+                "lVal18AFC": "قپيرا",
+                "flow": 0,
+                "cIsin": null,
+                "zTitad": 0.0,
+                "baseVol": 0,
+                "instrumentID": null,
+                "cgrValCot": null,
+                "cComVal": null,
+                "lastDate": 0,
+                "sourceID": 0,
+                "flowTitle": null,
+                "cgrValCotTitle": null
+            }
+        },
+        {
+            "insCode": 0,
+            "dEven": 20261107,
+            "pClosing": 4010.0,
+            "pClosingNotAdjusted": 4020.0,
+            "corporateTypeCode": null,
+            "instrument": {
+                "cValMne": null,
+                "lVal18": null,
+                "cSocCSAC": null,
+                "lSoc30": null,
+                "yMarNSC": null,
+                "yVal": null,
+                "insCode": "18004480270695404",
+                "lVal30": "آلومراد",
+                "lVal18AFC": "فمراد",
+                "flow": 0,
+                "cIsin": null,
+                "zTitad": 0.0,
+                "baseVol": 0,
+                "instrumentID": null,
+                "cgrValCot": null,
+                "cComVal": null,
+                "lastDate": 0,
+                "sourceID": 0,
+                "flowTitle": null,
+                "cgrValCotTitle": null
+            }
+        },
+        {
+            "insCode": 0,
+            "dEven": 20261024,
+            "pClosing": 5600.0,
+            "pClosingNotAdjusted": 5730.0,
+            "corporateTypeCode": null,
+            "instrument": {
+                "cValMne": null,
+                "lVal18": null,
+                "cSocCSAC": null,
+                "lSoc30": null,
+                "yMarNSC": null,
+                "yVal": null,
+                "insCode": "44850033148208596",
+                "lVal30": "كشت‌ و صنعت‌ چين‌ چين",
+                "lVal18AFC": "غچين",
+                "flow": 0,
+                "cIsin": null,
+                "zTitad": 0.0,
+                "baseVol": 0,
+                "instrumentID": null,
+                "cgrValCot": null,
+                "cComVal": null,
+                "lastDate": 0,
+                "sourceID": 0,
+                "flowTitle": null,
+                "cgrValCotTitle": null
+            }
+        }
+    ]
+}

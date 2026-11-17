@@ -5,6 +5,7 @@ from pytest_aiohutils import file, validate_dict
 from tsetmc import Flow
 from tsetmc.general import (
     PREPARED_DATA_SCHEMA,
+    PRICE_ADJUST_SCHEMA,
     SECTOR_TOP_SCHEMA,
     MarketOverview,
     boards,
@@ -17,6 +18,7 @@ from tsetmc.general import (
     market_overview,
     messages,
     prepared_data,
+    price_adjust_by_flow,
     search_messages,
     sectors_summary,
     top_industry_groups,  # ty: ignore[deprecated]
@@ -334,3 +336,10 @@ async def test_get_sector_top():
     lf = await get_sector_top()
     df = lf.collect()
     assert dict(df.schema) == SECTOR_TOP_SCHEMA
+
+
+@file('get_price_adjust_by_flow.json')
+async def test_get_price_adjust_by_flow():
+    lf = await price_adjust_by_flow()
+    df = lf.collect()
+    assert dict(df.schema) == PRICE_ADJUST_SCHEMA

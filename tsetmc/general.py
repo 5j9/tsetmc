@@ -11,8 +11,10 @@ from polars import (
     Float64 as _Float64,
     Int64 as _Int64,
     LazyFrame as _LazyFrame,
+    Schema as _Schema,
     String as _String,
     col as _col,
+    json_normalize as _json_normalize,
 )
 
 from tsetmc import (
@@ -344,3 +346,43 @@ async def prepared_data(*, top: int = 200) -> _LazyFrame:
     """Get the latest prepared Codal data."""
     j = await _api(f'Codal/GetPreparedData/{top}')
     return _LazyFrame(j['preparedData'], schema=PREPARED_DATA_SCHEMA)
+
+
+PRICE_ADJUST_SCHEMA = _Schema(
+    {
+        'insCode': _Int64,
+        'dEven': _Int64,
+        'pClosing': _Float64,
+        'pClosingNotAdjusted': _Float64,
+        'corporateTypeCode': _Int64,
+        'instrument.cValMne': _String,
+        'instrument.lVal18': _String,
+        'instrument.cSocCSAC': _String,
+        'instrument.lSoc30': _String,
+        'instrument.yMarNSC': _String,
+        'instrument.yVal': _String,
+        'instrument.insCode': _String,
+        'instrument.lVal30': _String,
+        'instrument.lVal18AFC': _String,
+        'instrument.flow': _Int64,
+        'instrument.cIsin': _String,
+        'instrument.zTitad': _Float64,
+        'instrument.baseVol': _Int64,
+        'instrument.instrumentID': _String,
+        'instrument.cgrValCot': _String,
+        'instrument.cComVal': _String,
+        'instrument.lastDate': _Int64,
+        'instrument.sourceID': _Int64,
+        'instrument.flowTitle': _String,
+        'instrument.cgrValCotTitle': _String,
+    }
+)
+
+
+async def price_adjust_by_flow(*, flow: int = 1, top: int = 999) -> _LazyFrame:
+    """Get price adjustment data by market flow."""
+    j = await _api(f'ClosingPrice/GetPriceAdjustByFlow/{flow}/{top}')
+    return _json_normalize(
+        j['priceAdjust'],
+        schema=PRICE_ADJUST_SCHEMA,
+    ).lazy()
