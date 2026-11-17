@@ -8,6 +8,7 @@ from html_table_parse import (
 )
 from lxml.html import fromstring as _html
 from polars import (
+    Float64 as _Float64,
     Int64 as _Int64,
     LazyFrame as _LazyFrame,
     String as _String,
@@ -179,18 +180,27 @@ async def top_industry_groups() -> _LazyFrame:
     )
 
 
-class SectorTop(_TypedDict):
-    lVal30: str
-    marketCap: float
-    zTotTran: int
-    qTotTran5J: float
-    qTotCap: float
+SECTOR_TOP_SCHEMA = {
+    'lVal30': _String,
+    'marketCap': _Float64,
+    'qTotCap': _Float64,
+    'qTotTran5J': _Float64,
+    'zTotTran': _Int64,
+}
 
 
-async def get_sector_top(n: int = 9999) -> list[SectorTop]:
+async def get_sector_top(n: int = 9999) -> _LazyFrame:
+    """
+    Result columns:
+        lVal30: str
+        marketCap: float
+        zTotTran: int
+        qTotTran5J: float
+        qTotCap: float
+    """
     """tsetmc.com > برترین گروه‌های صنعت > شاخص‌ها"""
     j = await _api(f'MarketData/GetSectorTop/{n}')
-    return j['sectorTop']
+    return _LazyFrame(j['sectorTop'], schema=SECTOR_TOP_SCHEMA)
 
 
 def _parse_tds(tds):

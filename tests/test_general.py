@@ -5,8 +5,8 @@ from pytest_aiohutils import file, validate_dict
 from tsetmc import Flow
 from tsetmc.general import (
     PREPARED_DATA_SCHEMA,
+    SECTOR_TOP_SCHEMA,
     MarketOverview,
-    SectorTop,
     boards,
     cs_codes,
     get_sector_top,
@@ -331,5 +331,6 @@ async def test_prepared_data():
 
 @file('get_sector_top.json')
 async def test_get_sector_top():
-    d = await get_sector_top()
-    validate_dict(d[0], SectorTop)
+    lf = await get_sector_top()
+    df = lf.collect()
+    assert dict(df.schema) == SECTOR_TOP_SCHEMA
