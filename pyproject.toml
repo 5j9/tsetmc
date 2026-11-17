@@ -14,7 +14,6 @@ dependencies = [
     "html-table-parse>=0.2.2",
     'jdatetime',
     'lxml',
-    'numpy',
     # pd.options.future.infer_string = True
     "polars>=1.41.2",
 ]

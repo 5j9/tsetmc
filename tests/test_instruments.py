@@ -1,6 +1,5 @@
 from datetime import date
 
-from numpy import int64
 from polars import (
     Boolean,
     DataFrame,
@@ -508,8 +507,16 @@ async def test_dps_history():
     }
 
 
-def test_hash():
-    assert hash(Instrument(int64(1))) == 1  # type: ignore
+class IntLike:
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self) -> str:
+        return f'{self.value}'
+
+
+def test_hash():  # e.g. a numpy.int64 can be passed to Instrument
+    assert hash(Instrument(IntLike(1))) == 1  # type: ignore
 
 
 def test_parse_price_info():
