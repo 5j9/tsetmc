@@ -360,6 +360,8 @@ def test_parse_market_state_with_18_values():
     }
 
 
+# you can shorten the record result manually using
+# jaq -i '.marketwatch |= .[0:10]' tests/testdata/get_market_watch_0.json
 @file('get_market_watch_0.json')
 async def test_get_market_watch():
     lf = await get_market_watch()

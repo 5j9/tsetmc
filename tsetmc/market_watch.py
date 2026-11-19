@@ -496,6 +496,12 @@ _MARKET_WATCH_SCHEMA = {
     'zTotTran': _Float64,
     'qTotTran5J': _Float64,
     'qTotCap': _Float64,
+    'yVal': _Int64,
+    'flow': _Int64,
+    'cGrValCot': _String,
+    'yMarNSC': _String,
+    'pRedTran': _Float64,
+    'buyOP': _Int64,
 }
 
 
@@ -902,6 +908,10 @@ _NEW_MW_COL_NAMES_TO_OLD = {
     'pmo5': 'po5',
     'qmo5': 'qo5',
     'zmo5': 'zo5',
+    'yVal': 'yval',
+    'pRedTran': 'predtran',
+    'buyOP': 'buyop',
+    'cGrValCot': 'cgrvalcot',
 }
 
 
@@ -910,11 +920,6 @@ def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame:
 
     Renames columns to their old API equivalents. Best-limit data must
     already be unstacked to be renamed, otherwise they will remain unchanged.
-
-    Be aware that the new API has omitted some columns
-    including `yval` and `flow` so the compatibility will not be 100%.
-    Use `csv` (sector name code) or some other source for those missing
-    columns.
     """
     # Generated from tsetmc/dev/tsetmc_source_files/MWNewOldMigration.js
     return mw_df.rename(_NEW_MW_COL_NAMES_TO_OLD, strict=False)
