@@ -185,17 +185,14 @@ Searching for an instrument:
 The ``instruments.price_adjustments`` function gets all the price adjustments for a specified flow.
 
 
-The `market_watch`_ module contains several functions to fetch market watch data. They include:
+The `market_watch` module contains several functions to fetch market watch data. They include:
 
-* ``market_watch_init``
-* ``market_watch_plus``
-* ``closing_price_all``
-* ``client_type_all``
-* ``key_stats``
-* ``ombud_messages``
-* ``status_changes``
+* ``get_market_watch()``: returns market watch data as a Polars LazyFrame. It supports incremental fetching using the ``h_even`` and ``ref_id`` cursor parameters. Set ``unstack_best_limits=True`` to expand the best-limit data into separate columns.
+* ``get_client_type_all``
+* ``get_inst_value_all_inst_all_param``
+* ``closing_prices_daily_all``
 
-Use ``market_watch.MarketWatch`` for watching the market. Here is how:
+Use ``market_watch.MarketWatchNew`` for watching the market. Here is how:
 
 .. code-block:: python
 
@@ -203,24 +200,25 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
     import polars as pl
 
-    from tsetmc.market_watch import MarketWatch
+    from tsetmc.market_watch import MarketWatchNew
 
 
     async def listen_to_update_events(market_watch):
         while True:
             await market_watch.update_event.wait()
-            # market_watch elements are exposed as a Polars LazyFrame
-            lf = market_watch.lf
-            print(
-                lf.filter(pl.col('ins_code') == '35425587644337450')
-                .select('pl')
-                .collect()
-                .item()
-            )
+
+            # market_watch.df is a Polars DataFrame
+            df = market_watch.df
+            if df is not None:
+                print(
+                    df.filter(pl.col('insCode') == '35425587644337450')
+                    .select('pdv')
+                    .item()
+                )
 
 
     async def main():
-        market_watch = MarketWatch()
+        market_watch = MarketWatchNew()
         await gather(
             market_watch.start(),
             listen_to_update_events(market_watch),
@@ -229,8 +227,7 @@ Use ``market_watch.MarketWatch`` for watching the market. Here is how:
 
     run(main())
 
-
-
+``MarketWatchNew`` handles polling and incremental updates automatically. Its ``df`` attribute contains the accumulated market watch data as a Polars DataFrame. You can use ``update_event`` to wait for updates.
 
 There are many other functions and methods that are not covered here. Explore the codebase to learn more.
 
