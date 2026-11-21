@@ -6,7 +6,7 @@ An ``async`` Python library to fetch data from https://tsetmc.com/ built on top 
 
 Installation
 ------------
-Requires Python 3.13 or later.
+Requires Python 3.14 or later.
 
 ``pip install tsetmc``
 
