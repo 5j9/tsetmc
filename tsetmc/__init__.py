@@ -1,4 +1,4 @@
-__version__ = '5.2.2.dev1'
+__version__ = '5.2.2'
 from datetime import datetime as _datetime
 from enum import StrEnum as _StrEnum
 from json import JSONDecodeError, loads
