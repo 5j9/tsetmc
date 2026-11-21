@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Fixed best-limit data merging in market_watch.MarketWatchNew(): explicitly null levels now correctly overwrite previous values, while levels missing from an update retain their previous values.
 
 v5.2.0 (2026-11-19)
 -------------------

@@ -28,6 +28,7 @@ from polars import (
     lit as _lit,
     max_horizontal as _max_horizontal,
     scan_csv as _scan_csv,
+    when as _when,
 )
 from pytest import warns
 
@@ -523,6 +524,7 @@ def _unstack_market_watch_best_limits(df: _DataFrame) -> _DataFrame:
             'qmo',
             'zmo',
         )
+        .with_columns(_lit(True).alias('_present'))
     )
 
     df = df.drop('blDs')
@@ -544,17 +546,20 @@ def _unstack_market_watch_best_limits(df: _DataFrame) -> _DataFrame:
         if field.name != 'n'
         for n in range(1, 6)
     }
+    expected |= {f'_present{n}': _Boolean for n in range(1, 6)}
 
     if bl.is_empty():
         return df.with_columns(
-            _lit(None, dtype=dtype).alias(name)
+            _lit(
+                False if name.startswith('_present') else None, dtype=dtype
+            ).alias(name)
             for name, dtype in expected.items()
         )
 
     pivoted = bl.pivot(
         on='n',
         index='insCode',
-        values=['rid', 'pmd', 'qmd', 'zmd', 'pmo', 'qmo', 'zmo'],
+        values=['rid', 'pmd', 'qmd', 'zmd', 'pmo', 'qmo', 'zmo', '_present'],
         aggregate_function='first',
     )
 
@@ -564,7 +569,10 @@ def _unstack_market_watch_best_limits(df: _DataFrame) -> _DataFrame:
     ]
 
     pivoted = pivoted.with_columns(
-        _lit(None, dtype=dtype).alias(name)
+        _lit(
+            False if name.startswith('_present') else None,
+            dtype=dtype,
+        ).alias(name)
         for name, dtype in expected.items()
         if name not in pivoted.columns
     ).select('insCode', *expected)
@@ -962,6 +970,7 @@ class MarketWatchNew:
         """Update cursors from an unstacked market-watch DataFrame."""
         if df.is_empty():
             return
+
         rid_cols = [f'rid{i}' for i in range(1, 6)]
 
         exprs = [
@@ -978,17 +987,56 @@ class MarketWatchNew:
             self.ref_id = max(self.ref_id, ref_id)
 
     def handle_update(self, update: _DataFrame) -> None:
-        """Update self.df using the new data received from market-watch."""
+        """Merge new market-watch data, preserving missing best-limit levels."""
         current = self.df
 
         if current is None or current.is_empty():
-            self.df = update
+            self.df = update.drop([f'_present{n}' for n in range(1, 6)])
             return
 
         if update.is_empty():
             return
 
-        self.df = _concat([current, update], how='diagonal').unique(
+        best_limit_fields = [
+            field.name for field in _BL_DS_STRUCT.fields if field.name != 'n'
+        ]
+
+        best_limit_columns = [
+            f'{field}{n}' for field in best_limit_fields for n in range(1, 6)
+        ]
+
+        presence_columns = [f'_present{n}' for n in range(1, 6)]
+
+        # Retrieve previous best-limit values for matching instruments.
+        previous = current.select(
+            'insCode',
+            *best_limit_columns,
+        )
+
+        merged = update.join(
+            previous,
+            on='insCode',
+            how='left',
+            suffix='_old',
+        )
+
+        # Only overwrite a level when it is present in the new response.
+        merged = merged.with_columns(
+            _when(_col(f'_present{n}').fill_null(False))
+            .then(_col(f'{field}{n}'))
+            .otherwise(_col(f'{field}{n}_old'))
+            .alias(f'{field}{n}')
+            for n in range(1, 6)
+            for field in best_limit_fields
+        ).drop(
+            *presence_columns,
+            *[f'{col}_old' for col in best_limit_columns],
+        )
+
+        self.df = _concat(
+            [current, merged],
+            how='diagonal',
+        ).unique(
             subset='insCode',
             keep='last',
             maintain_order=True,
