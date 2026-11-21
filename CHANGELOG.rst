@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Fixed ``adapt_for_old_watch_consumers``: It now renames ``hEven`` to ``heven`` as expected.
 
 v5.2.1 (2026-11-21)
 -------------------
