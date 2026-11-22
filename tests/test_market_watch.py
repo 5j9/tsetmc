@@ -17,6 +17,7 @@ from pytest_aiohutils import file, validate_dict
 from tsetmc import MarketState
 from tsetmc.market_watch import (
     _BEST_LIMITS_SCHEMA,
+    _CLIENT_TYPE_ALL_SCHEMA,
     _MARKET_WATCH_SCHEMA,
     _PRICE_DTYPES_26,
     _PRICE_UPDATE_COLUMNS,
@@ -373,19 +374,7 @@ async def test_get_market_watch():
 async def test_get_client_type_all():
     lf = await get_client_type_all()
 
-    assert [*lf.collect_schema().items()] == [
-        ('insCode', String),
-        ('buy_I_Volume', Float64),
-        ('buy_N_Volume', Float64),
-        ('buy_DDD_Volume', Float64),
-        ('buy_CountI', Int64),
-        ('buy_CountN', Int64),
-        ('buy_CountDDD', Int64),
-        ('sell_I_Volume', Float64),
-        ('sell_N_Volume', Float64),
-        ('sell_CountI', Int64),
-        ('sell_CountN', Int64),
-    ]
+    assert dict(lf.collect_schema()) == _CLIENT_TYPE_ALL_SCHEMA
 
 
 @file('get_inst_value_all_inst_all_param.json')

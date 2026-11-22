@@ -626,6 +626,21 @@ async def get_market_watch(
     return df.lazy()
 
 
+_CLIENT_TYPE_ALL_SCHEMA = {
+    'insCode': _String,
+    'buy_I_Volume': _Float64,
+    'buy_N_Volume': _Float64,
+    'buy_DDD_Volume': _Float64,
+    'buy_CountI': _Int64,
+    'buy_CountN': _Int64,
+    'buy_CountDDD': _Int64,
+    'sell_I_Volume': _Float64,
+    'sell_N_Volume': _Float64,
+    'sell_CountI': _Int64,
+    'sell_CountN': _Int64,
+}
+
+
 async def get_client_type_all() -> _LazyFrame:
     """This function uses the new market watch API. Replaces client_type_all."""
     j = await _api('ClientType/GetClientTypeAll')
@@ -633,7 +648,7 @@ async def get_client_type_all() -> _LazyFrame:
         _logger.warning(
             f'Unexpected keys in get_client_type_all response: {j.keys()=}'
         )
-    return _DataFrame(j['clientTypeAllDto']).lazy()
+    return _LazyFrame(j['clientTypeAllDto'], schema=_CLIENT_TYPE_ALL_SCHEMA)
 
 
 async def get_inst_value_all_inst_all_param() -> _LazyFrame:
