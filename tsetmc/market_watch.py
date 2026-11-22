@@ -883,6 +883,8 @@ class MarketWatch:
             clear_event()
 
 
+# Most names generated from
+# tsetmc/dev/tsetmc_source_files/MWNewOldMigration.js
 _NEW_MW_COL_NAMES_TO_OLD = {
     'insCode': 'ins_code',
     'lva': 'l18',
@@ -952,14 +954,17 @@ _NEW_MW_COL_NAMES_TO_OLD = {
 def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame: ...
 @_overload
 def adapt_for_old_watch_consumers(mw_df: _LazyFrame) -> _LazyFrame: ...
-def adapt_for_old_watch_consumers(mw_df):
+def adapt_for_old_watch_consumers(mw_df: _LazyFrame | _DataFrame):
     """Adapt MarketWatchNew.df for consumers of the old MarketWatch.df.
 
     Renames columns to their old API equivalents. Best-limit data must
     already be unstacked to be renamed, otherwise they will remain unchanged.
+    Casts yval to string when present, matching market_watch_init.
     """
-    # Generated from tsetmc/dev/tsetmc_source_files/MWNewOldMigration.js
-    return mw_df.rename(_NEW_MW_COL_NAMES_TO_OLD, strict=False)
+    mw_df = mw_df.rename(_NEW_MW_COL_NAMES_TO_OLD, strict=False)
+    if 'yval' in mw_df.collect_schema():
+        mw_df = mw_df.with_columns(_col('yval').cast(_String))
+    return mw_df
 
 
 class MarketWatchNew:
