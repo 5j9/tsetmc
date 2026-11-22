@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v5.3.0 (2026-11-22)
 -------------------
 * Feat: ``adapt_for_old_watch_consumers`` now renames ``get_client_type_all`` as ``client_type_all``.
