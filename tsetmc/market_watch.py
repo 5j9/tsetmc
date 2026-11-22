@@ -2,7 +2,7 @@ from asyncio import Event as _Event, sleep as _sleep
 from collections.abc import Callable as _Callable
 from io import BytesIO as _BytesIO, StringIO as _StringIO
 from itertools import islice
-from typing import Any as _Any, TypedDict as _TypedDict
+from typing import Any as _Any, TypedDict as _TypedDict, overload as _overload
 from warnings import deprecated as _deprecated
 
 from aiohttp import (
@@ -936,10 +936,23 @@ _NEW_MW_COL_NAMES_TO_OLD = {
     'buyOP': 'buyop',
     'cGrValCot': 'cgrvalcot',
     'hEven': 'heven',
+    # Client type
+    'buy_CountN': 'n_buy_count',
+    'buy_CountI': 'l_buy_count',
+    'buy_N_Volume': 'n_buy_volume',
+    'buy_I_Volume': 'l_buy_volume',
+    'sell_CountN': 'n_sell_count',
+    'sell_CountI': 'l_sell_count',
+    'sell_N_Volume': 'n_sell_volume',
+    'sell_I_Volume': 'l_sell_volume',
 }
 
 
-def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame:
+@_overload
+def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame: ...
+@_overload
+def adapt_for_old_watch_consumers(mw_df: _LazyFrame) -> _LazyFrame: ...
+def adapt_for_old_watch_consumers(mw_df):
     """Adapt MarketWatchNew.df for consumers of the old MarketWatch.df.
 
     Renames columns to their old API equivalents. Best-limit data must
