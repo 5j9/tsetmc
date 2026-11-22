@@ -951,18 +951,25 @@ _NEW_MW_COL_NAMES_TO_OLD = {
 
 
 @_overload
-def adapt_for_old_watch_consumers(mw_df: _DataFrame) -> _DataFrame: ...
+def adapt_for_old_watch_consumers(
+    mw_df: _DataFrame, str_yval: bool
+) -> _DataFrame: ...
 @_overload
-def adapt_for_old_watch_consumers(mw_df: _LazyFrame) -> _LazyFrame: ...
-def adapt_for_old_watch_consumers(mw_df: _LazyFrame | _DataFrame):
+def adapt_for_old_watch_consumers(
+    mw_df: _LazyFrame, str_yval: bool
+) -> _LazyFrame: ...
+def adapt_for_old_watch_consumers(
+    mw_df: _LazyFrame | _DataFrame, str_yval: bool = True
+):
     """Adapt MarketWatchNew.df for consumers of the old MarketWatch.df.
 
     Renames columns to their old API equivalents. Best-limit data must
     already be unstacked to be renamed, otherwise they will remain unchanged.
-    Casts yval to string when present, matching market_watch_init.
+
+    Casts yval to string when str_yval is True, matching market_watch_init.
     """
     mw_df = mw_df.rename(_NEW_MW_COL_NAMES_TO_OLD, strict=False)
-    if 'yval' in mw_df.collect_schema():
+    if str_yval and 'yval' in mw_df.collect_schema():
         mw_df = mw_df.with_columns(_col('yval').cast(_String))
     return mw_df
 
