@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Added: ``str_yval`` param to ``adapt_for_old_watch_consumers``.
+* Updated dataset.
 
 v5.3.0 (2026-11-22)
 -------------------
