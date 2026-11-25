@@ -1,5 +1,5 @@
-Unreleased
-----------
+v5.4.0 (2026-11-25)
+-------------------
 * Added: ``str_yval`` param to ``adapt_for_old_watch_consumers``.
 * Added: ``update_df`` attribute to ``MarketWatchNew`` to expose the latest
   market-watch update separately from the accumulated ``df``.
