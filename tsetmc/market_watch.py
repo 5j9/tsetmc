@@ -952,11 +952,11 @@ _NEW_MW_COL_NAMES_TO_OLD = {
 
 @_overload
 def adapt_for_old_watch_consumers(
-    mw_df: _DataFrame, str_yval: bool
+    mw_df: _DataFrame, str_yval: bool = True
 ) -> _DataFrame: ...
 @_overload
 def adapt_for_old_watch_consumers(
-    mw_df: _LazyFrame, str_yval: bool
+    mw_df: _LazyFrame, str_yval: bool = True
 ) -> _LazyFrame: ...
 def adapt_for_old_watch_consumers(
     mw_df: _LazyFrame | _DataFrame, str_yval: bool = True
