@@ -207,14 +207,13 @@ Use ``market_watch.MarketWatchNew`` for watching the market. Here is how:
         while True:
             await market_watch.update_event.wait()
 
-            # market_watch.df is a Polars DataFrame
+            # market_watch.df and market_watch.update_df are Polars DataFrames
             df = market_watch.df
-            if df is not None:
-                print(
-                    df.filter(pl.col('insCode') == '35425587644337450')
-                    .select('pdv')
-                    .item()
-                )
+            print(
+                df.filter(pl.col('insCode') == '35425587644337450')
+                .select('pdv')
+                .item()
+            )
 
 
     async def main():

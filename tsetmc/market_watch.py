@@ -980,6 +980,7 @@ class MarketWatchNew:
         'h_even',
         'interval',
         'ref_id',
+        'update_df',
         'update_event',
     )
 
@@ -996,8 +997,16 @@ class MarketWatchNew:
         :param h_even: Initial hEven cursor.
         :param ref_id: Initial RefID cursor.
 
-        Each time new data is received, self.update_event will be set.
+        Each time new data is received, `self.update_event` will be set.
         Users can wait for this event to get notified of updates.
+
+        The following attributes are available after the first successful
+        update:
+            `update_df`: Most recently received batch.
+            `df`: Accumulated market-watch data.
+
+        Accessing these attributes before the first update will raise
+        `AttributeError`.
 
         To stop the watch, cancel the task running self.start().
         """
@@ -1005,10 +1014,10 @@ class MarketWatchNew:
         self.h_even = h_even
         self.ref_id = ref_id
         self.update_event = _Event()
-        self.df = None
 
-    def update_cursors(self, df: _DataFrame) -> None:
+    def update_cursors(self) -> None:
         """Update cursors from an unstacked market-watch DataFrame."""
+        df = self.update_df
         if df.is_empty():
             return
 
@@ -1027,9 +1036,13 @@ class MarketWatchNew:
         if ref_id is not None:
             self.ref_id = max(self.ref_id, ref_id)
 
-    def handle_update(self, update: _DataFrame) -> None:
+    def handle_update(self) -> None:
         """Merge new market-watch data, preserving missing best-limit levels."""
-        current = self.df
+        update = self.update_df
+        try:
+            current = self.df
+        except AttributeError:
+            current = None
 
         if current is None or current.is_empty():
             self.df = update.drop([f'_present{n}' for n in range(1, 6)])
@@ -1104,9 +1117,9 @@ class MarketWatchNew:
                 _logger.exception(f'{e!r} while awaiting get_market_watch')
                 continue
             else:
-                df = lf.collect()
-                self.update_cursors(df)
-                self.handle_update(df)
+                self.update_df = lf.collect()
+                self.update_cursors()
+                self.handle_update()
 
                 update_event = self.update_event
                 update_event.set()
